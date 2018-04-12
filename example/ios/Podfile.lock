@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - flutter_tts (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Pods/.symlinks/flutter/ios`)
+  - flutter_tts (from `Pods/.symlinks/plugins/flutter_tts/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Pods/.symlinks/flutter/ios
+  flutter_tts:
+    :path: Pods/.symlinks/plugins/flutter_tts/ios
+
+SPEC CHECKSUMS:
+  Flutter: 9d0fac939486c9aba2809b7982dfdbb47a7b0296
+  flutter_tts: f5973dd3b8cce8a02b52ab609872dd5ffda37501
+
+PODFILE CHECKSUM: 70e69985f01fdaffe3180d3ae5e73472304a9371
+
+COCOAPODS: 1.4.0
