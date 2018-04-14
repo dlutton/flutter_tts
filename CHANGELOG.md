@@ -1,3 +1,7 @@
-## [0.0.1] - TODO: Add release date.
+# ChangeLog
 
-* TODO: Describe initial release.
+## 0.0.1
+
+- first POC :
+  - methods : speak, stop, setRate, setLangauge, getLanguages
+  - a globalHandler for completion
