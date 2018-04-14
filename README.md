@@ -52,6 +52,28 @@ await flutterTts.setLanguage("en-US");
 await flutterTts.setRate(1.0);
 ```
 
+### Listening for platform calls
+
+```dart
+flutterTts.setStartHandler(() {
+  setState(() {
+    ttsState = TtsState.playing;
+  });
+});
+
+flutterTts.setCompletionHandler(() {
+  setState(() {
+    ttsState = TtsState.stopped;
+  });
+});
+
+flutterTts.setErrorHandler((msg) {
+  setState(() {
+    ttsState = TtsState.stopped;
+  });
+});
+```
+
 ## Getting Started
 
 For help getting started with Flutter, view our online

@@ -32,11 +32,15 @@ class _MyAppState extends State<MyApp> {
     flutterTts = new FlutterTts();
 
     flutterTts.setStartHandler(() {
-      setState(() {ttsState = TtsState.playing;});
+      setState(() {
+        ttsState = TtsState.playing;
+      });
     });
 
     flutterTts.setCompletionHandler(() {
-      setState(() {ttsState = TtsState.stopped;});
+      setState(() {
+        ttsState = TtsState.stopped;
+      });
     });
 
     flutterTts.setErrorHandler((msg) {
@@ -46,15 +50,17 @@ class _MyAppState extends State<MyApp> {
     });
 
     languages = await flutterTts.getLanguages;
-    setState((){languages;});
+    setState(() {
+      languages;
+    });
   }
 
-  Future _speak() async{
+  Future _speak() async {
     var result = await flutterTts.speak(_newVoiceText);
     if (result == 1) setState(() => ttsState = TtsState.playing);
   }
 
-  Future _stop() async{
+  Future _stop() async {
     var result = await flutterTts.stop();
     if (result == 1) setState(() => ttsState = TtsState.stopped);
   }
@@ -70,10 +76,7 @@ class _MyAppState extends State<MyApp> {
   List<DropdownMenuItem<String>> getDropDownMenuItems() {
     List<DropdownMenuItem<String>> items = new List();
     for (String type in languages) {
-      items.add(new DropdownMenuItem(
-        value: type,
-        child: new Text(type)
-      ));
+      items.add(new DropdownMenuItem(value: type, child: new Text(type)));
     }
     return items;
   }
@@ -86,56 +89,53 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onChange(String text) {
-    setState((){_newVoiceText = text;});
+    setState(() {
+      _newVoiceText = text;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-
     return new MaterialApp(
       home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('Flutter TTS'),
-        ),
-        body: languages != null ? _buildRow() : null
-      ),
+          appBar: new AppBar(
+            title: new Text('Flutter TTS'),
+          ),
+          body: languages != null ? _buildRow() : null),
     );
   }
 
-  Widget _buildRow() => new Column(
-    children:<Widget>[
-      new Container(
-        alignment: Alignment.topCenter,
-        padding: new EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
-        child: new TextField (
-          onChanged: (String value){_onChange(value);},
-        )
-      ),
-      new Container(
-        padding: new EdgeInsets.only(top: 200.0),
-        child: new Row (
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            new IconButton(
-              icon: new Icon(Icons.play_arrow),
-              onPressed: _newVoiceText == null || isPlaying ? null : () => _speak(),
-              color: Colors.green,
-              splashColor: Colors.greenAccent
-            ),
-            new IconButton(
-              icon: new Icon(Icons.stop),
-              onPressed: isStopped ? null : () => _stop(),
-              color: Colors.red,
-              splashColor: Colors.redAccent
-            ),
-            new DropdownButton(
-              value: language,
-              items: getDropDownMenuItems(),
-              onChanged: changedDropDownItem,
-            )
-          ]
-        )
-      )
-    ]
-  );
+  Widget _buildRow() => new Column(children: <Widget>[
+        new Container(
+            alignment: Alignment.topCenter,
+            padding: new EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
+            child: new TextField(
+              onChanged: (String value) {
+                _onChange(value);
+              },
+            )),
+        new Container(
+            padding: new EdgeInsets.only(top: 200.0),
+            child: new Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  new IconButton(
+                      icon: new Icon(Icons.play_arrow),
+                      onPressed: _newVoiceText == null || isPlaying
+                          ? null
+                          : () => _speak(),
+                      color: Colors.green,
+                      splashColor: Colors.greenAccent),
+                  new IconButton(
+                      icon: new Icon(Icons.stop),
+                      onPressed: isStopped ? null : () => _stop(),
+                      color: Colors.red,
+                      splashColor: Colors.redAccent),
+                  new DropdownButton(
+                    value: language,
+                    items: getDropDownMenuItems(),
+                    onChanged: changedDropDownItem,
+                  )
+                ]))
+      ]);
 }

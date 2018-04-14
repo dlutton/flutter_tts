@@ -6,8 +6,7 @@ import 'package:flutter/services.dart';
 typedef void ErrorHandler(String message);
 
 class FlutterTts {
-  static const MethodChannel _channel =
-      const MethodChannel('flutter_tts');
+  static const MethodChannel _channel = const MethodChannel('flutter_tts');
 
   VoidCallback startHandler;
   VoidCallback completionHandler;
@@ -19,9 +18,11 @@ class FlutterTts {
 
   Future<dynamic> speak(String text) => _channel.invokeMethod('speak', text);
 
-  Future<dynamic> setLanguage(String language) => _channel.invokeMethod('setLanguage', language);
+  Future<dynamic> setLanguage(String language) =>
+      _channel.invokeMethod('setLanguage', language);
 
-  Future<dynamic> setRate(double rate) => _channel.invokeMethod('setRate', rate);
+  Future<dynamic> setRate(double rate) =>
+      _channel.invokeMethod('setRate', rate);
 
   Future<dynamic> stop() => _channel.invokeMethod('stop');
 
@@ -63,7 +64,6 @@ class FlutterTts {
         break;
       default:
         print('Unknowm method ${call.method}');
-     }
+    }
   }
-
 }
