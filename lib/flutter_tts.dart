@@ -24,6 +24,12 @@ class FlutterTts {
   Future<dynamic> setRate(double rate) =>
       _channel.invokeMethod('setRate', rate);
 
+  Future<dynamic> setVolume(double volume) =>
+      _channel.invokeMethod('setVolume', volume);
+
+  Future<dynamic> setPitch(double pitch) =>
+      _channel.invokeMethod('setPitch', pitch);
+
   Future<dynamic> stop() => _channel.invokeMethod('stop');
 
   Future<dynamic> pause() => _channel.invokeMethod('pause');

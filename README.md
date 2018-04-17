@@ -10,6 +10,8 @@ A flutter text to speech plugin (Swift,Java)
   - [x] get languages
   - [x] set language
   - [x] speech rate
+  - [x] speech volume
+  - [x] speech pitch
 
 ## Usage
 
@@ -50,6 +52,10 @@ List<dynamic> languages = await flutterTts.getLanguages;
 await flutterTts.setLanguage("en-US");
 
 await flutterTts.setRate(1.0);
+
+await flutterTts.setVolume(1.0);
+
+await flutterTts.setPitch(1.0);
 ```
 
 ### Listening for platform calls

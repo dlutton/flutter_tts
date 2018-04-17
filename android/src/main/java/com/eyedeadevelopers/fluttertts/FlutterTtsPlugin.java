@@ -24,6 +24,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   private final Activity activity;
   private TextToSpeech tts;
   String uuid;
+  Bundle bundle;
 
   /**
    * Plugin registration.
@@ -33,8 +34,8 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     this.channel = channel;
     this.channel.setMethodCallHandler(this);
 
+    bundle = new Bundle();
     tts = new TextToSpeech(activity.getApplicationContext(), onInitListener);
-    uuid = UUID.randomUUID().toString();
   };
 
   private UtteranceProgressListener utteranceProgressListener = new UtteranceProgressListener() {
@@ -96,6 +97,12 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       String rate = call.arguments.toString();
       setRate(Float.parseFloat(rate));
       result.success(1);
+    } else if (call.method.equals("setVolume")) {
+      String volume = call.arguments.toString();
+      setVolume(Float.parseFloat(volume), result);
+    } else if (call.method.equals("setPitch")) {
+      String pitch = call.arguments.toString();
+      setPitch(Float.parseFloat(pitch), result);
     } else if (call.method.equals("setLanguage")){
       String language = call.arguments.toString();
       setLanguage(language, result);
@@ -125,6 +132,28 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     if (checkLanguage(locale)) {
       tts.setLanguage(locale);
       result.success(1);
+    } else {
+      result.success(0);
+    }
+  }
+
+  void setVolume(float volume, Result result) {
+    if (volume >= 0.0F && volume <= 1.0F) {
+      bundle.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume); 
+      result.success(1);
+    } else {
+      Log.e("error", "Invalid volume " + volume + " value - Range is from 0.0 to 1.0");
+      result.success(0);
+    }
+  }
+
+  void setPitch(float pitch, Result result) {
+    if (pitch >= 0.5F && pitch <= 2.0F) {
+      tts.setPitch(pitch);
+      result.success(1);
+    } else {
+      Log.e("error", "Invalid pitch " + pitch + " value - Range is from 0.5 to 2.0");
+      result.success(0);
     }
   }
 
@@ -137,7 +166,8 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   }
 
   void speak(String text) {
-    tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, uuid);
+    uuid = UUID.randomUUID().toString();
+    tts.speak(text, TextToSpeech.QUEUE_FLUSH, bundle, uuid);
   }
 
   void stop() {

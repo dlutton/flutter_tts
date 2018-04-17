@@ -6,6 +6,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   let synthesizer = AVSpeechSynthesizer()
   var language: String = AVSpeechSynthesisVoice.currentLanguageCode() 
   var rate: Float = AVSpeechUtteranceDefaultSpeechRate
+  var volume: Float = 1.0
+  var pitch: Float = 1.0
 
   var channel = FlutterMethodChannel()
     
@@ -37,6 +39,14 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       self.setRate(rate: Float(rate))
       result(1)
       break
+    case "setVolume":
+      let volume: Double = call.arguments as! Double
+      self.setVolume(volume: Float(volume), result: result)
+      break
+    case "setPitch":
+      let pitch: Double = call.arguments as! Double
+      self.setPitch(pitch: Float(pitch), result: result)
+      break
     case "stop":
       self.stop()
       result(1)
@@ -53,6 +63,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     let utterance = AVSpeechUtterance(string: text)
     utterance.voice = AVSpeechSynthesisVoice(language: self.language)
     utterance.rate = self.rate
+    utterance.volume = self.volume 
+    utterance.pitchMultiplier = self.pitch 
 
     self.synthesizer.speak(utterance)
   }
@@ -63,7 +75,6 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       voices.append(voice.language)
     }
     if !(voices.contains(language)){
-      self.channel.invokeMethod("speak.onError", arguments: "Invalid language code - \(language)")
       result(0)
     } else {
       self.language = language
@@ -73,6 +84,24 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func setRate(rate: Float) {
     self.rate = rate
+  }
+
+  private func setVolume(volume: Float, result: FlutterResult) {
+    if (volume >= 0.0 && volume <= 1.0) {
+      self.volume = volume
+      result(1)
+    } else {
+      result(0)
+    }
+  }
+
+  private func setPitch(pitch: Float, result: FlutterResult) {
+    if (volume >= 0.5 && volume <= 2.0) {
+      self.pitch = pitch
+      result(1)
+    } else {
+      result(0)
+    }
   }
 
   private func stop() {

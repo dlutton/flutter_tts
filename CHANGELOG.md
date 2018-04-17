@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.0.3
+
+- Adding IOS/Android speech pitch and volume
+
 ## 0.0.2
 
 - Flutter formatting and fixing pubspec sdk versioning
