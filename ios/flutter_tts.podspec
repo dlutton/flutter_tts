@@ -4,18 +4,18 @@
 Pod::Spec.new do |s|
   s.name             = 'flutter_tts'
   s.version          = '0.0.1'
-  s.summary          = 'A new flutter plugin project.'
+  s.summary          = 'A flutter text to speech plugin.'
   s.description      = <<-DESC
-A new flutter plugin project.
+A flutter text to speech plugin
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/dlutton/flutter_tts'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'eyedeadevelopers' => 'eyedea32@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  
   s.ios.deployment_target = '8.0'
+  s.static_framework = true
 end
 
