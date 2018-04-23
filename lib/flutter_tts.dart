@@ -21,8 +21,8 @@ class FlutterTts {
   Future<dynamic> setLanguage(String language) =>
       _channel.invokeMethod('setLanguage', language);
 
-  Future<dynamic> setRate(double rate) =>
-      _channel.invokeMethod('setRate', rate);
+  Future<dynamic> setSpeechRate(double rate) =>
+      _channel.invokeMethod('setSpeechRate', rate);
 
   Future<dynamic> setVolume(double volume) =>
       _channel.invokeMethod('setVolume', volume);

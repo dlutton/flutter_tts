@@ -34,7 +34,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       let language: String = call.arguments as! String
       self.setLanguage(language: language, result: result)
       break
-    case "setRate":
+    case "setSpeechRate":
       let rate: Double = call.arguments as! Double
       self.setRate(rate: Float(rate))
       result(1)

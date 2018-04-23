@@ -88,9 +88,9 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     } else if (call.method.equals("stop")) {
       stop();
       result.success(1);
-    } else if (call.method.equals("setRate")) {
+    } else if (call.method.equals("setSpeechRate")) {
       String rate = call.arguments.toString();
-      setRate(Float.parseFloat(rate));
+      setSpeechRate(Float.parseFloat(rate));
       result.success(1);
     } else if (call.method.equals("setVolume")) {
       String volume = call.arguments.toString();
@@ -108,7 +108,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     }
   }
 
-  void setRate(float rate) {
+  void setSpeechRate(float rate) {
     tts.setSpeechRate(rate);
   }
 
