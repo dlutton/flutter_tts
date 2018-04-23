@@ -63,9 +63,9 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           if (status == TextToSpeech.SUCCESS) {
             tts.setOnUtteranceProgressListener(utteranceProgressListener);
 
-            Locale locale = tts.getDefaultVoice().getLocale();
-            locale = new Locale(locale.toString());
-            if (checkLanguage(locale)) {
+            String locale_str = tts.getDefaultVoice().getLocale().toString().replace("_", "-");
+            Locale locale = new Locale(locale_str);
+            if (isLanguageAvailable(locale)) {
               tts.setLanguage(locale);
             }
           } else {
@@ -103,6 +103,11 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       setLanguage(language, result);
     } else if (call.method.equals("getLanguages")) {
       getLanguages(result);
+    } else if (call.method.equals("isLanguageAvailable")) {
+      String language = call.arguments.toString().substring(10, 15);
+      Locale locale = new Locale(language);
+      final Boolean isAvailable = isLanguageAvailable(locale);
+      result.success(isAvailable);
     } else {
       result.notImplemented();
     }
@@ -112,19 +117,19 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     tts.setSpeechRate(rate);
   }
 
-  private Boolean checkLanguage(Locale locale) {
-    Boolean isLangAvailable = false;
+  Boolean isLanguageAvailable(Locale locale) {
+    Boolean isLanguageAvailable = false;
     if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_AVAILABLE) {
-      isLangAvailable = true;
+      isLanguageAvailable = true;
     } else {
       Log.e("error", "Language is not available - " + locale);
     }
-    return isLangAvailable;
+    return isLanguageAvailable;
   }
 
   void setLanguage(String language, Result result) {
     Locale locale = new Locale(language);
-    if (checkLanguage(locale)) {
+    if (isLanguageAvailable(locale)) {
       tts.setLanguage(locale);
       result.success(1);
     } else {

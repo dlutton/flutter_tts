@@ -39,6 +39,9 @@ class FlutterTts {
     return languages;
   }
 
+  Future<dynamic> isLanguageAvailable(String language) => _channel.invokeMethod(
+      'isLanguageAvailable', <String, Object>{'language': language});
+
   void setStartHandler(VoidCallback callback) {
     startHandler = callback;
   }
