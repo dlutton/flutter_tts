@@ -11,6 +11,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -63,8 +64,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           if (status == TextToSpeech.SUCCESS) {
             tts.setOnUtteranceProgressListener(utteranceProgressListener);
 
-            String locale_str = tts.getDefaultVoice().getLocale().toString().replace("_", "-");
-            Locale locale = new Locale(locale_str);
+            Locale locale = tts.getDefaultVoice().getLocale();
             if (isLanguageAvailable(locale)) {
               tts.setLanguage(locale);
             }
@@ -104,7 +104,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     } else if (call.method.equals("getLanguages")) {
       getLanguages(result);
     } else if (call.method.equals("isLanguageAvailable")) {
-      String language = call.arguments.toString().substring(10, 15);
+      String language = ((HashMap) call.arguments()).get("language").toString();
       Locale locale = new Locale(language);
       final Boolean isAvailable = isLanguageAvailable(locale);
       result.success(isAvailable);

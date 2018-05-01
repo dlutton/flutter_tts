@@ -9,9 +9,10 @@ A flutter text to speech plugin (Swift,Java)
   - [x] stop
   - [x] get languages
   - [x] set language
-  - [x] speech rate
-  - [x] speech volume
-  - [x] speech pitch
+  - [x] is language available
+  - [x] set speech rate
+  - [x] set speech volume
+  - [x] set speech pitch
 
 ## Usage
 
@@ -34,7 +35,7 @@ To use this plugin :
 FlutterTts flutterTts = new FlutterTts();
 ```
 
-### speak, stop, getLanguages, setLanguage, speech rate
+### speak, stop, getLanguages, setLanguage, setSpeechRate, setVolume, setPitch, isLanguageAvailable
 
 ```dart
 Future _speak() async{
@@ -51,11 +52,13 @@ List<dynamic> languages = await flutterTts.getLanguages;
 
 await flutterTts.setLanguage("en-US");
 
-await flutterTts.setRate(1.0);
+await flutterTts.setSpeechRate(1.0);
 
 await flutterTts.setVolume(1.0);
 
 await flutterTts.setPitch(1.0);
+
+await flutterTts.isLanguageAvailable("en-US");
 ```
 
 ### Listening for platform calls

@@ -1,5 +1,11 @@
 # ChangeLog
 
+
+## 0.0.5
+
+- Adding IOS/Android isLanguageAvailable
+- Rename setRate to setSpeechRate
+
 ## 0.0.4
 
 - Simplify podspec for Cocoapods 1.5.0

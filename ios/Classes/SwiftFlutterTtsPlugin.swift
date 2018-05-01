@@ -6,6 +6,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   let synthesizer = AVSpeechSynthesizer()
   var language: String = AVSpeechSynthesisVoice.currentLanguageCode() 
   var rate: Float = AVSpeechUtteranceDefaultSpeechRate
+  var languages: [String] = []
   var volume: Float = 1.0
   var pitch: Float = 1.0
 
@@ -15,6 +16,13 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     super.init()
     self.channel = channel
     synthesizer.delegate = self
+    setLanguages()
+  }
+
+  private func setLanguages() {
+    for voice in (AVSpeechSynthesisVoice.speechVoices()){
+      self.languages.append(voice.language)
+    }
   }
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -54,6 +62,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     case "getLanguages":
       self.getLanguages(result: result)
       break
+    case "isLanguageAvailable":
+      let arg: Dictionary<String, String> = call.arguments as! Dictionary<String, String>
+      self.isLanguageAvailable(language: arg["language"] as! String, result: result)
+      break
     default: 
       result(FlutterMethodNotImplemented)
     }
@@ -70,11 +82,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   private func setLanguage(language: String, result: FlutterResult) {
-    var voices: [String] = []
-    for voice in (AVSpeechSynthesisVoice.speechVoices()){
-      voices.append(voice.language)
-    }
-    if !(voices.contains(language)){
+    if !(self.languages.contains(language)) {
       result(0)
     } else {
       self.language = language
@@ -109,11 +117,15 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   private func getLanguages(result: FlutterResult) {
-    var voices: [String] = []
-    for voice in (AVSpeechSynthesisVoice.speechVoices()){
-        voices.append(voice.language)
+    result(self.languages)
+  }
+
+  private func isLanguageAvailable(language: String, result: FlutterResult) {
+    var isAvailable: Bool = false
+    if (self.languages.contains(language)) {
+      isAvailable = true
     }
-    result(voices)
+    result(isAvailable);
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
