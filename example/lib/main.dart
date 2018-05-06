@@ -50,9 +50,7 @@ class _MyAppState extends State<MyApp> {
     });
 
     languages = await flutterTts.getLanguages;
-    setState(() {
-      languages;
-    });
+    if (languages != null) setState(() => languages);
   }
 
   Future _speak() async {
@@ -101,11 +99,42 @@ class _MyAppState extends State<MyApp> {
           appBar: new AppBar(
             title: new Text('Flutter TTS'),
           ),
-          body: languages != null ? _buildRow() : null),
+          body: languages != null
+              ? _buildRowWithLanguages()
+              : _buildRowWithoutLanguages()),
     );
   }
 
-  Widget _buildRow() => new Column(children: <Widget>[
+  Widget _buildRowWithoutLanguages() => new Column(children: <Widget>[
+        new Container(
+            alignment: Alignment.topCenter,
+            padding: new EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
+            child: new TextField(
+              onChanged: (String value) {
+                _onChange(value);
+              },
+            )),
+        new Container(
+            padding: new EdgeInsets.only(top: 200.0),
+            child: new Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  new IconButton(
+                      icon: new Icon(Icons.play_arrow),
+                      onPressed: _newVoiceText == null || isPlaying
+                          ? null
+                          : () => _speak(),
+                      color: Colors.green,
+                      splashColor: Colors.greenAccent),
+                  new IconButton(
+                      icon: new Icon(Icons.stop),
+                      onPressed: isStopped ? null : () => _stop(),
+                      color: Colors.red,
+                      splashColor: Colors.redAccent),
+                ]))
+      ]);
+
+  Widget _buildRowWithLanguages() => new Column(children: <Widget>[
         new Container(
             alignment: Alignment.topCenter,
             padding: new EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),

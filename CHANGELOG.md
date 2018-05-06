@@ -1,6 +1,12 @@
 # ChangeLog
 
 
+## 0.0.6
+
+- Android: Upgrading Gradle 4.1 to 4.4
+- Android: Setting minSdk version to 21
+- Android: Adding try/catch to getAvailableLanguages & getDefaultVoice methods (Issues with API 21 & 22)
+
 ## 0.0.5
 
 - Adding IOS/Android isLanguageAvailable

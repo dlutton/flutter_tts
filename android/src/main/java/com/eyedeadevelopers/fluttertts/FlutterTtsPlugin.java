@@ -18,14 +18,13 @@ import java.util.UUID;
 /** FlutterTtsPlugin */
 public class FlutterTtsPlugin implements MethodCallHandler {
   private final MethodChannel channel;
-  private final Activity activity;
   private TextToSpeech tts;
+  private final String tag = "TTS";
   String uuid;
   Bundle bundle;
 
   /** Plugin registration. */
   private FlutterTtsPlugin(Activity activity, MethodChannel channel) {
-    this.activity = activity;
     this.channel = channel;
     this.channel.setMethodCallHandler(this);
 
@@ -64,12 +63,16 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           if (status == TextToSpeech.SUCCESS) {
             tts.setOnUtteranceProgressListener(utteranceProgressListener);
 
-            Locale locale = tts.getDefaultVoice().getLocale();
-            if (isLanguageAvailable(locale)) {
-              tts.setLanguage(locale);
+            try {
+              Locale locale = tts.getDefaultVoice().getLocale();
+              if (isLanguageAvailable(locale)) {
+                tts.setLanguage(locale);
+              }
+            } catch (NullPointerException e) {
+              Log.d(tag, "getDefaultVoice: " + e.getMessage() + " (known issue with API 21 & 22)");
             }
           } else {
-            Log.e("error", "Failed to initialize TextToSpeech");
+            Log.d(tag, "Failed to initialize TextToSpeech");
           }
         }
       };
@@ -122,7 +125,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_AVAILABLE) {
       isLanguageAvailable = true;
     } else {
-      Log.e("error", "Language is not available - " + locale);
+      Log.d(tag, "Language is not available - " + locale);
     }
     return isLanguageAvailable;
   }
@@ -142,7 +145,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       bundle.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume);
       result.success(1);
     } else {
-      Log.e("error", "Invalid volume " + volume + " value - Range is from 0.0 to 1.0");
+      Log.d(tag, "Invalid volume " + volume + " value - Range is from 0.0 to 1.0");
       result.success(0);
     }
   }
@@ -152,17 +155,22 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       tts.setPitch(pitch);
       result.success(1);
     } else {
-      Log.e("error", "Invalid pitch " + pitch + " value - Range is from 0.5 to 2.0");
+      Log.d(tag, "Invalid pitch " + pitch + " value - Range is from 0.5 to 2.0");
       result.success(0);
     }
   }
 
   void getLanguages(Result result) {
     ArrayList<String> locales = new ArrayList<>();
-    for (Locale locale : tts.getAvailableLanguages()) {
-      locales.add(locale.toLanguageTag());
+    try {
+      for (Locale locale : tts.getAvailableLanguages()) {
+        locales.add(locale.toLanguageTag());
+      }
+      result.success(locales);
+    } catch (NullPointerException e) {
+      Log.d(tag, "getAvailableLanguages: " + e.getMessage() + " - (known issue with API 21 & 22)");
+      result.success(null);
     }
-    result.success(locales);
   }
 
   void speak(String text) {
