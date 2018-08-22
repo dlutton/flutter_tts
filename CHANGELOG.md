@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 0.0.7
+
+- Updating SDK version in pubspec.yaml
+- Adding package link to README
+- Fixing language string warning received from xcode
+
 
 ## 0.0.6
 

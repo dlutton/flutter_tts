@@ -64,7 +64,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       break
     case "isLanguageAvailable":
       let arg: Dictionary<String, String> = call.arguments as! Dictionary<String, String>
-      self.isLanguageAvailable(language: arg["language"] as! String, result: result)
+      self.isLanguageAvailable(language: arg["language"]! as String, result: result)
       break
     default: 
       result(FlutterMethodNotImplemented)
