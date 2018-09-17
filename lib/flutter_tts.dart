@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-typedef void ErrorHandler(String message);
+typedef void ErrorHandler(dynamic message);
 
 class FlutterTts {
   static const MethodChannel _channel = const MethodChannel('flutter_tts');

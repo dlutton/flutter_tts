@@ -1,11 +1,15 @@
 # ChangeLog
 
+## 0.0.8
+
+- Adding analysis_options.yaml for improved healthscore
+- Fixing info/errors from flutter analyze
+
 ## 0.0.7
 
 - Updating SDK version in pubspec.yaml
 - Adding package link to README
 - Fixing language string warning received from xcode
-
 
 ## 0.0.6
 
