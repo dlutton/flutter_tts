@@ -1,8 +1,13 @@
 # ChangeLog
 
+## 0.1.0
+
+- Updating version for improved maintenance score
+- Updating package description for improved maintenance score
+
 ## 0.0.8
 
-- Adding analysis_options.yaml for improved healthscore
+- Adding analysis_options.yaml for improved health score
 - Fixing info/errors from flutter analyze
 
 ## 0.0.7
