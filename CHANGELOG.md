@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 0.1.1
+
+- Fixing TTS bound error in the example
+- Fixing default voice language not found error on Android
+
 ## 0.1.0
 
 - Updating version for improved maintenance score

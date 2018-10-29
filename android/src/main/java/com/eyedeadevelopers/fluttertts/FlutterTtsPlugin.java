@@ -64,7 +64,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
             tts.setOnUtteranceProgressListener(utteranceProgressListener);
 
             try {
-              Locale locale = tts.getDefaultVoice().getLocale();
+              Locale locale =  new Locale(tts.getDefaultVoice().getLocale().toLanguageTag());
               if (isLanguageAvailable(locale)) {
                 tts.setLanguage(locale);
               }

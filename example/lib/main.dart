@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -28,6 +27,7 @@ class _MyAppState extends State<MyApp> {
   initState() {
     super.initState();
     initTts();
+    _getLanguages();
   }
 
   initTts() async {
@@ -50,9 +50,6 @@ class _MyAppState extends State<MyApp> {
         ttsState = TtsState.stopped;
       });
     });
-
-    languages = await flutterTts.getLanguages;
-    if (languages != null) setState(() => languages);
   }
 
   Future _speak() async {
@@ -90,6 +87,11 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _newVoiceText = text;
     });
+  }
+
+  void _getLanguages() async {
+    languages = await flutterTts.getLanguages;
+    if (languages != null) setState(() => languages);
   }
 
   @override
