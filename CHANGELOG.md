@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 0.1.2
+
+- Support for Android background execution
+- Updating Android build gradle version to 3.2.1
+
 ## 0.1.1
 
 - Fixing TTS bound error in the example
