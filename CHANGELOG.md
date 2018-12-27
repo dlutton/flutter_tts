@@ -1,5 +1,25 @@
 # ChangeLog
 
+## 0.1.1
+
+- Fixing TTS bound error in the example
+- Fixing default voice language not found error on Android
+
+## 0.1.0
+
+- Updating version for improved maintenance score
+- Updating package description for improved maintenance score
+
+## 0.0.8
+
+- Adding analysis_options.yaml for improved health score
+- Fixing info/errors from flutter analyze
+
+## 0.0.7
+
+- Updating SDK version in pubspec.yaml
+- Adding package link to README
+- Fixing language string warning received from xcode
 
 ## 0.0.6
 

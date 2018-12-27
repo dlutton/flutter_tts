@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'dart:async';
 
 void main() => runApp(new MyApp());
 
@@ -14,6 +14,7 @@ enum TtsState { playing, stopped }
 class _MyAppState extends State<MyApp> {
   FlutterTts flutterTts;
   List<dynamic> languages;
+  String language;
 
   String _newVoiceText;
 
@@ -26,6 +27,7 @@ class _MyAppState extends State<MyApp> {
   initState() {
     super.initState();
     initTts();
+    _getLanguages();
   }
 
   initTts() async {
@@ -48,9 +50,6 @@ class _MyAppState extends State<MyApp> {
         ttsState = TtsState.stopped;
       });
     });
-
-    languages = await flutterTts.getLanguages;
-    if (languages != null) setState(() => languages);
   }
 
   Future _speak() async {
@@ -69,10 +68,8 @@ class _MyAppState extends State<MyApp> {
     flutterTts.stop();
   }
 
-  String language;
-
   List<DropdownMenuItem<String>> getDropDownMenuItems() {
-    List<DropdownMenuItem<String>> items = new List();
+    var items = new List<DropdownMenuItem<String>>();
     for (String type in languages) {
       items.add(new DropdownMenuItem(value: type, child: new Text(type)));
     }
@@ -90,6 +87,11 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _newVoiceText = text;
     });
+  }
+
+  void _getLanguages() async {
+    languages = await flutterTts.getLanguages;
+    if (languages != null) setState(() => languages);
   }
 
   @override
@@ -121,14 +123,14 @@ class _MyAppState extends State<MyApp> {
                 children: <Widget>[
                   new IconButton(
                       icon: new Icon(Icons.play_arrow),
-                      onPressed: _newVoiceText == null || isPlaying
+                      onPressed: _newVoiceText == null || isPlaying == true
                           ? null
                           : () => _speak(),
                       color: Colors.green,
                       splashColor: Colors.greenAccent),
                   new IconButton(
                       icon: new Icon(Icons.stop),
-                      onPressed: isStopped ? null : () => _stop(),
+                      onPressed: isStopped == true ? null : () => _stop(),
                       color: Colors.red,
                       splashColor: Colors.redAccent),
                 ]))
@@ -150,14 +152,14 @@ class _MyAppState extends State<MyApp> {
                 children: <Widget>[
                   new IconButton(
                       icon: new Icon(Icons.play_arrow),
-                      onPressed: _newVoiceText == null || isPlaying
+                      onPressed: _newVoiceText == null || isPlaying == true
                           ? null
                           : () => _speak(),
                       color: Colors.green,
                       splashColor: Colors.greenAccent),
                   new IconButton(
                       icon: new Icon(Icons.stop),
-                      onPressed: isStopped ? null : () => _stop(),
+                      onPressed: isStopped == true ? null : () => _stop(),
                       color: Colors.red,
                       splashColor: Colors.redAccent),
                   new DropdownButton(

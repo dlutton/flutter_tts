@@ -1,6 +1,7 @@
 package com.eyedeadevelopers.fluttertts;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
@@ -24,12 +25,12 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   Bundle bundle;
 
   /** Plugin registration. */
-  private FlutterTtsPlugin(Activity activity, MethodChannel channel) {
+  private FlutterTtsPlugin(Context context, MethodChannel channel) {
     this.channel = channel;
     this.channel.setMethodCallHandler(this);
 
     bundle = new Bundle();
-    tts = new TextToSpeech(activity.getApplicationContext(), onInitListener);
+    tts = new TextToSpeech(context.getApplicationContext(), onInitListener);
   };
 
   private UtteranceProgressListener utteranceProgressListener =
@@ -64,7 +65,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
             tts.setOnUtteranceProgressListener(utteranceProgressListener);
 
             try {
-              Locale locale = tts.getDefaultVoice().getLocale();
+              Locale locale =  new Locale(tts.getDefaultVoice().getLocale().toLanguageTag());
               if (isLanguageAvailable(locale)) {
                 tts.setLanguage(locale);
               }
@@ -79,7 +80,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
 
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_tts");
-    channel.setMethodCallHandler(new FlutterTtsPlugin(registrar.activity(), channel));
+    channel.setMethodCallHandler(new FlutterTtsPlugin(registrar.activeContext(), channel));
   }
 
   @Override
