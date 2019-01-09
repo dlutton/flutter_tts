@@ -1,10 +1,11 @@
-package com.eyedeadevelopers.fluttertts;
+package com.tundralabs.fluttertts;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import android.util.Log;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -21,6 +22,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   private final MethodChannel channel;
   private TextToSpeech tts;
   private final String tag = "TTS";
+  private final String googleTtsEngine = "com.google.android.tts";
   String uuid;
   Bundle bundle;
 
@@ -30,7 +32,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     this.channel.setMethodCallHandler(this);
 
     bundle = new Bundle();
-    tts = new TextToSpeech(context.getApplicationContext(), onInitListener);
+    tts = new TextToSpeech(context.getApplicationContext(), onInitListener, googleTtsEngine);
   };
 
   private UtteranceProgressListener utteranceProgressListener =
@@ -63,6 +65,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
         public void onInit(int status) {
           if (status == TextToSpeech.SUCCESS) {
             tts.setOnUtteranceProgressListener(utteranceProgressListener);
+            channel.invokeMethod("tts.init", true);
 
             try {
               Locale locale =  new Locale(tts.getDefaultVoice().getLocale().toLanguageTag());
@@ -107,6 +110,11 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       setLanguage(language, result);
     } else if (call.method.equals("getLanguages")) {
       getLanguages(result);
+    } else if (call.method.equals("getVoices")) {
+      getVoices(result);
+    } else if (call.method.equals("setVoice")) {
+      String voice = call.arguments.toString();
+      setVoice(voice, result);
     } else if (call.method.equals("isLanguageAvailable")) {
       String language = ((HashMap) call.arguments()).get("language").toString();
       Locale locale = new Locale(language);
@@ -141,6 +149,18 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     }
   }
 
+  void setVoice(String voice, Result result) {
+    for (Voice ttsVoice : tts.getVoices()) {
+      if (ttsVoice.getName().equals(voice)) {
+        tts.setVoice(ttsVoice);
+        result.success(1);
+        return;
+      }
+    }
+    Log.d(tag, "Voice name not found: " + voice);
+    result.success(0);
+  }
+
   void setVolume(float volume, Result result) {
     if (volume >= 0.0F && volume <= 1.0F) {
       bundle.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume);
@@ -158,6 +178,19 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     } else {
       Log.d(tag, "Invalid pitch " + pitch + " value - Range is from 0.5 to 2.0");
       result.success(0);
+    }
+  }
+ 
+  void getVoices(Result result) {
+    ArrayList<String> voices = new ArrayList<>();
+    try {
+      for (Voice voice : tts.getVoices()) {
+        voices.add(voice.getName());
+      }
+      result.success(voices);
+    } catch(NullPointerException e) {
+      Log.d(tag, "getVoices: " + e.getMessage());
+      result.success(null);
     }
   }
 

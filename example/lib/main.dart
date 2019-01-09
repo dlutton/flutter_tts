@@ -1,20 +1,23 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-void main() => runApp(new MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => new _MyAppState();
+  _MyAppState createState() => _MyAppState();
 }
 
 enum TtsState { playing, stopped }
 
 class _MyAppState extends State<MyApp> {
   FlutterTts flutterTts;
-  List<dynamic> languages;
+  dynamic languages;
+  dynamic voices;
   String language;
+  String voice;
 
   String _newVoiceText;
 
@@ -27,11 +30,19 @@ class _MyAppState extends State<MyApp> {
   initState() {
     super.initState();
     initTts();
-    _getLanguages();
   }
 
-  initTts() async {
-    flutterTts = new FlutterTts();
+  initTts() {
+    flutterTts = FlutterTts();
+
+    if (Platform.isAndroid) {
+      flutterTts.ttsInitHandler(() {
+        _getLanguages();
+        _getVoices();
+      });
+    } else if (Platform.isIOS) {
+      _getLanguages();
+    }
 
     flutterTts.setStartHandler(() {
       setState(() {
@@ -52,9 +63,23 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  Future _getLanguages() async {
+    languages = await flutterTts.getLanguages;
+    if (languages != null) setState(() => languages);
+  }
+
+  Future _getVoices() async {
+    voices = await flutterTts.getVoices;
+    if (voices != null) setState(() => voices);
+  }
+
   Future _speak() async {
-    var result = await flutterTts.speak(_newVoiceText);
-    if (result == 1) setState(() => ttsState = TtsState.playing);
+    if (_newVoiceText != null) {
+      if (_newVoiceText.isNotEmpty) {
+        var result = await flutterTts.speak(_newVoiceText);
+        if (result == 1) setState(() => ttsState = TtsState.playing);
+      }
+    }
   }
 
   Future _stop() async {
@@ -68,18 +93,33 @@ class _MyAppState extends State<MyApp> {
     flutterTts.stop();
   }
 
-  List<DropdownMenuItem<String>> getDropDownMenuItems() {
-    var items = new List<DropdownMenuItem<String>>();
+  List<DropdownMenuItem<String>> getLanguageDropDownMenuItems() {
+    var items = List<DropdownMenuItem<String>>();
     for (String type in languages) {
-      items.add(new DropdownMenuItem(value: type, child: new Text(type)));
+      items.add(DropdownMenuItem(value: type, child: Text(type)));
     }
     return items;
   }
 
-  void changedDropDownItem(String selectedType) {
+  List<DropdownMenuItem<String>> getVoiceDropDownMenuItems() {
+    var items = List<DropdownMenuItem<String>>();
+    for (String type in voices) {
+      items.add(DropdownMenuItem(value: type, child: Text(type)));
+    }
+    return items;
+  }
+
+  void changedLanguageDropDownItem(String selectedType) {
     setState(() {
       language = selectedType;
       flutterTts.setLanguage(language);
+    });
+  }
+
+  void changedVoiceDropDownItem(String selectedType) {
+    setState(() {
+      voice = selectedType;
+      flutterTts.setVoice(voice);
     });
   }
 
@@ -89,84 +129,79 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _getLanguages() async {
-    languages = await flutterTts.getLanguages;
-    if (languages != null) setState(() => languages);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-          appBar: new AppBar(
-            title: new Text('Flutter TTS'),
-          ),
-          body: languages != null
-              ? _buildRowWithLanguages()
-              : _buildRowWithoutLanguages()),
-    );
+    return MaterialApp(
+        home: Scaffold(
+            appBar: AppBar(
+              title: Text('Flutter TTS'),
+            ),
+            body: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(children: [
+                  inputSection(),
+                  btnSection(),
+                  languages != null ? languageDropDownSection() : Text(""),
+                  voices != null ? voiceDropDownSection() : Text("")
+                ]))));
   }
 
-  Widget _buildRowWithoutLanguages() => new Column(children: <Widget>[
-        new Container(
-            alignment: Alignment.topCenter,
-            padding: new EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
-            child: new TextField(
-              onChanged: (String value) {
-                _onChange(value);
-              },
-            )),
-        new Container(
-            padding: new EdgeInsets.only(top: 200.0),
-            child: new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new IconButton(
-                      icon: new Icon(Icons.play_arrow),
-                      onPressed: _newVoiceText == null || isPlaying == true
-                          ? null
-                          : () => _speak(),
-                      color: Colors.green,
-                      splashColor: Colors.greenAccent),
-                  new IconButton(
-                      icon: new Icon(Icons.stop),
-                      onPressed: isStopped == true ? null : () => _stop(),
-                      color: Colors.red,
-                      splashColor: Colors.redAccent),
-                ]))
-      ]);
+  Widget inputSection() => Container(
+      alignment: Alignment.topCenter,
+      padding: EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
+      child: TextField(
+        onChanged: (String value) {
+          _onChange(value);
+        },
+      ));
 
-  Widget _buildRowWithLanguages() => new Column(children: <Widget>[
-        new Container(
-            alignment: Alignment.topCenter,
-            padding: new EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
-            child: new TextField(
-              onChanged: (String value) {
-                _onChange(value);
-              },
-            )),
-        new Container(
-            padding: new EdgeInsets.only(top: 200.0),
-            child: new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  new IconButton(
-                      icon: new Icon(Icons.play_arrow),
-                      onPressed: _newVoiceText == null || isPlaying == true
-                          ? null
-                          : () => _speak(),
-                      color: Colors.green,
-                      splashColor: Colors.greenAccent),
-                  new IconButton(
-                      icon: new Icon(Icons.stop),
-                      onPressed: isStopped == true ? null : () => _stop(),
-                      color: Colors.red,
-                      splashColor: Colors.redAccent),
-                  new DropdownButton(
-                    value: language,
-                    items: getDropDownMenuItems(),
-                    onChanged: changedDropDownItem,
-                  )
-                ]))
-      ]);
+  Widget btnSection() => Container(
+      padding: EdgeInsets.only(top: 50.0),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+        _buildButtonColumn(
+            Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
+        _buildButtonColumn(
+            Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop)
+      ]));
+
+  Widget languageDropDownSection() => Container(
+      padding: EdgeInsets.only(top: 50.0),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        DropdownButton(
+          value: language,
+          items: getLanguageDropDownMenuItems(),
+          onChanged: changedLanguageDropDownItem,
+        )
+      ]));
+
+  Widget voiceDropDownSection() => Container(
+      padding: EdgeInsets.only(top: 50.0),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        DropdownButton(
+          value: voice,
+          items: getVoiceDropDownMenuItems(),
+          onChanged: changedVoiceDropDownItem,
+        )
+      ]));
+
+  Column _buildButtonColumn(Color color, Color splashColor, IconData icon,
+      String label, Function func) {
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+              icon: Icon(icon),
+              color: color,
+              splashColor: splashColor,
+              onPressed: () => func()),
+          Container(
+              margin: const EdgeInsets.only(top: 8.0),
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w400,
+                      color: color)))
+        ]);
+  }
 }

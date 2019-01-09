@@ -1,4 +1,4 @@
-group 'com.eyedeadevelopers.fluttertts'
+group 'com.tundralabs.fluttertts'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -25,7 +25,7 @@ android {
     compileSdkVersion 27
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 16
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     lintOptions {

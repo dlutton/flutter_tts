@@ -10,7 +10,7 @@ A flutter text to speech plugin
                        DESC
   s.homepage         = 'https://github.com/dlutton/flutter_tts'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'eyedeadevelopers' => 'eyedea32@gmail.com' }
+  s.author           = { 'tundralabs' => 'eyedea32@gmail.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'

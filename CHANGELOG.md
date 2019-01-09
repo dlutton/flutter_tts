@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 0.2.0
+
+- Android: Adding exception catch for samsung devices
+- Android: Using default com.google.android.tts engine
+- Android: Get and Set Voice
+- Android: InitHandler 
+- Cleaning up the example
+
 ## 0.1.2
 
 - Support for Android background execution
