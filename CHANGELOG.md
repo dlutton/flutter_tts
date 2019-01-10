@@ -1,5 +1,8 @@
 # ChangeLog
 
+## 0.2.1
+- IOS: Fixing getLanguages bug
+
 ## 0.2.0
 
 - Android: Adding exception catch for samsung devices

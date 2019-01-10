@@ -6,7 +6,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   let synthesizer = AVSpeechSynthesizer()
   var language: String = AVSpeechSynthesisVoice.currentLanguageCode() 
   var rate: Float = AVSpeechUtteranceDefaultSpeechRate
-  var languages: [String] = []
+  var languages = Set<String>()
   var volume: Float = 1.0
   var pitch: Float = 1.0
 
@@ -20,8 +20,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   private func setLanguages() {
-    for voice in (AVSpeechSynthesisVoice.speechVoices()){
-      self.languages.append(voice.language)
+    for voice in AVSpeechSynthesisVoice.speechVoices(){
+      self.languages.insert(voice.language)
     }
   }
 
@@ -117,7 +117,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   private func getLanguages(result: FlutterResult) {
-    result(self.languages)
+    result(Array(self.languages))
   }
 
   private func isLanguageAvailable(language: String, result: FlutterResult) {
