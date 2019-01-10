@@ -1,5 +1,8 @@
 # ChangeLog
 
+## 0.2.2
+- Android: Fixing Locale bug
+
 ## 0.2.1
 - IOS: Fixing getLanguages bug
 
