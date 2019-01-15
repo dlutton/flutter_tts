@@ -1,5 +1,8 @@
 # ChangeLog
 
+## 0.2.3
+- IOS: Audio continues with the Ring/Silent switch set to silent 
+
 ## 0.2.2
 - Android: Fixing Locale bug
 
