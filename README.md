@@ -20,6 +20,15 @@ A flutter text to speech plugin (Swift,Java)
 
 ## Usage
 
+## Android
+Change the minimum Android sdk version to 21 (or higher) in your `android/app/build.gradle` file.
+```
+minSdkVersion 21
+```
+
+## iOS
+There's a known issue with integrating plugins that use Swift into a Flutter project created with the Objective-C template. [Flutter#16049](https://github.com/flutter/flutter/issues/16049)
+
 [Example](https://github.com/dlutton/flutter_tts/blob/master/example/lib/main.dart) 
 
 To use this plugin : 

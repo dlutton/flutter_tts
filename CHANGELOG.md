@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.2.4
+- Android: setting minSDK back to 21 and adding instructions to readme
+- Android: Adding fallback for getLanguages and defaultLanguage
+
 ## 0.2.3
 - IOS: Audio continues with the Ring/Silent switch set to silent 
 

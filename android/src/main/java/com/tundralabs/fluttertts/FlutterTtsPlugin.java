@@ -1,7 +1,7 @@
 package com.tundralabs.fluttertts;
 
-import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
@@ -68,12 +68,14 @@ public class FlutterTtsPlugin implements MethodCallHandler {
             channel.invokeMethod("tts.init", true);
 
             try {
-              Locale locale = tts.getDefaultVoice().getLocale();
+              Locale locale = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                      ? tts.getDefaultVoice().getLocale()
+                      : tts.getDefaultLanguage();
               if (isLanguageAvailable(locale)) {
                 tts.setLanguage(locale);
               }
-            } catch (NullPointerException | java.lang.IllegalArgumentException e) {
-              Log.d(tag, "getDefaultVoice: " + e.getMessage() + " (known issue with API 21 & 22)");
+            } catch (NullPointerException | IllegalArgumentException e){
+              Log.d(tag, "getDefaultLocale: " + e.getMessage());
             }
           } else {
             Log.d(tag, "Failed to initialize TextToSpeech");
@@ -129,13 +131,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   }
 
   Boolean isLanguageAvailable(Locale locale) {
-    Boolean isLanguageAvailable = false;
-    if (tts.isLanguageAvailable(locale) == TextToSpeech.LANG_COUNTRY_AVAILABLE) {
-      isLanguageAvailable = true;
-    } else {
-      Log.d(tag, "Language is not available - " + locale);
-    }
-    return isLanguageAvailable;
+      return tts.isLanguageAvailable(locale) > 0;
   }
 
   void setLanguage(String language, Result result) {
@@ -195,15 +191,20 @@ public class FlutterTtsPlugin implements MethodCallHandler {
 
   void getLanguages(Result result) {
     ArrayList<String> locales = new ArrayList<>();
-    try {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      // While this method was introduced in API level 21, it seems that it
+      // has not been implemented in the speech service side until API Level 23.
       for (Locale locale : tts.getAvailableLanguages()) {
         locales.add(locale.toLanguageTag());
       }
-      result.success(locales);
-    } catch (NullPointerException e) {
-      Log.d(tag, "getAvailableLanguages: " + e.getMessage() + " - (known issue with API 21 & 22)");
-      result.success(null);
+    } else {
+      for (Locale locale : Locale.getAvailableLocales()) {
+        if (locale.getVariant().isEmpty() && isLanguageAvailable(locale)) {
+          locales.add(locale.toLanguageTag());
+        }
+      }
     }
+    result.success(locales);
   }
 
   void speak(String text) {
