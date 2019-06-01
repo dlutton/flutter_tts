@@ -3,6 +3,8 @@ package com.tundralabs.fluttertts;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
@@ -19,6 +21,7 @@ import java.util.UUID;
 
 /** FlutterTtsPlugin */
 public class FlutterTtsPlugin implements MethodCallHandler {
+  private final Handler handler;
   private final MethodChannel channel;
   private TextToSpeech tts;
   private final String tag = "TTS";
@@ -31,6 +34,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     this.channel = channel;
     this.channel.setMethodCallHandler(this);
 
+    handler = new Handler(Looper.getMainLooper());
     bundle = new Bundle();
     tts = new TextToSpeech(context.getApplicationContext(), onInitListener, googleTtsEngine);
   };
@@ -39,23 +43,23 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       new UtteranceProgressListener() {
         @Override
         public void onStart(String utteranceId) {
-          channel.invokeMethod("speak.onStart", true);
+          invokeMethod("speak.onStart", true);
         }
 
         @Override
         public void onDone(String utteranceId) {
-          channel.invokeMethod("speak.onComplete", true);
+          invokeMethod("speak.onComplete", true);
         }
 
         @Override
         @Deprecated
         public void onError(String utteranceId) {
-          channel.invokeMethod("speak.onError", "Error from TextToSpeech");
+          invokeMethod("speak.onError", "Error from TextToSpeech");
         }
 
         @Override
         public void onError(String utteranceId, int errorCode) {
-          channel.invokeMethod("speak.onError", "Error from TextToSpeech - " + errorCode);
+          invokeMethod("speak.onError", "Error from TextToSpeech - " + errorCode);
         }
       };
 
@@ -65,7 +69,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
         public void onInit(int status) {
           if (status == TextToSpeech.SUCCESS) {
             tts.setOnUtteranceProgressListener(utteranceProgressListener);
-            channel.invokeMethod("tts.init", true);
+            invokeMethod("tts.init", true);
 
             try {
               Locale locale = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
@@ -214,5 +218,14 @@ public class FlutterTtsPlugin implements MethodCallHandler {
 
   void stop() {
     tts.stop();
+  }
+
+  private void invokeMethod(final String method, final Object arguments) {
+    handler.post(new Runnable() {
+      @Override
+      public void run() {
+        channel.invokeMethod(method, arguments);
+      }
+    });
   }
 }
