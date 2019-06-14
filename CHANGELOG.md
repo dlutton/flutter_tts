@@ -1,16 +1,24 @@
 # ChangeLog
 
+## 0.2.5
+
+- Android: Ensure invokeMethod runs on main thread
+
 ## 0.2.4
+
 - Android: setting minSDK back to 21 and adding instructions to readme
 - Android: Adding fallback for getLanguages and defaultLanguage
 
 ## 0.2.3
-- IOS: Audio continues with the Ring/Silent switch set to silent 
+
+- IOS: Audio continues with the Ring/Silent switch set to silent
 
 ## 0.2.2
+
 - Android: Fixing Locale bug
 
 ## 0.2.1
+
 - IOS: Fixing getLanguages bug
 
 ## 0.2.0
@@ -18,7 +26,7 @@
 - Android: Adding exception catch for samsung devices
 - Android: Using default com.google.android.tts engine
 - Android: Get and Set Voice
-- Android: InitHandler 
+- Android: InitHandler
 - Cleaning up the example
 
 ## 0.1.2
