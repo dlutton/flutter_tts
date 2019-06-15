@@ -42,6 +42,7 @@ class _MyAppState extends State<MyApp> {
       });
     } else if (Platform.isIOS) {
       _getLanguages();
+      _getVoices();
     }
 
     flutterTts.setStartHandler(() {

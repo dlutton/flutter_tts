@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.2.6
+
+- IOS: Add voice selection implementation
+
 ## 0.2.5
 
 - Android: Ensure invokeMethod runs on main thread

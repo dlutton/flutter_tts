@@ -15,7 +15,6 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set speech rate
   - [x] set speech volume
   - [x] set speech pitch
-- [x] Android
   - [x] get voices
   - [x] set voice
 
