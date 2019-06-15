@@ -1,17 +1,18 @@
 import Flutter
 import UIKit
 import AVFoundation
-    
+
 public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDelegate {
   let synthesizer = AVSpeechSynthesizer()
-  var language: String = AVSpeechSynthesisVoice.currentLanguageCode() 
+  var language: String = AVSpeechSynthesisVoice.currentLanguageCode()
   var rate: Float = AVSpeechUtteranceDefaultSpeechRate
   var languages = Set<String>()
   var volume: Float = 1.0
   var pitch: Float = 1.0
+  var voice: AVSpeechSynthesisVoice?
 
   var channel = FlutterMethodChannel()
-    
+
   init(channel: FlutterMethodChannel) {
     super.init()
     self.channel = channel
@@ -74,18 +75,29 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       let arg: Dictionary<String, String> = call.arguments as! Dictionary<String, String>
       self.isLanguageAvailable(language: arg["language"]! as String, result: result)
       break
-    default: 
+    case "getVoices":
+      self.getVoices(result: result)
+      break
+    case "setVoice":
+      let voiceName = call.arguments as! String
+      self.setVoice(voiceName: voiceName, result: result)
+      break
+    default:
       result(FlutterMethodNotImplemented)
     }
   }
 
   private func speak(text: String) {
     let utterance = AVSpeechUtterance(string: text)
-    utterance.voice = AVSpeechSynthesisVoice(language: self.language)
+    if self.voice != nil {
+      utterance.voice = self.voice!
+    } else {
+      utterance.voice = AVSpeechSynthesisVoice(language: self.language)
+    }
     utterance.rate = self.rate
-    utterance.volume = self.volume 
-    utterance.pitchMultiplier = self.pitch 
-
+    utterance.volume = self.volume
+    utterance.pitchMultiplier = self.pitch
+    
     self.synthesizer.speak(utterance)
   }
 
@@ -94,6 +106,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       result(0)
     } else {
       self.language = language
+      self.voice = nil
       result(1)
     }
   }
@@ -134,6 +147,34 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       isAvailable = true
     }
     result(isAvailable);
+  }
+
+  private func getVoices(result: FlutterResult) {
+    if #available(iOS 9.0, *) {
+      let voices = NSMutableArray()
+      for voice in AVSpeechSynthesisVoice.speechVoices() {
+        voices.add(voice.name)
+      }
+      result(voices)
+    } else {
+      // Since voice selection is not supported below iOS 9, make voice getter and setter
+      // have the same bahavior as language selection.
+      getLanguages(result: result)
+    }
+  }
+
+  private func setVoice(voiceName: String, result: FlutterResult) {
+    if #available(iOS 9.0, *) {
+      if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.name == voiceName }) {
+        self.voice = voice
+        self.language = voice.language
+        result(1)
+        return
+      }
+      result(0)
+    } else {
+      setLanguage(language: voiceName, result: result)
+    }
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
