@@ -22,23 +22,28 @@ class FlutterTts {
   Future<dynamic> speak(String text) => _channel.invokeMethod('speak', text);
 
   /// [Future] which invokes the platform specific method for setLanguage
-  Future<dynamic> setLanguage(String language) => _channel.invokeMethod('setLanguage', language);
+  Future<dynamic> setLanguage(String language) =>
+      _channel.invokeMethod('setLanguage', language);
 
   /// [Future] which invokes the platform specific method for setSpeechRate
   /// Allowed values are in the range from 0.0 (silent) to 1.0 (loudest)
-  Future<dynamic> setSpeechRate(double rate) => _channel.invokeMethod('setSpeechRate', rate);
+  Future<dynamic> setSpeechRate(double rate) =>
+      _channel.invokeMethod('setSpeechRate', rate);
 
   /// [Future] which invokes the platform specific method for setVolume
   /// Allowed values are in the range from 0.0 (silent) to 1.0 (loudest)
-  Future<dynamic> setVolume(double volume) => _channel.invokeMethod('setVolume', volume);
+  Future<dynamic> setVolume(double volume) =>
+      _channel.invokeMethod('setVolume', volume);
 
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
-  Future<dynamic> setPitch(double pitch) => _channel.invokeMethod('setPitch', pitch);
+  Future<dynamic> setPitch(double pitch) =>
+      _channel.invokeMethod('setPitch', pitch);
 
   /// [Future] which invokes the platform specific method for setVoice
   /// ***Android supported only***
-  Future<dynamic> setVoice(String voice) => _channel.invokeMethod('setVoice', voice);
+  Future<dynamic> setVoice(String voice) =>
+      _channel.invokeMethod('setVoice', voice);
 
   /// [Future] which invokes the platform specific method for stop
   Future<dynamic> stop() => _channel.invokeMethod('stop');
@@ -61,12 +66,13 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for isLanguageAvailable
   /// Returns `true` or `false`
-  Future<dynamic> isLanguageAvailable(String language) =>
-      _channel.invokeMethod('isLanguageAvailable', <String, Object>{'language': language});
+  Future<dynamic> isLanguageAvailable(String language) => _channel.invokeMethod(
+      'isLanguageAvailable', <String, Object>{'language': language});
 
   /// [Future] which invokes the platform specific method for setSilence
   /// 0 means start the utterance immediately. If the value is greater than zero a silence period in milliseconds is set according to the parameter
-  Future<dynamic> setSilence(int timems) => _channel.invokeMethod('setSilence', timems ?? 0);
+  Future<dynamic> setSilence(int timems) =>
+      _channel.invokeMethod('setSilence', timems ?? 0);
 
   void setStartHandler(VoidCallback callback) {
     startHandler = callback;

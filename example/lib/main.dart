@@ -116,9 +116,12 @@ class _MyAppState extends State<MyApp> {
 
   List<DropdownMenuItem<int>> getSilenceDropDownMenuItems() {
     var items = List<DropdownMenuItem<int>>();
-    items.add(DropdownMenuItem(value: null, child: Text("No Silence before TTS")));
-    items.add(DropdownMenuItem(value: 1000, child: Text("1 Second Silence before TTS")));
-    items.add(DropdownMenuItem(value: 5000, child: Text("5 Seconds Silence before TTS")));
+    items.add(
+        DropdownMenuItem(value: null, child: Text("No Silence before TTS")));
+    items.add(DropdownMenuItem(
+        value: 1000, child: Text("1 Second Silence before TTS")));
+    items.add(DropdownMenuItem(
+        value: 5000, child: Text("5 Seconds Silence before TTS")));
     return items;
   }
 
@@ -179,8 +182,10 @@ class _MyAppState extends State<MyApp> {
   Widget btnSection() => Container(
       padding: EdgeInsets.only(top: 50.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        _buildButtonColumn(Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
-        _buildButtonColumn(Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop)
+        _buildButtonColumn(
+            Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
+        _buildButtonColumn(
+            Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop)
       ]));
 
   Widget languageDropDownSection() => Container(
@@ -213,12 +218,24 @@ class _MyAppState extends State<MyApp> {
         )
       ]));
 
-  Column _buildButtonColumn(Color color, Color splashColor, IconData icon, String label, Function func) {
-    return Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
-      IconButton(icon: Icon(icon), color: color, splashColor: splashColor, onPressed: () => func()),
-      Container(
-          margin: const EdgeInsets.only(top: 8.0),
-          child: Text(label, style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400, color: color)))
-    ]);
+  Column _buildButtonColumn(Color color, Color splashColor, IconData icon,
+      String label, Function func) {
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+              icon: Icon(icon),
+              color: color,
+              splashColor: splashColor,
+              onPressed: () => func()),
+          Container(
+              margin: const EdgeInsets.only(top: 8.0),
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w400,
+                      color: color)))
+        ]);
   }
 }

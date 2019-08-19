@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.5.1
+
+- Applying flutter format to fix health suggestion
+
 ## 0.5.0
 
 - Android: Adding silence before speak
