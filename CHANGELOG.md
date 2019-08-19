@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 0.5.0
+
+- Android: Adding silence before speak
+- Android: Removing deprecated API
+
 ## 0.2.6
 
 - IOS: Add voice selection implementation
