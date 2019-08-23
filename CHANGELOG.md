@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.5.2
+
+- Android: Bug Fix on isLanguageAvailable
+
 ## 0.5.1
 
 - Applying flutter format to fix health suggestion

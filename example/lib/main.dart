@@ -166,7 +166,7 @@ class _MyAppState extends State<MyApp> {
                   btnSection(),
                   languages != null ? languageDropDownSection() : Text(""),
                   voices != null ? voiceDropDownSection() : Text(""),
-                  silenceDropDownSection(),
+                  Platform.isAndroid ? silenceDropDownSection() : Text("")
                 ]))));
   }
 
