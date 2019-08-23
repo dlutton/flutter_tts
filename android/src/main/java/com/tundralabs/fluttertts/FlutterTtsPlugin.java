@@ -146,7 +146,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     }
 
     Boolean isLanguageAvailable(Locale locale) {
-        return tts.isLanguageAvailable(locale) > 0;
+        return tts.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE;
     }
 
     void setLanguage(String language, Result result) {
