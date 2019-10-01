@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.6.0
+
+- Android: AndroidX support
+
 ## 0.5.2
 
 - Android: Bug Fix on isLanguageAvailable
