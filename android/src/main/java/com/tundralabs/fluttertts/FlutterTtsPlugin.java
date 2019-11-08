@@ -142,7 +142,8 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     }
 
     void setSpeechRate(float rate) {
-        tts.setSpeechRate(rate);
+        float convertedRate = rate < 0.5f ? 0.25f + (0.5f * rate) + (2f * (rate * rate)) : 2f - (6f * rate) + (8f * (rate * rate));
+        tts.setSpeechRate(convertedRate);
     }
 
     Boolean isLanguageAvailable(Locale locale) {
