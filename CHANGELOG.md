@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.7.0
+
+- iOS: Adding Swift version 4.2 to podspec and correct audio playback category
+
 ## 0.6.0
 
 - Android: AndroidX support
