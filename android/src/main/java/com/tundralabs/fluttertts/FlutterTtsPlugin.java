@@ -47,8 +47,6 @@ public class FlutterTtsPlugin implements MethodCallHandler {
         tts = new TextToSpeech(context.getApplicationContext(), onInitListener, googleTtsEngine);
     }
 
-    ;
-
     private UtteranceProgressListener utteranceProgressListener =
             new UtteranceProgressListener() {
                 @Override
@@ -142,7 +140,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     }
 
     void setSpeechRate(float rate) {
-        tts.setSpeechRate(rate);
+        tts.setSpeechRate(rate*2.0f);
     }
 
     Boolean isLanguageAvailable(Locale locale) {
