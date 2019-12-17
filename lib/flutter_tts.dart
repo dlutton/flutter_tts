@@ -26,7 +26,7 @@ class FlutterTts {
       _channel.invokeMethod('setLanguage', language);
 
   /// [Future] which invokes the platform specific method for setSpeechRate
-  /// Allowed values are in the range from 0.0 (silent) to 1.0 (loudest)
+  /// Allowed values are in the range from 0.0 (slowest) to 1.0 (fastest)
   Future<dynamic> setSpeechRate(double rate) =>
       _channel.invokeMethod('setSpeechRate', rate);
 
