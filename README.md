@@ -23,6 +23,10 @@ A flutter text to speech plugin (Swift,Java)
 
 ## Usage
 
+## Web
+
+[Example](https://dlutton.github.io/flutter_tts)
+
 ## Android
 
 Change the minimum Android sdk version to 21 (or higher) in your `android/app/build.gradle` file.
