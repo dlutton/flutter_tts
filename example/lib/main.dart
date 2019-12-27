@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
 
     flutterTts.setErrorHandler((msg) {
       setState(() {
-        print("error");
+        print("error: $msg");
         ttsState = TtsState.stopped;
       });
     });

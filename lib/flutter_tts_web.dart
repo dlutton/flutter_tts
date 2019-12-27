@@ -16,12 +16,14 @@ class FlutterTtsPlugin {
     channel.setMethodCallHandler(instance.handleMethodCall);
   }
 
-  var synth = html.window.speechSynthesis;
+  html.SpeechSynthesis synth;
   html.SpeechSynthesisUtterance utterance;
-  var voices = [];
+  List<dynamic> voices;
+  List<String> languages;
 
   FlutterTtsPlugin() {
     utterance = html.SpeechSynthesisUtterance();
+    synth = html.window.speechSynthesis;
 
     _listeners();
   }
@@ -31,8 +33,7 @@ class FlutterTtsPlugin {
         .listen((e) => channel.invokeMethod("speak.onStart", null));
     utterance.onEnd
         .listen((e) => channel.invokeMethod("speak.onComplete", null));
-    utterance.onError
-        .listen((e) => channel.invokeMethod("speak.onError", null));
+    utterance.onError.listen((e) => channel.invokeMethod("speak.onError", e));
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
@@ -68,6 +69,10 @@ class FlutterTtsPlugin {
         _setPitch(pitch);
         return 1;
         break;
+      case 'isLanguageAvailable':
+        final lang = call.arguments as String;
+        return _isLanguageAvailable(lang);
+        break;
       default:
         throw PlatformException(
             code: 'Unimplemented',
@@ -79,7 +84,7 @@ class FlutterTtsPlugin {
   void _speak(String text) {
     synth.cancel();
     utterance.text = text;
-    html.window.speechSynthesis.speak(utterance);
+    synth.speak(utterance);
   }
 
   void _stop() => synth.cancel();
@@ -88,13 +93,32 @@ class FlutterTtsPlugin {
   void _setPitch(num pitch) => utterance.pitch = pitch;
   void _setLanguage(String language) => utterance.lang = language;
 
-  List _getLanguages() {
-    var languages = Set();
+  bool _isLanguageAvailable(String language) {
+    if (voices?.isEmpty ?? true) _setVoices();
+    if (languages?.isEmpty ?? true) _setLanguages();
+    for (var lang in languages) {
+      if (lang.toLowerCase() == language.toLowerCase()) return true;
+    }
+    return false;
+  }
+
+  List<String> _getLanguages() {
+    if (voices?.isEmpty ?? true) _setVoices();
+    if (languages?.isEmpty ?? true) _setLanguages();
+    return languages;
+  }
+
+  void _setVoices() {
     voices =
         context['speechSynthesis'].callMethod('getVoices') as JsArray<dynamic>;
+  }
+
+  void _setLanguages() {
+    var langs = Set<String>();
     for (var v in voices) {
-      languages.add(v['lang'] as String);
+      langs.add(v['lang'] as String);
     }
-    return languages.toList();
+
+    languages = langs.toList();
   }
 }

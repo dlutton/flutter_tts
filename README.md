@@ -14,10 +14,10 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set speech rate
   - [x] set speech volume
   - [x] set speech pitch
+  - [x] is language available
 - [x] Android, iOS
   - [x] get voices
   - [x] set voice
-  - [x] is language available
 - [x] Android
   - [x] set Silence
 
@@ -25,7 +25,7 @@ A flutter text to speech plugin (Swift,Java)
 
 ## Web
 
-[Example](https://dlutton.github.io/flutter_tts)
+[Website](https://dlutton.github.io/flutter_tts) from the example directory.
 
 ## Android
 
@@ -52,10 +52,10 @@ To use this plugin :
     flutter_tts:
 ```
 
-- instantiate a FlutterTts instance
+- instantiate FlutterTts
 
 ```dart
-FlutterTts flutterTts = new FlutterTts();
+FlutterTts flutterTts = FlutterTts();
 ```
 
 ### speak, stop, getLanguages, setLanguage, setSpeechRate, setVolume, setPitch, isLanguageAvailable

@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 0.8.2
+
+- Web: Adding isLanguageAvailable method
+- All: Fixing isLanguageAvailable platform channel and making it case insensitive
+
 ## 0.8.0
 
 - Web: Adding Web Support

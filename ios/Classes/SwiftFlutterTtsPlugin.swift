@@ -72,8 +72,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       self.getLanguages(result: result)
       break
     case "isLanguageAvailable":
-      let arg: Dictionary<String, String> = call.arguments as! Dictionary<String, String>
-      self.isLanguageAvailable(language: arg["language"]! as String, result: result)
+      let language: String = call.arguments as! String
+      self.isLanguageAvailable(language: language, result: result)
       break
     case "getVoices":
       self.getVoices(result: result)
@@ -102,7 +102,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   private func setLanguage(language: String, result: FlutterResult) {
-    if !(self.languages.contains(language)) {
+    if !(self.languages.contains(where: {$0.range(of: language, options: [.caseInsensitive, .anchored]) != nil})) {
       result(0)
     } else {
       self.language = language
@@ -143,7 +143,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func isLanguageAvailable(language: String, result: FlutterResult) {
     var isAvailable: Bool = false
-    if (self.languages.contains(language)) {
+    if (self.languages.contains(where: {$0.range(of: language, options: [.caseInsensitive, .anchored]) != nil})) {
       isAvailable = true
     }
     result(isAvailable);

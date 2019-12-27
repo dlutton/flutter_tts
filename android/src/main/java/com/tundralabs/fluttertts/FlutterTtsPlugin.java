@@ -128,7 +128,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
             String voice = call.arguments.toString();
             setVoice(voice, result);
         } else if (call.method.equals("isLanguageAvailable")) {
-            String language = ((HashMap) call.arguments()).get("language").toString();
+            String language = call.arguments().toString();
             Locale locale = Locale.forLanguageTag(language);
             result.success(isLanguageAvailable(locale));
         } else if (call.method.equals("setSilence")) {

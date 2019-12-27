@@ -66,8 +66,8 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for isLanguageAvailable
   /// Returns `true` or `false`
-  Future<dynamic> isLanguageAvailable(String language) => _channel.invokeMethod(
-      'isLanguageAvailable', <String, Object>{'language': language});
+  Future<dynamic> isLanguageAvailable(String language) =>
+      _channel.invokeMethod('isLanguageAvailable', language);
 
   /// [Future] which invokes the platform specific method for setSilence
   /// 0 means start the utterance immediately. If the value is greater than zero a silence period in milliseconds is set according to the parameter
