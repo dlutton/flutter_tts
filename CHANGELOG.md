@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 0.8.5
+
+- Android: Fix Android async platform initialization
+- Android: Removing initHandler
+
 ## 0.8.2
 
 - Web: Adding isLanguageAvailable method

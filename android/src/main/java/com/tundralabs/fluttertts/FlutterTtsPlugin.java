@@ -80,7 +80,6 @@ public class FlutterTtsPlugin implements MethodCallHandler {
                     if (status == TextToSpeech.SUCCESS) {
                         tts.setOnUtteranceProgressListener(utteranceProgressListener);
                         ttsInitLatch.countDown();
-                        invokeMethod("tts.init", true);
 
                         try {
                             Locale locale = tts.getDefaultVoice().getLocale();

@@ -9,7 +9,6 @@ typedef void ErrorHandler(dynamic message);
 class FlutterTts {
   static const MethodChannel _channel = const MethodChannel('flutter_tts');
 
-  VoidCallback initHandler;
   VoidCallback startHandler;
   VoidCallback completionHandler;
   ErrorHandler errorHandler;
@@ -86,18 +85,9 @@ class FlutterTts {
     errorHandler = handler;
   }
 
-  void ttsInitHandler(VoidCallback handler) {
-    initHandler = handler;
-  }
-
   /// Platform listeners
   Future platformCallHandler(MethodCall call) async {
     switch (call.method) {
-      case "tts.init":
-        if (initHandler != null) {
-          initHandler();
-        }
-        break;
       case "speak.onStart":
         if (startHandler != null) {
           startHandler();
