@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -28,6 +29,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     private final Handler handler;
     private final MethodChannel channel;
     private TextToSpeech tts;
+    private final CountDownLatch ttsInitLatch = new CountDownLatch(1);
     private final String tag = "TTS";
     private final String googleTtsEngine = "com.google.android.tts";
     String uuid;
@@ -77,6 +79,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
                 public void onInit(int status) {
                     if (status == TextToSpeech.SUCCESS) {
                         tts.setOnUtteranceProgressListener(utteranceProgressListener);
+                        ttsInitLatch.countDown();
                         invokeMethod("tts.init", true);
 
                         try {
@@ -100,6 +103,12 @@ public class FlutterTtsPlugin implements MethodCallHandler {
 
     @Override
     public void onMethodCall(MethodCall call, Result result) {
+        //Wait for TTS engine to be ready
+        try {
+            ttsInitLatch.await();
+        } catch (InterruptedException e){
+            throw new AssertionError("Unexpected Interruption", e);
+        }
         if (call.method.equals("speak")) {
             String text = call.arguments.toString();
             speak(text);
