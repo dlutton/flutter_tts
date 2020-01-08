@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -16,10 +15,10 @@ enum TtsState { playing, stopped }
 class _MyAppState extends State<MyApp> {
   FlutterTts flutterTts;
   dynamic languages;
-  dynamic voices;
   String language;
-  String voice;
-  int silencems;
+  double volume = 0.5;
+  double pitch = 1.0;
+  double rate = 0.5;
 
   String _newVoiceText;
 
@@ -38,18 +37,11 @@ class _MyAppState extends State<MyApp> {
   initTts() {
     flutterTts = FlutterTts();
 
-    if (Platform.isAndroid) {
-      flutterTts.ttsInitHandler(() {
-        _getLanguages();
-        _getVoices();
-      });
-    } else if (Platform.isIOS) {
-      _getLanguages();
-      _getVoices();
-    }
+    _getLanguages();
 
     flutterTts.setStartHandler(() {
       setState(() {
+        print("playing");
         ttsState = TtsState.playing;
       });
     });
@@ -63,6 +55,7 @@ class _MyAppState extends State<MyApp> {
 
     flutterTts.setErrorHandler((msg) {
       setState(() {
+        print("error: $msg");
         ttsState = TtsState.stopped;
       });
     });
@@ -73,12 +66,11 @@ class _MyAppState extends State<MyApp> {
     if (languages != null) setState(() => languages);
   }
 
-  Future _getVoices() async {
-    voices = await flutterTts.getVoices;
-    if (voices != null) setState(() => voices);
-  }
-
   Future _speak() async {
+    await flutterTts.setVolume(volume);
+    await flutterTts.setSpeechRate(rate);
+    await flutterTts.setPitch(pitch);
+
     if (_newVoiceText != null) {
       if (_newVoiceText.isNotEmpty) {
         var result = await flutterTts.speak(_newVoiceText);
@@ -106,43 +98,10 @@ class _MyAppState extends State<MyApp> {
     return items;
   }
 
-  List<DropdownMenuItem<String>> getVoiceDropDownMenuItems() {
-    var items = List<DropdownMenuItem<String>>();
-    for (String type in voices) {
-      items.add(DropdownMenuItem(value: type, child: Text(type)));
-    }
-    return items;
-  }
-
-  List<DropdownMenuItem<int>> getSilenceDropDownMenuItems() {
-    var items = List<DropdownMenuItem<int>>();
-    items.add(
-        DropdownMenuItem(value: null, child: Text("No Silence before TTS")));
-    items.add(DropdownMenuItem(
-        value: 1000, child: Text("1 Second Silence before TTS")));
-    items.add(DropdownMenuItem(
-        value: 5000, child: Text("5 Seconds Silence before TTS")));
-    return items;
-  }
-
   void changedLanguageDropDownItem(String selectedType) {
     setState(() {
       language = selectedType;
       flutterTts.setLanguage(language);
-    });
-  }
-
-  void changedVoiceDropDownItem(String selectedType) {
-    setState(() {
-      voice = selectedType;
-      flutterTts.setVoice(voice);
-    });
-  }
-
-  void changedSilenceDropDownItem(int selectedType) {
-    setState(() {
-      silencems = selectedType;
-      flutterTts.setSilence(silencems);
     });
   }
 
@@ -162,15 +121,14 @@ class _MyAppState extends State<MyApp> {
             body: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
                 child: Column(children: [
-                  inputSection(),
-                  btnSection(),
-                  languages != null ? languageDropDownSection() : Text(""),
-                  voices != null ? voiceDropDownSection() : Text(""),
-                  Platform.isAndroid ? silenceDropDownSection() : Text("")
+                  _inputSection(),
+                  _btnSection(),
+                  languages != null ? _languageDropDownSection() : Text(""),
+                  _buildSliders()
                 ]))));
   }
 
-  Widget inputSection() => Container(
+  Widget _inputSection() => Container(
       alignment: Alignment.topCenter,
       padding: EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
       child: TextField(
@@ -179,7 +137,7 @@ class _MyAppState extends State<MyApp> {
         },
       ));
 
-  Widget btnSection() => Container(
+  Widget _btnSection() => Container(
       padding: EdgeInsets.only(top: 50.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
         _buildButtonColumn(
@@ -188,33 +146,13 @@ class _MyAppState extends State<MyApp> {
             Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop)
       ]));
 
-  Widget languageDropDownSection() => Container(
+  Widget _languageDropDownSection() => Container(
       padding: EdgeInsets.only(top: 50.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         DropdownButton(
           value: language,
           items: getLanguageDropDownMenuItems(),
           onChanged: changedLanguageDropDownItem,
-        )
-      ]));
-
-  Widget voiceDropDownSection() => Container(
-      padding: EdgeInsets.only(top: 30.0),
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        DropdownButton(
-          value: voice,
-          items: getVoiceDropDownMenuItems(),
-          onChanged: changedVoiceDropDownItem,
-        )
-      ]));
-
-  Widget silenceDropDownSection() => Container(
-      padding: EdgeInsets.only(top: 30.0),
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        DropdownButton(
-          value: silencems,
-          items: getSilenceDropDownMenuItems(),
-          onChanged: changedSilenceDropDownItem,
         )
       ]));
 
@@ -237,5 +175,51 @@ class _MyAppState extends State<MyApp> {
                       fontWeight: FontWeight.w400,
                       color: color)))
         ]);
+  }
+
+  Widget _buildSliders() {
+    return Column(
+      children: [_volume(), _pitch(), _rate()],
+    );
+  }
+
+  Widget _volume() {
+    return Slider(
+        value: volume,
+        onChanged: (newVolume) {
+          setState(() => volume = newVolume);
+        },
+        min: 0.0,
+        max: 1.0,
+        divisions: 10,
+        label: "Volume: $volume");
+  }
+
+  Widget _pitch() {
+    return Slider(
+      value: pitch,
+      onChanged: (newPitch) {
+        setState(() => pitch = newPitch);
+      },
+      min: 0.5,
+      max: 2.0,
+      divisions: 15,
+      label: "Pitch: $pitch",
+      activeColor: Colors.red,
+    );
+  }
+
+  Widget _rate() {
+    return Slider(
+      value: rate,
+      onChanged: (newRate) {
+        setState(() => rate = newRate);
+      },
+      min: 0.0,
+      max: 1.0,
+      divisions: 10,
+      label: "Rate: $rate",
+      activeColor: Colors.green,
+    );
   }
 }

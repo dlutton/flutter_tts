@@ -1,5 +1,23 @@
 # ChangeLog
 
+## 0.8.6
+
+- iOS: Reducing volume of other sessions while TTS is playing
+
+## 0.8.5
+
+- Android: Fix Android async platform initialization
+- Android: Removing initHandler
+
+## 0.8.2
+
+- Web: Adding isLanguageAvailable method
+- All: Fixing isLanguageAvailable platform channel and making it case insensitive
+
+## 0.8.0
+
+- Web: Adding Web Support
+
 ## 0.7.0
 
 - iOS: Adding Swift version 4.2 to podspec and correct audio playback category

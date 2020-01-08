@@ -12,6 +12,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var voice: AVSpeechSynthesisVoice?
 
   var channel = FlutterMethodChannel()
+  lazy var audioSession = AVAudioSession.sharedInstance()
 
   init(channel: FlutterMethodChannel) {
     super.init()
@@ -21,8 +22,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     
     // Allow audio playback when the Ring/Silent switch is set to silent
     do {
-      try AVAudioSession.sharedInstance().setCategory(.playback)
-      try AVAudioSession.sharedInstance().setActive(true)
+      try audioSession.setCategory(.playback, options: [.duckOthers])
     } catch {
       print(error)
     }
@@ -72,8 +72,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       self.getLanguages(result: result)
       break
     case "isLanguageAvailable":
-      let arg: Dictionary<String, String> = call.arguments as! Dictionary<String, String>
-      self.isLanguageAvailable(language: arg["language"]! as String, result: result)
+      let language: String = call.arguments as! String
+      self.isLanguageAvailable(language: language, result: result)
       break
     case "getVoices":
       self.getVoices(result: result)
@@ -102,7 +102,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   private func setLanguage(language: String, result: FlutterResult) {
-    if !(self.languages.contains(language)) {
+    if !(self.languages.contains(where: {$0.range(of: language, options: [.caseInsensitive, .anchored]) != nil})) {
       result(0)
     } else {
       self.language = language
@@ -143,7 +143,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func isLanguageAvailable(language: String, result: FlutterResult) {
     var isAvailable: Bool = false
-    if (self.languages.contains(language)) {
+    if (self.languages.contains(where: {$0.range(of: language, options: [.caseInsensitive, .anchored]) != nil})) {
       isAvailable = true
     }
     result(isAvailable);
@@ -178,6 +178,11 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+    do {
+      try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+    } catch {
+      print(error)
+    }
     self.channel.invokeMethod("speak.onComplete", arguments: nil)
   }
 

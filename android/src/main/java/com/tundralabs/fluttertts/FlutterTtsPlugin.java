@@ -49,8 +49,6 @@ public class FlutterTtsPlugin implements MethodCallHandler {
         tts = new TextToSpeech(context.getApplicationContext(), onInitListener, googleTtsEngine);
     }
 
-    ;
-
     private UtteranceProgressListener utteranceProgressListener =
             new UtteranceProgressListener() {
                 @Override
@@ -82,7 +80,6 @@ public class FlutterTtsPlugin implements MethodCallHandler {
                     if (status == TextToSpeech.SUCCESS) {
                         tts.setOnUtteranceProgressListener(utteranceProgressListener);
                         ttsInitLatch.countDown();
-                        invokeMethod("tts.init", true);
 
                         try {
                             Locale locale = tts.getDefaultVoice().getLocale();
@@ -139,7 +136,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
             String voice = call.arguments.toString();
             setVoice(voice, result);
         } else if (call.method.equals("isLanguageAvailable")) {
-            String language = ((HashMap) call.arguments()).get("language").toString();
+            String language = call.arguments().toString();
             Locale locale = Locale.forLanguageTag(language);
             result.success(isLanguageAvailable(locale));
         } else if (call.method.equals("setSilence")) {
@@ -151,7 +148,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     }
 
     void setSpeechRate(float rate) {
-        tts.setSpeechRate(rate);
+        tts.setSpeechRate(rate*2.0f);
     }
 
     Boolean isLanguageAvailable(Locale locale) {

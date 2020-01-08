@@ -9,7 +9,6 @@ typedef void ErrorHandler(dynamic message);
 class FlutterTts {
   static const MethodChannel _channel = const MethodChannel('flutter_tts');
 
-  VoidCallback initHandler;
   VoidCallback startHandler;
   VoidCallback completionHandler;
   ErrorHandler errorHandler;
@@ -26,7 +25,7 @@ class FlutterTts {
       _channel.invokeMethod('setLanguage', language);
 
   /// [Future] which invokes the platform specific method for setSpeechRate
-  /// Allowed values are in the range from 0.0 (silent) to 1.0 (loudest)
+  /// Allowed values are in the range from 0.0 (slowest) to 1.0 (fastest)
   Future<dynamic> setSpeechRate(double rate) =>
       _channel.invokeMethod('setSpeechRate', rate);
 
@@ -66,8 +65,8 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for isLanguageAvailable
   /// Returns `true` or `false`
-  Future<dynamic> isLanguageAvailable(String language) => _channel.invokeMethod(
-      'isLanguageAvailable', <String, Object>{'language': language});
+  Future<dynamic> isLanguageAvailable(String language) =>
+      _channel.invokeMethod('isLanguageAvailable', language);
 
   /// [Future] which invokes the platform specific method for setSilence
   /// 0 means start the utterance immediately. If the value is greater than zero a silence period in milliseconds is set according to the parameter
@@ -86,18 +85,9 @@ class FlutterTts {
     errorHandler = handler;
   }
 
-  void ttsInitHandler(VoidCallback handler) {
-    initHandler = handler;
-  }
-
   /// Platform listeners
   Future platformCallHandler(MethodCall call) async {
     switch (call.method) {
-      case "tts.init":
-        if (initHandler != null) {
-          initHandler();
-        }
-        break;
       case "speak.onStart":
         if (startHandler != null) {
           startHandler();
