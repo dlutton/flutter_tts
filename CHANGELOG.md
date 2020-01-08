@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.8.6
+
+- iOS: Reducing volume of other sessions while TTS is playing
+
 ## 0.8.5
 
 - Android: Fix Android async platform initialization
