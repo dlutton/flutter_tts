@@ -12,6 +12,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var voice: AVSpeechSynthesisVoice?
 
   var channel = FlutterMethodChannel()
+  lazy var audioSession = AVAudioSession.sharedInstance()
 
   init(channel: FlutterMethodChannel) {
     super.init()
@@ -21,8 +22,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     
     // Allow audio playback when the Ring/Silent switch is set to silent
     do {
-      try AVAudioSession.sharedInstance().setCategory(.playback)
-      try AVAudioSession.sharedInstance().setActive(true)
+      try audioSession.setCategory(.playback, options: [.duckOthers])
     } catch {
       print(error)
     }
@@ -178,6 +178,11 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+    do {
+      try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+    } catch {
+      print(error)
+    }
     self.channel.invokeMethod("speak.onComplete", arguments: nil)
   }
 
