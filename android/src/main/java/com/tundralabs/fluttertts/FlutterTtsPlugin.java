@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -29,9 +28,10 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     private final Handler handler;
     private final MethodChannel channel;
     private TextToSpeech tts;
-    private final CountDownLatch ttsInitLatch = new CountDownLatch(1);
     private final String tag = "TTS";
     private final String googleTtsEngine = "com.google.android.tts";
+    private boolean isTtsInitialized = false;
+    private ArrayList<Runnable> pendingMethodCalls = new ArrayList<>();
     String uuid;
     Bundle bundle;
     private int silencems;
@@ -79,7 +79,6 @@ public class FlutterTtsPlugin implements MethodCallHandler {
                 public void onInit(int status) {
                     if (status == TextToSpeech.SUCCESS) {
                         tts.setOnUtteranceProgressListener(utteranceProgressListener);
-                        ttsInitLatch.countDown();
 
                         try {
                             Locale locale = tts.getDefaultVoice().getLocale();
@@ -88,6 +87,12 @@ public class FlutterTtsPlugin implements MethodCallHandler {
                             }
                         } catch (NullPointerException | IllegalArgumentException e) {
                             Log.e(tag, "getDefaultLocale: " + e.getMessage());
+                        }
+
+                        //Handle pending method calls (sent while TTS was initializing)
+                        isTtsInitialized = true;
+                        for(Runnable call : pendingMethodCalls) {
+                            call.run();
                         }
                     } else {
                         Log.e(tag, "Failed to initialize TextToSpeech");
@@ -101,12 +106,17 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     }
 
     @Override
-    public void onMethodCall(MethodCall call, Result result) {
-        //Wait for TTS engine to be ready
-        try {
-            ttsInitLatch.await();
-        } catch (InterruptedException e){
-            throw new AssertionError("Unexpected Interruption", e);
+    public void onMethodCall(final MethodCall call, final Result result) {
+        //If TTS is still loading
+        if (!isTtsInitialized) {
+            //Suspend method call until the TTS engine is ready
+            final Runnable suspendedCall = new Runnable() {
+                public void run() {
+                    onMethodCall(call, result);
+                }
+            };
+            pendingMethodCalls.add(suspendedCall);
+            return;
         }
         if (call.method.equals("speak")) {
             String text = call.arguments.toString();
