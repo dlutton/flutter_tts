@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.8.7
+
+- Android: Fix sporadic ANR on initialization
+
 ## 0.8.6
 
 - iOS: Reducing volume of other sessions while TTS is playing
