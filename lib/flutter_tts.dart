@@ -64,7 +64,6 @@ class FlutterTts {
   }
 
   /// [Future] which invokes the platform specific method for getVoices
-  /// ***Android supported only ***
   /// Returns a `List` of voice names
   Future<dynamic> get getVoices async {
     final voices = await _channel.invokeMethod('getVoices');
