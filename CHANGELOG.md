@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.9.0
+
+- Android: Adding synthesize to file
+
 ## 0.8.7
 
 - Android: Fix sporadic ANR on initialization
