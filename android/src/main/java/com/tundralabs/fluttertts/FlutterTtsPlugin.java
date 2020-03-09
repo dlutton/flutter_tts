@@ -14,6 +14,7 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.UUID;
@@ -27,43 +28,61 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   private final String googleTtsEngine = "com.google.android.tts";
   private boolean isTtsInitialized = false;
   private ArrayList<Runnable> pendingMethodCalls = new ArrayList<>();
-  String uuid;
+  private Context context;
   Bundle bundle;
   private int silencems;
   private static final String SILENCE_PREFIX = "SIL_";
+  private static final String SYNTHESIZE_TO_FILE_PREFIX = "STF_";
 
   /** Plugin registration. */
   private FlutterTtsPlugin(Context context, MethodChannel channel) {
     this.channel = channel;
+    this.context = context;
     this.channel.setMethodCallHandler(this);
 
     handler = new Handler(Looper.getMainLooper());
     bundle = new Bundle();
-    tts = new TextToSpeech(context.getApplicationContext(), onInitListener, googleTtsEngine);
+    tts = new TextToSpeech(this.context.getApplicationContext(), onInitListener, googleTtsEngine);
   }
 
   private UtteranceProgressListener utteranceProgressListener =
       new UtteranceProgressListener() {
         @Override
         public void onStart(String utteranceId) {
-          invokeMethod("speak.onStart", true);
+          if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            invokeMethod("synth.onStart", true);
+          } else {
+            invokeMethod("speak.onStart", true);
+          }
         }
 
         @Override
         public void onDone(String utteranceId) {
           if (utteranceId != null && utteranceId.startsWith(SILENCE_PREFIX)) return;
-          invokeMethod("speak.onComplete", true);
+          if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            invokeMethod("synth.onComplete", true);
+          } else {
+            invokeMethod("speak.onComplete", true);
+          }
         }
 
         @Override
         @Deprecated
         public void onError(String utteranceId) {
-          invokeMethod("speak.onError", "Error from TextToSpeech");
+          if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            invokeMethod("synth.onError", "Error from TextToSpeech (synth)");
+          } else {
+            invokeMethod("speak.onError", "Error from TextToSpeech (speak)");
+          }
         }
 
         @Override
         public void onError(String utteranceId, int errorCode) {
-          invokeMethod("speak.onError", "Error from TextToSpeech - " + errorCode);
+          if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            invokeMethod("synth.onError", "Error from TextToSpeech (synth) - " + errorCode);
+          } else {
+            invokeMethod("speak.onError", "Error from TextToSpeech (speak) - " + errorCode);
+          }
         }
       };
 
@@ -116,6 +135,12 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     if (call.method.equals("speak")) {
       String text = call.arguments.toString();
       speak(text);
+      result.success(1);
+    }
+    if (call.method.equals("synthesizeToFile")) {
+      String text = call.argument("text");
+      String fileName = call.argument("fileName");
+      synthesizeToFile(text, fileName);
       result.success(1);
     } else if (call.method.equals("stop")) {
       stop();
@@ -234,7 +259,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   }
 
   private void speak(String text) {
-    uuid = UUID.randomUUID().toString();
+    String uuid = UUID.randomUUID().toString();
     if (silencems > 0) {
       tts.playSilentUtterance(silencems, TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid);
       tts.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid);
@@ -245,6 +270,19 @@ public class FlutterTtsPlugin implements MethodCallHandler {
 
   private void stop() {
     tts.stop();
+  }
+
+  private void synthesizeToFile(String text, String fileName) {
+    File file = new File(this.context.getApplicationContext().getExternalFilesDir(null), fileName);
+    String uuid = UUID.randomUUID().toString();
+    bundle.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, SYNTHESIZE_TO_FILE_PREFIX + uuid);
+
+    int result = tts.synthesizeToFile(text, bundle, file, SYNTHESIZE_TO_FILE_PREFIX + uuid);
+    if (result == TextToSpeech.SUCCESS) {
+      Log.d(tag, "Successfully created file : " + file.getPath());
+    } else {
+      Log.d(tag, "Failed creating file : " + file.getPath());
+    }
   }
 
   private void invokeMethod(final String method, final Object arguments) {

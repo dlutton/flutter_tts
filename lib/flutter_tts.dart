@@ -20,6 +20,14 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for speaking
   Future<dynamic> speak(String text) => _channel.invokeMethod('speak', text);
 
+  /// [Future] which invokes the platform specific method for synthesizeToFile
+  /// Currently only supported for Android
+  Future<dynamic> synthesizeToFile(String text, String fileName) =>
+      _channel.invokeMethod('synthesizeToFile', <String, dynamic>{
+        "text": text,
+        "fileName": fileName,
+      });
+
   /// [Future] which invokes the platform specific method for setLanguage
   Future<dynamic> setLanguage(String language) =>
       _channel.invokeMethod('setLanguage', language);
@@ -93,12 +101,27 @@ class FlutterTts {
           startHandler();
         }
         break;
+      case "synth.onStart":
+        if (startHandler != null) {
+          startHandler();
+        }
+        break;
       case "speak.onComplete":
         if (completionHandler != null) {
           completionHandler();
         }
         break;
+      case "synth.onComplete":
+        if (completionHandler != null) {
+          completionHandler();
+        }
+        break;
       case "speak.onError":
+        if (errorHandler != null) {
+          errorHandler(call.arguments);
+        }
+        break;
+      case "synth.onError":
         if (errorHandler != null) {
           errorHandler(call.arguments);
         }

@@ -20,6 +20,7 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set voice
 - [x] Android
   - [x] set Silence
+  - [x] synthesize to file
 
 ## Usage
 
@@ -69,6 +70,10 @@ Future _speak() async{
 Future _stop() async{
     var result = await flutterTts.stop();
     if (result == 1) setState(() => ttsState = TtsState.stopped);
+}
+
+Future _synthesizeToFile() async{
+    var result = await flutterTts.synthesizeToFile("Hello World", "tts.wav");
 }
 
 List<dynamic> languages = await flutterTts.getLanguages;
