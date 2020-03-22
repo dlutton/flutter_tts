@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.9.1
+
+- Android: Fixing method call error
+
 ## 0.9.0
 
 - Android: Adding synthesize to file

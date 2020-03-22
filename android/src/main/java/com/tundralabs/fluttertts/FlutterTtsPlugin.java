@@ -136,8 +136,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       String text = call.arguments.toString();
       speak(text);
       result.success(1);
-    }
-    if (call.method.equals("synthesizeToFile")) {
+    } else if (call.method.equals("synthesizeToFile")) {
       String text = call.argument("text");
       String fileName = call.argument("fileName");
       synthesizeToFile(text, fileName);
