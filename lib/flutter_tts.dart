@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 typedef void ErrorHandler(dynamic message);
+typedef ProgressHandler = void Function(
+    String text, int start, int end, String word);
 
 // Provides Platform specific TTS services (Android: TextToSpeech, IOS: AVSpeechSynthesizer)
 class FlutterTts {
@@ -11,6 +13,7 @@ class FlutterTts {
 
   VoidCallback startHandler;
   VoidCallback completionHandler;
+  ProgressHandler progressHandler;
   ErrorHandler errorHandler;
 
   FlutterTts() {
@@ -88,6 +91,10 @@ class FlutterTts {
     completionHandler = callback;
   }
 
+  void setProgressHandler(ProgressHandler callback) {
+    progressHandler = callback;
+  }
+
   void setErrorHandler(ErrorHandler handler) {
     errorHandler = handler;
   }
@@ -118,6 +125,17 @@ class FlutterTts {
       case "speak.onError":
         if (errorHandler != null) {
           errorHandler(call.arguments);
+        }
+        break;
+      case 'speak.onProgress':
+        if (progressHandler != null) {
+          final args = call.arguments as Map<dynamic, dynamic>;
+          progressHandler(
+            args['text'].toString(),
+            int.parse(args['start'].toString()),
+            int.parse(args['end'].toString()),
+            args['word'].toString(),
+          );
         }
         break;
       case "synth.onError":
