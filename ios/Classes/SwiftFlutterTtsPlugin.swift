@@ -71,6 +71,9 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     case "getLanguages":
       self.getLanguages(result: result)
       break
+    case "getSpeechRateValidRange":
+      self.getSpeechRateValidRange(result: result)
+      break
     case "isLanguageAvailable":
       let language: String = call.arguments as! String
       self.isLanguageAvailable(language: language, result: result)
@@ -139,6 +142,16 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func getLanguages(result: FlutterResult) {
     result(Array(self.languages))
+  }
+
+  private func getSpeechRateValidRange(result: FlutterResult) {
+    let validSpeechRateRange: [String:String] = [
+      "min": String(AVSpeechUtteranceMinimumSpeechRate),
+      "normal": String(AVSpeechUtteranceDefaultSpeechRate),
+      "max": String(AVSpeechUtteranceMaximumSpeechRate),
+      "platform": "ios"
+    ]
+    result(validSpeechRateRange)
   }
 
   private func isLanguageAvailable(language: String, result: FlutterResult) {

@@ -263,11 +263,12 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   void getSpeechRateValidRange(Result result) {
     // Valid values available in the android documentation.
     // https://developer.android.com/reference/android/speech/tts/TextToSpeech#setSpeechRate(float)
-    final HashMap<String, String> limits = new HashMap<String, String>();
-    limits.put("min", "0");
-    limits.put("normal", "1");
-    limits.put("max", "3");
-    result.success(limits);
+    final HashMap<String, String> data = new HashMap<String, String>();
+    data.put("min", "0");
+    data.put("normal", "1");
+    data.put("max", "3");
+    data.put("platform", "android");
+    result.success(data);
   }
 
   private void speak(String text) {
