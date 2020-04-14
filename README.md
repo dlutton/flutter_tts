@@ -18,6 +18,7 @@ A flutter text to speech plugin (Swift,Java)
 - [x] Android, iOS
   - [x] get voices
   - [x] set voice
+  - [x] speech marks (requires iOS 7+ and Android 26+)
 - [x] Android
   - [x] set Silence
   - [x] synthesize to file
@@ -101,6 +102,12 @@ flutterTts.setStartHandler(() {
 flutterTts.setCompletionHandler(() {
   setState(() {
     ttsState = TtsState.stopped;
+  });
+});
+
+tts.setProgressHandler((String text, int startOffset, int endOffset, String word) {
+  setState(() {
+    _currentWord = word;
   });
 });
 
