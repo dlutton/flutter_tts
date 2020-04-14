@@ -190,4 +190,15 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     self.channel.invokeMethod("speak.onStart", arguments: nil)
   }
 
+  public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {
+    let nsWord = utterance.speechString as NSString
+    let data: [String:String] = [
+      "text": utterance.speechString,
+      "start": String(characterRange.location),
+      "end": String(characterRange.location + characterRange.length),
+      "word": nsWord.substring(with: characterRange)
+    ]
+    self.channel.invokeMethod("speak.onProgress", arguments: data)
+  }
+
 }
