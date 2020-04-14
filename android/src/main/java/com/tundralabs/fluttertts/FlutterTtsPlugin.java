@@ -16,6 +16,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -161,6 +162,8 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       getLanguages(result);
     } else if (call.method.equals("getVoices")) {
       getVoices(result);
+    } else if (call.method.equals("getSpeechRateValidRange")) {
+      getSpeechRateValidRange(result);
     } else if (call.method.equals("setVoice")) {
       String voice = call.arguments.toString();
       setVoice(voice, result);
@@ -177,7 +180,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   }
 
   void setSpeechRate(float rate) {
-    tts.setSpeechRate(rate * 2.0f);
+    tts.setSpeechRate(rate);
   }
 
   Boolean isLanguageAvailable(Locale locale) {
@@ -255,6 +258,16 @@ public class FlutterTtsPlugin implements MethodCallHandler {
       }
     }
     result.success(locales);
+  }
+
+  void getSpeechRateValidRange(Result result) {
+    // Valid values available in the android documentation.
+    // https://developer.android.com/reference/android/speech/tts/TextToSpeech#setSpeechRate(float)
+    final HashMap<String, String> limits = new HashMap<String, String>();
+    limits.put("min", "0");
+    limits.put("normal", "1");
+    limits.put("max", "3");
+    result.success(limits);
   }
 
   private void speak(String text) {

@@ -5,6 +5,14 @@ import 'package:flutter/services.dart';
 
 typedef void ErrorHandler(dynamic message);
 
+class SpeechRateValidRange {
+  final double min;
+  final double normal;
+  final double max;
+
+  SpeechRateValidRange(this.min, this.normal, this.max);
+}
+
 // Provides Platform specific TTS services (Android: TextToSpeech, IOS: AVSpeechSynthesizer)
 class FlutterTts {
   static const MethodChannel _channel = const MethodChannel('flutter_tts');
@@ -74,6 +82,15 @@ class FlutterTts {
   /// Returns `true` or `false`
   Future<dynamic> isLanguageAvailable(String language) =>
       _channel.invokeMethod('isLanguageAvailable', language);
+
+  Future<SpeechRateValidRange> get getSpeechRateValidRange async {
+    final validRange = await _channel.invokeMethod('getSpeechRateValidRange')
+        as Map<dynamic, dynamic>;
+    final min = double.parse(validRange['min'].toString());
+    final normal = double.parse(validRange['normal'].toString());
+    final max = double.parse(validRange['max'].toString());
+    return SpeechRateValidRange(min, normal, max);
+  }
 
   /// [Future] which invokes the platform specific method for setSilence
   /// 0 means start the utterance immediately. If the value is greater than zero a silence period in milliseconds is set according to the parameter
