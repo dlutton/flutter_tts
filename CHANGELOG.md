@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 0.9.2
+
+- iOS: Changing audio session to playAndRecord
+
 ## 0.9.1
 
 - Android: Fixing method call error
