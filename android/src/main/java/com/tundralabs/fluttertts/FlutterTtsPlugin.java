@@ -29,6 +29,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   private final String googleTtsEngine = "com.google.android.tts";
   private boolean isTtsInitialized = false;
   private ArrayList<Runnable> pendingMethodCalls = new ArrayList<>();
+  private final HashMap<String, String> utterances = new HashMap<>();
   private Context context;
   Bundle bundle;
   private int silencems;
@@ -55,6 +56,9 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           } else {
             invokeMethod("speak.onStart", true);
           }
+          if (Build.VERSION.SDK_INT < 26) {
+            this.onProgress(utteranceId, 0, utterances.get(utteranceId).length());
+          }
         }
 
         @Override
@@ -65,6 +69,24 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           } else {
             invokeMethod("speak.onComplete", true);
           }
+          utterances.remove(utteranceId);
+        }
+
+        private void onProgress(String utteranceId, int startAt, int endAt) {
+          final String text = utterances.get(utteranceId);
+          final HashMap<String, String> data = new HashMap<>();
+          data.put("text", text);
+          data.put("start", Integer.toString(startAt));
+          data.put("end", Integer.toString(endAt));
+          data.put("word", text.substring(startAt, endAt));
+          invokeMethod("speak.onProgress", data);
+        }
+
+        // Requires Android 26 or later
+        @Override
+        public void onRangeStart(String utteranceId, int startAt, int endAt, int frame) {
+          super.onRangeStart(utteranceId, startAt, endAt, frame);
+          this.onProgress(utteranceId, startAt, endAt);
         }
 
         @Override
@@ -273,6 +295,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
 
   private void speak(String text) {
     String uuid = UUID.randomUUID().toString();
+    utterances.put(uuid, text);
     if (silencems > 0) {
       tts.playSilentUtterance(silencems, TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid);
       tts.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid);
