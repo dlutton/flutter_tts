@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.0.0
+
+- iOS/Android: Feature - Speech marks
+- iOS/Android: Breaking changes to Speech rate
+
 ## 0.9.2
 
 - iOS: Changing audio session to playAndRecord

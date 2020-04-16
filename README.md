@@ -105,7 +105,7 @@ flutterTts.setCompletionHandler(() {
   });
 });
 
-tts.setProgressHandler((String text, int startOffset, int endOffset, String word) {
+flutterTts.setProgressHandler((String text, int startOffset, int endOffset, String word) {
   setState(() {
     _currentWord = word;
   });
