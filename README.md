@@ -22,7 +22,9 @@ A flutter text to speech plugin (Swift,Java)
 - [x] Android
   - [x] set Silence
   - [x] synthesize to file
-
+- [x] iOS
+  - [x] set shared instance
+  
 ## Usage
 
 ## Web
@@ -58,9 +60,14 @@ To use this plugin :
 
 ```dart
 FlutterTts flutterTts = FlutterTts();
+
+```
+To set shared audio [instance](https://developer.apple.com/documentation/avfoundation/avaudiosession/1616504-sharedinstance):
+```dart
+await flutterTts.setSharedInstance(true);
 ```
 
-### speak, stop, getLanguages, setLanguage, setSpeechRate, setVolume, setPitch, isLanguageAvailable
+### speak, stop, getLanguages, setLanguage, setSpeechRate, setVolume, setPitch, isLanguageAvailable, setSharedInstance
 
 ```dart
 Future _speak() async{
@@ -88,6 +95,9 @@ await flutterTts.setVolume(1.0);
 await flutterTts.setPitch(1.0);
 
 await flutterTts.isLanguageAvailable("en-US");
+
+// iOS only
+await flutterTts.setSharedInstance(true);
 ```
 
 ### Listening for platform calls
