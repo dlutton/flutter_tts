@@ -56,6 +56,11 @@ class FlutterTts {
   Future<dynamic> setVolume(double volume) =>
       _channel.invokeMethod('setVolume', volume);
 
+  /// [Future] which invokes the platform specific method for shared instance
+  /// ***Ios supported only***
+  Future<dynamic> setSharedInstance(bool sharedSession) =>
+      _channel.invokeMethod('setSharedInstance', sharedSession);
+
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
   Future<dynamic> setPitch(double pitch) =>

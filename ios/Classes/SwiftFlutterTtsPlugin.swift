@@ -85,6 +85,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       let voiceName = call.arguments as! String
       self.setVoice(voiceName: voiceName, result: result)
       break
+    case "setSharedInstance":
+      let sharedInstance = call.arguments as! Bool
+      self.setSharedInstance(sharedInstance: sharedInstance, result: result)
+      break
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -134,6 +138,15 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     } else {
       result(0)
     }
+  }
+    
+  private func setSharedInstance(sharedInstance: Bool, result: FlutterResult) {
+      do {
+          try AVAudioSession.sharedInstance().setActive(sharedInstance)
+          result(1)
+      } catch {
+          result(0)
+      }
   }
 
   private func stop() {
