@@ -44,8 +44,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     switch call.method {
     case "speak":
       let text: String = call.arguments as! String
-      self.speak(text: text)
-      result(1)
+      self.speak(text: text, result: result)
+      break
+    case "pause":
+      self.pause(result: result)
       break
     case "setLanguage":
       let language: String = call.arguments as! String
@@ -94,18 +96,35 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     }
   }
 
-  private func speak(text: String) {
-    let utterance = AVSpeechUtterance(string: text)
-    if self.voice != nil {
-      utterance.voice = self.voice!
+  private func speak(text: String, result: FlutterResult) {
+    if (self.synthesizer.isPaused) {
+      if (self.synthesizer.continueSpeaking()) {
+        result(1)
+      } else {
+        result(0)
+      }
     } else {
-      utterance.voice = AVSpeechSynthesisVoice(language: self.language)
+      let utterance = AVSpeechUtterance(string: text)
+      if self.voice != nil {
+        utterance.voice = self.voice!
+      } else {
+        utterance.voice = AVSpeechSynthesisVoice(language: self.language)
+      }
+      utterance.rate = self.rate
+      utterance.volume = self.volume
+      utterance.pitchMultiplier = self.pitch
+      
+      self.synthesizer.speak(utterance)
+      result(1)
     }
-    utterance.rate = self.rate
-    utterance.volume = self.volume
-    utterance.pitchMultiplier = self.pitch
-    
-    self.synthesizer.speak(utterance)
+  }
+
+  private func pause(result: FlutterResult) {
+      if (self.synthesizer.pauseSpeaking(at: AVSpeechBoundary.word)) {
+        result(1)
+      } else {
+        result(0)
+      }
   }
 
   private func setLanguage(language: String, result: FlutterResult) {
