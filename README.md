@@ -22,6 +22,8 @@ A flutter text to speech plugin (Swift,Java)
 - [x] Android
   - [x] set Silence
   - [x] synthesize to file
+- [x] iOS
+  - [x] pause
 
 ## Usage
 

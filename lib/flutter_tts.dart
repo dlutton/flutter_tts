@@ -34,6 +34,10 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for speaking
   Future<dynamic> speak(String text) => _channel.invokeMethod('speak', text);
 
+  /// [Future] which invokes the platform specific method for pause
+  /// ***iOS supported only***
+  Future<dynamic> pause() => _channel.invokeMethod('pause');
+
   /// [Future] which invokes the platform specific method for synthesizeToFile
   /// Currently only supported for Android
   Future<dynamic> synthesizeToFile(String text, String fileName) =>
