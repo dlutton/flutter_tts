@@ -22,7 +22,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     
     // Allow audio playback when the Ring/Silent switch is set to silent
     do {
-      try audioSession.setCategory(.playAndRecord, options: [.duckOthers])
+        try audioSession.setCategory(.playAndRecord, options: .defaultToSpeaker)
     } catch {
       print(error)
     }
