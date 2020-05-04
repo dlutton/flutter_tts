@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -7,13 +8,87 @@ typedef void ErrorHandler(dynamic message);
 typedef ProgressHandler = void Function(
     String text, int start, int end, String word);
 
-enum Platform { android, ios }
+const String iosAudioCategoryOptionsKey = 'iosAudioCategoryOptions';
+const String iosAudioCategoryKey = 'iosAudioCategoryKey';
+const String iosAudioCategoryAmbientSolo = 'iosAudioCategoryAmbientSolo';
+const String iosAudioCategoryAmbient = 'iosAudioCategoryAmbient';
+const String iosAudioCategoryPlayback = 'iosAudioCategoryPlayback';
+const String iosAudioCategoryPlaybackAndRecord =
+    'iosAudioCategoryPlaybackAndRecord';
+
+const String iosAudioCategoryOptionsMixWithOthers =
+    'iosAudioCategoryOptionsMixWithOthers';
+const String iosAudioCategoryOptionsDuckOthers =
+    'iosAudioCategoryOptionsDuckOthers';
+const String iosAudioCategoryOptionsInterruptSpokenAudioAndMixWithOthers =
+    'iosAudioCategoryOptionsInterruptSpokenAudioAndMixWithOthers';
+const String iosAudioCategoryOptionsAllowBluetooth =
+    'iosAudioCategoryOptionsAllowBluetooth';
+const String iosAudioCategoryOptionsAllowBluetoothA2DP =
+    'iosAudioCategoryOptionsAllowBluetoothA2DP';
+const String iosAudioCategoryOptionsAllowAirPlay =
+    'iosAudioCategoryOptionsAllowAirPlay';
+const String iosAudioCategoryOptionsDefaultToSpeaker =
+    'iosAudioCategoryOptionsDefaultToSpeaker';
+
+enum TextToSpeechPlatform { android, ios }
+
+enum IosTextToSpeechAudioCategory {
+  /// Audio is silenced by screen lock and the silent switch; audio will not mix
+  /// with other apps' audio.
+  ambientSolo,
+
+  /// Audio is silenced by screen lock and the silent switch; audio will mix
+  /// with other apps' (mixable) audio.
+  ambient,
+
+  /// Audio is not silenced by screen lock or silent switch; audio will not mix
+  /// with other apps' audio.
+  ///
+  playback,
+
+  ///  The category for recording (input) and playback (output) of audio,
+  ///  such as for a Voice over Internet Protocol (VoIP) app.
+  /// The default value.
+  playAndRecord,
+}
+
+enum IosTextToSpeechAudioCategoryOptions {
+  /// An option that indicates whether audio from this session mixes with audio
+  /// from active sessions in other audio apps.
+  mixWithOthers,
+
+  /// An option that reduces the volume of other audio session while audio
+  /// from this session plays.
+  duckOthers,
+
+  /// An option that determines whether to pause spoken audio content
+  /// from other sessions when your app plays its audio.
+  interruptSpokenAudioAndMixWithOthers,
+
+  ///An option that determines whether Bluetooth hands-free devices
+  /// appear as available input routes.
+  allowBluetooth,
+
+  ///An option that determines whether you can stream audio
+  /// from this session to Bluetooth devices that support the Advanced Audio Distribution Profile (A2DP).
+  allowBluetoothA2DP,
+
+  ///An option that determines whether you can stream audio
+  /// from this session to AirPlay devices.
+  allowAirPlay,
+
+  ///An option that determines whether audio
+  /// from the session defaults to the built-in speaker instead of the receiver.
+  /// The default value.
+  defaultToSpeaker,
+}
 
 class SpeechRateValidRange {
   final double min;
   final double normal;
   final double max;
-  final Platform platform;
+  final TextToSpeechPlatform platform;
 
   SpeechRateValidRange(this.min, this.normal, this.max, this.platform);
 }
@@ -65,6 +140,44 @@ class FlutterTts {
   Future<dynamic> setSharedInstance(bool sharedSession) =>
       _channel.invokeMethod('setSharedInstance', sharedSession);
 
+  /// [Future] which invokes the platform specific method for setting audio category
+  /// ***Ios supported only***
+  Future<dynamic> setIosAudioCategory(IosTextToSpeechAudioCategory category,
+      List<IosTextToSpeechAudioCategoryOptions> options) async {
+    const Map<IosTextToSpeechAudioCategory, String> categoryToString =
+        <IosTextToSpeechAudioCategory, String>{
+      IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
+      IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
+      IosTextToSpeechAudioCategory.playback: iosAudioCategoryPlayback
+    };
+    const Map<IosTextToSpeechAudioCategoryOptions, String> optionsToString = {
+      IosTextToSpeechAudioCategoryOptions.mixWithOthers:
+          'iosAudioCategoryOptionsMixWithOthers',
+      IosTextToSpeechAudioCategoryOptions.duckOthers:
+          'iosAudioCategoryOptionsDuckOthers',
+      IosTextToSpeechAudioCategoryOptions.interruptSpokenAudioAndMixWithOthers:
+          'iosAudioCategoryOptionsInterruptSpokenAudioAndMixWithOthers',
+      IosTextToSpeechAudioCategoryOptions.allowBluetooth:
+          'iosAudioCategoryOptionsAllowBluetooth',
+      IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP:
+          'iosAudioCategoryOptionsAllowBluetoothA2DP',
+      IosTextToSpeechAudioCategoryOptions.allowAirPlay:
+          'iosAudioCategoryOptionsAllowAirPlay',
+      IosTextToSpeechAudioCategoryOptions.defaultToSpeaker:
+          'iosAudioCategoryOptionsDefaultToSpeaker',
+    };
+    if (!Platform.isAndroid) return;
+    try {
+      return _channel
+          .invokeMethod<dynamic>('setIosAudioCategory', <String, dynamic>{
+        iosAudioCategoryKey: categoryToString[category],
+        iosAudioCategoryOptionsKey: options.map((o) => optionsToString[o])
+      });
+    } on PlatformException catch (e) {
+      print('setIosAudioCategory error, category: $category');
+    }
+  }
+
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
   Future<dynamic> setPitch(double pitch) =>
@@ -100,13 +213,14 @@ class FlutterTts {
 
   Future<SpeechRateValidRange> get getSpeechRateValidRange async {
     final validRange = await _channel.invokeMethod('getSpeechRateValidRange')
-        as Map<dynamic, dynamic>;
+    as Map<dynamic, dynamic>;
     final min = double.parse(validRange['min'].toString());
     final normal = double.parse(validRange['normal'].toString());
     final max = double.parse(validRange['max'].toString());
     final platformStr = validRange['platform'].toString();
     final platform =
-        Platform.values.firstWhere((e) => describeEnum(e) == platformStr);
+    TextToSpeechPlatform.values.firstWhere((e) =>
+    describeEnum(e) == platformStr);
 
     return SpeechRateValidRange(min, normal, max, platform);
   }
