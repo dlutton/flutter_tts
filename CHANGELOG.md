@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.1.0
+
+- iOS: Adding Pause
+- iOS: Adding set Shared Instance
+
 ## 1.0.0
 
 - iOS/Android: Feature - Speech marks

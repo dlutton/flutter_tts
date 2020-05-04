@@ -196,6 +196,8 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     } else if (call.method.equals("setSilence")) {
       String silencems = call.arguments.toString();
       this.silencems = Integer.parseInt(silencems);
+    }  else if (call.method.equals("setSharedInstance")) {
+      result.success(1);
     } else {
       result.notImplemented();
     }

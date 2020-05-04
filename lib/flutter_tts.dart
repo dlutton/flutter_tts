@@ -34,6 +34,10 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for speaking
   Future<dynamic> speak(String text) => _channel.invokeMethod('speak', text);
 
+  /// [Future] which invokes the platform specific method for pause
+  /// ***iOS supported only***
+  Future<dynamic> pause() => _channel.invokeMethod('pause');
+
   /// [Future] which invokes the platform specific method for synthesizeToFile
   /// Currently only supported for Android
   Future<dynamic> synthesizeToFile(String text, String fileName) =>
@@ -55,6 +59,11 @@ class FlutterTts {
   /// Allowed values are in the range from 0.0 (silent) to 1.0 (loudest)
   Future<dynamic> setVolume(double volume) =>
       _channel.invokeMethod('setVolume', volume);
+
+  /// [Future] which invokes the platform specific method for shared instance
+  /// ***Ios supported only***
+  Future<dynamic> setSharedInstance(bool sharedSession) =>
+      _channel.invokeMethod('setSharedInstance', sharedSession);
 
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
