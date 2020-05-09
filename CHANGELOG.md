@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.2.0
+
+- iOS: Adding Set Audio Session Category
+- Android: Bug fixes
+
 ## 1.1.0
 
 - iOS: Adding Pause
