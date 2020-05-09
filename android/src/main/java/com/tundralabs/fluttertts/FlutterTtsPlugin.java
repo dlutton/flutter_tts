@@ -74,20 +74,24 @@ public class FlutterTtsPlugin implements MethodCallHandler {
         }
 
         private void onProgress(String utteranceId, int startAt, int endAt) {
-          final String text = utterances.get(utteranceId);
-          final HashMap<String, String> data = new HashMap<>();
-          data.put("text", text);
-          data.put("start", Integer.toString(startAt));
-          data.put("end", Integer.toString(endAt));
-          data.put("word", text.substring(startAt, endAt));
-          invokeMethod("speak.onProgress", data);
+          if (utteranceId != null && !utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            final String text = utterances.get(utteranceId);
+            final HashMap<String, String> data = new HashMap<>();
+            data.put("text", text);
+            data.put("start", Integer.toString(startAt));
+            data.put("end", Integer.toString(endAt));
+            data.put("word", text.substring(startAt, endAt));
+            invokeMethod("speak.onProgress", data);
+          }
         }
 
         // Requires Android 26 or later
         @Override
         public void onRangeStart(String utteranceId, int startAt, int endAt, int frame) {
-          super.onRangeStart(utteranceId, startAt, endAt, frame);
-          this.onProgress(utteranceId, startAt, endAt);
+          if (utteranceId != null && !utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            super.onRangeStart(utteranceId, startAt, endAt, frame);
+            this.onProgress(utteranceId, startAt, endAt);
+          }
         }
 
         @Override
