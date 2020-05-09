@@ -25,6 +25,7 @@ A flutter text to speech plugin (Swift,Java)
 - [x] iOS
   - [x] set shared instance
   - [x] pause
+  - [x] set audio session category
 
 ## Usage
 
@@ -68,6 +69,16 @@ To set shared audio [instance](https://developer.apple.com/documentation/avfound
 
 ```dart
 await flutterTts.setSharedInstance(true);
+```
+To set audio [category and options](https://developer.apple.com/documentation/avfoundation/avaudiosession):
+
+```dart
+await flutterTts
+        .setIosAudioCategory(IosTextToSpeechAudioCategory.playAndRecord, [
+      IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+      IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+      IosTextToSpeechAudioCategoryOptions.mixWithOthers
+    ]);
 ```
 
 ### speak, stop, getLanguages, setLanguage, setSpeechRate, setVolume, setPitch, isLanguageAvailable, setSharedInstance

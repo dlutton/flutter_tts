@@ -2,7 +2,12 @@ import Flutter
 import UIKit
 import AVFoundation
 
+
+
 public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDelegate {
+  final var iosAudioCategoryKey = "iosAudioCategoryKey"
+  final var iosAudioCategoryOptionsKey = "iosAudioCategoryOptionsKey"
+  
   let synthesizer = AVSpeechSynthesizer()
   var language: String = AVSpeechSynthesisVoice.currentLanguageCode()
   var rate: Float = AVSpeechUtteranceDefaultSpeechRate
@@ -10,10 +15,9 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var volume: Float = 1.0
   var pitch: Float = 1.0
   var voice: AVSpeechSynthesisVoice?
-
+  
   var channel = FlutterMethodChannel()
   lazy var audioSession = AVAudioSession.sharedInstance()
-
   init(channel: FlutterMethodChannel) {
     super.init()
     self.channel = channel
@@ -22,7 +26,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     
     // Allow audio playback when the Ring/Silent switch is set to silent
     do {
-      try audioSession.setCategory(.playAndRecord, options: [.duckOthers])
+        try audioSession.setCategory(.playAndRecord, options: [.defaultToSpeaker])
     } catch {
       print(error)
     }
@@ -90,6 +94,15 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     case "setSharedInstance":
       let sharedInstance = call.arguments as! Bool
       self.setSharedInstance(sharedInstance: sharedInstance, result: result)
+      break
+    case "setIosAudioCategory":
+      guard let args = call.arguments as? [String: Any] else {
+        result("iOS could not recognize flutter arguments in method: (sendParams)")
+        return
+      }
+      let audioCategory = args["iosAudioCategoryKey"] as? String
+      let audioOptions = args[iosAudioCategoryOptionsKey] as? Array<String>
+      self.setAudioCategory(audioCategory: audioCategory, audioOptions: audioOptions, result: result)
       break
     default:
       result(FlutterMethodNotImplemented)
@@ -167,6 +180,57 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
           result(0)
       }
   }
+    private func setAudioCategory(audioCategory: String?, audioOptions: Array<String>?, result: FlutterResult){
+        do{
+            var category: AVAudioSession.Category = audioSession.category
+            var options: AVAudioSession.CategoryOptions = []
+            if(!(audioCategory?.isEmpty ?? true)){
+                if(audioCategory == "iosAudioCategoryAmbientSolo"){
+                    category = AVAudioSession.Category.soloAmbient
+                }
+                if(audioCategory == "iosAudioCategoryAmbient"){
+                    category = AVAudioSession.Category.ambient
+                }
+                if(audioCategory == "iosAudioCategoryPlayback"){
+                    category = AVAudioSession.Category.soloAmbient
+                }
+                if(audioCategory == "iosAudioCategoryPlaybackAndRecord"){
+                    category = AVAudioSession.Category.soloAmbient
+                }
+            }
+            if(!(audioOptions?.isEmpty ?? true)){
+                if(audioOptions!.contains("iosAudioCategoryOptionsMixWithOthers")){
+                    options.insert(AVAudioSession.CategoryOptions.mixWithOthers)
+                }
+                if(audioOptions!.contains("iosAudioCategoryOptionsDuckOthers")){
+                    options.insert(AVAudioSession.CategoryOptions.duckOthers);
+                }
+                if #available(iOS 9.0, *) {
+                    if(audioOptions!.contains("iosAudioCategoryOptionsInterruptSpokenAudioAndMixWithOthers")){
+                        options.insert(AVAudioSession.CategoryOptions.interruptSpokenAudioAndMixWithOthers)
+                    }
+                }
+                if(audioOptions!.contains("iosAudioCategoryOptionsAllowBluetooth")){
+                    options.insert(AVAudioSession.CategoryOptions.allowBluetooth)
+                }
+                if #available(iOS 10.0, *) {
+                    if(audioOptions!.contains("iosAudioCategoryOptionsAllowBluetoothA2DP")){
+                        options.insert(AVAudioSession.CategoryOptions.allowBluetoothA2DP)
+                    }
+                    if(audioOptions!.contains("iosAudioCategoryOptionsAllowAirPlay")){
+                        options.insert(AVAudioSession.CategoryOptions.allowAirPlay)
+                    }
+                }
+                if(audioOptions!.contains("iosAudioCategoryOptionsDefaultToSpeaker")){
+                    options.insert(AVAudioSession.CategoryOptions.defaultToSpeaker)
+                }
+            }
+            try audioSession.setCategory(category, options: options)
+        } catch {
+             print(error)
+        }
+    
+    }
 
   private func stop() {
     self.synthesizer.stopSpeaking(at: AVSpeechBoundary.immediate)
