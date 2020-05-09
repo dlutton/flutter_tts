@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.UUID;
 
 /** FlutterTtsPlugin */
@@ -196,7 +197,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
     } else if (call.method.equals("setSilence")) {
       String silencems = call.arguments.toString();
       this.silencems = Integer.parseInt(silencems);
-    }  else if (call.method.equals("setSharedInstance")) {
+    } else if (call.method.equals("setSharedInstance")) {
       result.success(1);
     } else {
       result.notImplemented();
@@ -268,18 +269,22 @@ public class FlutterTtsPlugin implements MethodCallHandler {
 
   void getLanguages(Result result) {
     ArrayList<String> locales = new ArrayList<>();
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      // While this method was introduced in API level 21, it seems that it
-      // has not been implemented in the speech service side until API Level 23.
-      for (Locale locale : tts.getAvailableLanguages()) {
-        locales.add(locale.toLanguageTag());
-      }
-    } else {
-      for (Locale locale : Locale.getAvailableLocales()) {
-        if (locale.getVariant().isEmpty() && isLanguageAvailable(locale)) {
+    try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        // While this method was introduced in API level 21, it seems that it
+        // has not been implemented in the speech service side until API Level 23.
+        for (Locale locale : tts.getAvailableLanguages()) {
           locales.add(locale.toLanguageTag());
         }
+      } else {
+        for (Locale locale : Locale.getAvailableLocales()) {
+          if (locale.getVariant().isEmpty() && isLanguageAvailable(locale)) {
+            locales.add(locale.toLanguageTag());
+          }
+        }
       }
+    } catch (MissingResourceException e) {
+      Log.d(tag, "getLanguages: " + e.getMessage());
     }
     result.success(locales);
   }
