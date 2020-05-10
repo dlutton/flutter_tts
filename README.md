@@ -65,12 +65,13 @@ FlutterTts flutterTts = FlutterTts();
 
 ```
 
-To set shared audio [instance](https://developer.apple.com/documentation/avfoundation/avaudiosession/1616504-sharedinstance):
+To set shared audio [instance](https://developer.apple.com/documentation/avfoundation/avaudiosession/1616504-sharedinstance) (iOS only):
 
 ```dart
 await flutterTts.setSharedInstance(true);
 ```
-To set audio [category and options](https://developer.apple.com/documentation/avfoundation/avaudiosession):
+
+To set audio [category and options](https://developer.apple.com/documentation/avfoundation/avaudiosession) (iOS only):
 
 ```dart
 await flutterTts
@@ -94,10 +95,6 @@ Future _stop() async{
     if (result == 1) setState(() => ttsState = TtsState.stopped);
 }
 
-Future _synthesizeToFile() async{
-    var result = await flutterTts.synthesizeToFile("Hello World", "tts.wav");
-}
-
 List<dynamic> languages = await flutterTts.getLanguages;
 
 await flutterTts.setLanguage("en-US");
@@ -114,6 +111,11 @@ await flutterTts.isLanguageAvailable("en-US");
 await flutterTts.setSharedInstance(true);
 
 await flutterTts.pause();
+
+// Android only
+await flutterTts.synthesizeToFile("Hello World", "tts.wav");
+
+await flutterTts.setSilence(2);
 ```
 
 ### Listening for platform calls

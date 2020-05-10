@@ -114,7 +114,7 @@ class FlutterTts {
   Future<dynamic> pause() => _channel.invokeMethod('pause');
 
   /// [Future] which invokes the platform specific method for synthesizeToFile
-  /// Currently only supported for Android
+  /// ***Android supported only***
   Future<dynamic> synthesizeToFile(String text, String fileName) =>
       _channel.invokeMethod('synthesizeToFile', <String, dynamic>{
         "text": text,
@@ -136,7 +136,7 @@ class FlutterTts {
       _channel.invokeMethod('setVolume', volume);
 
   /// [Future] which invokes the platform specific method for shared instance
-  /// ***Ios supported only***
+  /// ***iOS supported only***
   Future<dynamic> setSharedInstance(bool sharedSession) =>
       _channel.invokeMethod('setSharedInstance', sharedSession);
 
@@ -144,13 +144,12 @@ class FlutterTts {
   /// ***Ios supported only***
   Future<dynamic> setIosAudioCategory(IosTextToSpeechAudioCategory category,
       List<IosTextToSpeechAudioCategoryOptions> options) async {
-    const Map<IosTextToSpeechAudioCategory, String> categoryToString =
-        <IosTextToSpeechAudioCategory, String>{
+    const categoryToString = <IosTextToSpeechAudioCategory, String>{
       IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
       IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
       IosTextToSpeechAudioCategory.playback: iosAudioCategoryPlayback
     };
-    const Map<IosTextToSpeechAudioCategoryOptions, String> optionsToString = {
+    const optionsToString = {
       IosTextToSpeechAudioCategoryOptions.mixWithOthers:
           'iosAudioCategoryOptionsMixWithOthers',
       IosTextToSpeechAudioCategoryOptions.duckOthers:
@@ -174,7 +173,8 @@ class FlutterTts {
         iosAudioCategoryOptionsKey: options.map((o) => optionsToString[o])
       });
     } on PlatformException catch (e) {
-      print('setIosAudioCategory error, category: $category');
+      print(
+          'setIosAudioCategory error, category: $category, error: ${e.message}');
     }
   }
 
@@ -213,20 +213,20 @@ class FlutterTts {
 
   Future<SpeechRateValidRange> get getSpeechRateValidRange async {
     final validRange = await _channel.invokeMethod('getSpeechRateValidRange')
-    as Map<dynamic, dynamic>;
+        as Map<dynamic, dynamic>;
     final min = double.parse(validRange['min'].toString());
     final normal = double.parse(validRange['normal'].toString());
     final max = double.parse(validRange['max'].toString());
     final platformStr = validRange['platform'].toString();
-    final platform =
-    TextToSpeechPlatform.values.firstWhere((e) =>
-    describeEnum(e) == platformStr);
+    final platform = TextToSpeechPlatform.values
+        .firstWhere((e) => describeEnum(e) == platformStr);
 
     return SpeechRateValidRange(min, normal, max, platform);
   }
 
   /// [Future] which invokes the platform specific method for setSilence
   /// 0 means start the utterance immediately. If the value is greater than zero a silence period in milliseconds is set according to the parameter
+  /// ***Android supported only***
   Future<dynamic> setSilence(int timems) =>
       _channel.invokeMethod('setSilence', timems ?? 0);
 
