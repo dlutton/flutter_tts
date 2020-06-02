@@ -192,10 +192,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
                     category = AVAudioSession.Category.ambient
                 }
                 if(audioCategory == "iosAudioCategoryPlayback"){
-                    category = AVAudioSession.Category.soloAmbient
+                    category = AVAudioSession.Category.playback
                 }
                 if(audioCategory == "iosAudioCategoryPlaybackAndRecord"){
-                    category = AVAudioSession.Category.soloAmbient
+                    category = AVAudioSession.Category.playAndRecord
                 }
             }
             if(!(audioOptions?.isEmpty ?? true)){
