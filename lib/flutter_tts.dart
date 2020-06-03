@@ -99,6 +99,9 @@ class FlutterTts {
 
   VoidCallback startHandler;
   VoidCallback completionHandler;
+  VoidCallback pauseHandler;
+  VoidCallback continueHandler;
+  VoidCallback cancelHandler;
   ProgressHandler progressHandler;
   ErrorHandler errorHandler;
 
@@ -238,6 +241,18 @@ class FlutterTts {
     completionHandler = callback;
   }
 
+  void setContinueHandler(VoidCallback callback) {
+    continueHandler = callback;
+  }
+
+  void setPauseHandler(VoidCallback callback) {
+    pauseHandler = callback;
+  }
+
+  void setCancelHandler(VoidCallback callback) {
+    cancelHandler = callback;
+  }
+
   void setProgressHandler(ProgressHandler callback) {
     progressHandler = callback;
   }
@@ -267,6 +282,21 @@ class FlutterTts {
       case "synth.onComplete":
         if (completionHandler != null) {
           completionHandler();
+        }
+        break;
+      case "speak.onPause":
+        if (pauseHandler != null) {
+          pauseHandler();
+        }
+        break;
+      case "speak.onContinue":
+        if (continueHandler != null) {
+          continueHandler();
+        }
+        break;
+      case "speak.onCancel":
+        if (cancelHandler != null) {
+          cancelHandler();
         }
         break;
       case "speak.onError":

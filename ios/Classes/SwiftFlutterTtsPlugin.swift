@@ -2,8 +2,6 @@ import Flutter
 import UIKit
 import AVFoundation
 
-
-
 public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDelegate {
   final var iosAudioCategoryKey = "iosAudioCategoryKey"
   final var iosAudioCategoryOptionsKey = "iosAudioCategoryOptionsKey"
@@ -297,6 +295,18 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
     self.channel.invokeMethod("speak.onStart", arguments: nil)
+  }
+
+  public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
+    self.channel.invokeMethod("speak.onPause", arguments: nil)
+  }
+
+  public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
+    self.channel.invokeMethod("speak.onContinue", arguments: nil)
+  }
+
+  public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+    self.channel.invokeMethod("speak.onCancel", arguments: nil)
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {

@@ -55,6 +55,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
             invokeMethod("synth.onStart", true);
           } else {
+            Log.d(tag, "Utterance ID has started: " + utteranceId);
             invokeMethod("speak.onStart", true);
           }
           if (Build.VERSION.SDK_INT < 26) {
@@ -68,9 +69,16 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
             invokeMethod("synth.onComplete", true);
           } else {
+            Log.d(tag, "Utterance ID has completed: " + utteranceId);
             invokeMethod("speak.onComplete", true);
           }
           utterances.remove(utteranceId);
+        }
+
+        @Override
+        public void onStop(String utteranceId, boolean interrupted) {
+          Log.d(tag, "Utterance ID has been stopped: " + utteranceId + ". Interrupted: " + interrupted);
+          invokeMethod("speak.onCancel", true);
         }
 
         private void onProgress(String utteranceId, int startAt, int endAt) {

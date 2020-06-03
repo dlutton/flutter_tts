@@ -144,11 +144,30 @@ flutterTts.setErrorHandler((msg) {
     ttsState = TtsState.stopped;
   });
 });
+
+flutterTts.setCancelHandler((msg) {
+  setState(() {
+    ttsState = TtsState.stopped;
+  });
+});
+
+// iOS only
+flutterTts.setPauseHandler((msg) {
+  setState(() {
+    ttsState = TtsState.paused;
+  });
+});
+
+flutterTts.setContinueHandler((msg) {
+  setState(() {
+    ttsState = TtsState.continued;
+  });
+});
 ```
 
 ## Getting Started
 
 For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
+[documentation](https://flutter.dev/).
 
-For help on editing plugin code, view the [documentation](https://flutter.io/platform-plugins/#edit-code).
+For help on editing plugin code, view the [documentation](https://flutter.dev/platform-plugins/#edit-code).

@@ -53,6 +53,13 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
+    flutterTts.setCancelHandler(() {
+      setState(() {
+        print("Cancel");
+        ttsState = TtsState.stopped;
+      });
+    });
+
     flutterTts.setErrorHandler((msg) {
       setState(() {
         print("error: $msg");
