@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.2.1
+
+- iOS: Fix setting iOS Category
+- iOS/Android: Adding additional platform calls
+
 ## 1.2.0
 
 - iOS: Adding Set Audio Session Category
