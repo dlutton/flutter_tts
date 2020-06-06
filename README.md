@@ -19,12 +19,13 @@ A flutter text to speech plugin (Swift,Java)
   - [x] get voices
   - [x] set voice
   - [x] speech marks (requires iOS 7+ and Android 26+)
+- [x] iOS, Web
+  - [x] pause
 - [x] Android
   - [x] set Silence
   - [x] synthesize to file
 - [x] iOS
   - [x] set shared instance
-  - [x] pause
   - [x] set audio session category
 
 ## Usage
@@ -110,6 +111,7 @@ await flutterTts.isLanguageAvailable("en-US");
 // iOS only
 await flutterTts.setSharedInstance(true);
 
+// iOS and Web
 await flutterTts.pause();
 
 // Android only
@@ -151,7 +153,7 @@ flutterTts.setCancelHandler((msg) {
   });
 });
 
-// iOS only
+// iOS and Web
 flutterTts.setPauseHandler((msg) {
   setState(() {
     ttsState = TtsState.paused;

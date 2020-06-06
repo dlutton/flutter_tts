@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 1.2.2
+
+- Web: Adding pause and continue
+
 ## 1.2.1
 
 - iOS: Fix setting iOS Category
