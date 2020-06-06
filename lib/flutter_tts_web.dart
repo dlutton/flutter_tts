@@ -5,9 +5,21 @@ import 'dart:js';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
+enum TtsState { playing, stopped, paused, continued }
+
 class FlutterTtsPlugin {
   static const String PLATFORM_CHANNEL = "flutter_tts";
   static MethodChannel channel;
+
+  TtsState ttsState = TtsState.stopped;
+
+  get isPlaying => ttsState == TtsState.playing;
+
+  get isStopped => ttsState == TtsState.stopped;
+
+  get isPaused => ttsState == TtsState.paused;
+
+  get isContinued => ttsState == TtsState.continued;
 
   static void registerWith(Registrar registrar) {
     channel = MethodChannel(
@@ -29,10 +41,22 @@ class FlutterTtsPlugin {
   }
 
   void _listeners() {
-    utterance.onStart
-        .listen((e) => channel.invokeMethod("speak.onStart", null));
-    utterance.onEnd
-        .listen((e) => channel.invokeMethod("speak.onComplete", null));
+    utterance.onStart.listen((e) {
+      ttsState = TtsState.playing;
+      channel.invokeMethod("speak.onStart", null);
+    });
+    utterance.onEnd.listen((e) {
+      ttsState = TtsState.stopped;
+      channel.invokeMethod("speak.onComplete", null);
+    });
+    utterance.onPause.listen((e) {
+      ttsState = TtsState.paused;
+      channel.invokeMethod("speak.onPause", null);
+    });
+    utterance.onResume.listen((e) {
+      ttsState = TtsState.continued;
+      channel.invokeMethod("speak.onContinue", null);
+    });
     utterance.onError.listen((e) => channel.invokeMethod("speak.onError", e));
   }
 
@@ -45,6 +69,9 @@ class FlutterTtsPlugin {
         break;
       case 'stop':
         return _stop();
+        break;
+      case 'pause':
+        return _pause();
         break;
       case 'setLanguage':
         final language = call.arguments as String;
@@ -82,12 +109,28 @@ class FlutterTtsPlugin {
   }
 
   void _speak(String text) {
-    synth.cancel();
-    utterance.text = text;
-    synth.speak(utterance);
+    if (ttsState == TtsState.stopped || ttsState == TtsState.paused) {
+      utterance.text = text;
+      if (ttsState == TtsState.paused) {
+        synth.resume();
+      } else {
+        synth.speak(utterance);
+      }
+    }
   }
 
-  void _stop() => synth.cancel();
+  void _stop() {
+    if (ttsState != TtsState.stopped) {
+      synth.cancel();
+    }
+  }
+
+  void _pause() {
+    if (ttsState == TtsState.playing || ttsState == TtsState.continued) {
+      synth.pause();
+    }
+  }
+
   void _setRate(num rate) => utterance.rate = rate * 2.0;
   void _setVolume(num volume) => utterance.volume = volume;
   void _setPitch(num pitch) => utterance.pitch = pitch;

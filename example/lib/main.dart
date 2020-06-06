@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -10,7 +12,7 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-enum TtsState { playing, stopped }
+enum TtsState { playing, stopped, paused, continued }
 
 class _MyAppState extends State<MyApp> {
   FlutterTts flutterTts;
@@ -28,6 +30,10 @@ class _MyAppState extends State<MyApp> {
 
   get isStopped => ttsState == TtsState.stopped;
 
+  get isPaused => ttsState == TtsState.paused;
+
+  get isContinued => ttsState == TtsState.continued;
+
   @override
   initState() {
     super.initState();
@@ -41,7 +47,7 @@ class _MyAppState extends State<MyApp> {
 
     flutterTts.setStartHandler(() {
       setState(() {
-        print("playing");
+        print("Playing");
         ttsState = TtsState.playing;
       });
     });
@@ -59,6 +65,22 @@ class _MyAppState extends State<MyApp> {
         ttsState = TtsState.stopped;
       });
     });
+
+    if (kIsWeb || Platform.isIOS) {
+      flutterTts.setPauseHandler(() {
+        setState(() {
+          print("Paused");
+          ttsState = TtsState.paused;
+        });
+      });
+
+      flutterTts.setContinueHandler(() {
+        setState(() {
+          print("Continued");
+          ttsState = TtsState.continued;
+        });
+      });
+    }
 
     flutterTts.setErrorHandler((msg) {
       setState(() {
@@ -89,6 +111,11 @@ class _MyAppState extends State<MyApp> {
   Future _stop() async {
     var result = await flutterTts.stop();
     if (result == 1) setState(() => ttsState = TtsState.stopped);
+  }
+
+  Future _pause() async {
+    var result = await flutterTts.pause();
+    if (result == 1) setState(() => ttsState = TtsState.paused);
   }
 
   @override
@@ -145,14 +172,31 @@ class _MyAppState extends State<MyApp> {
         },
       ));
 
-  Widget _btnSection() => Container(
-      padding: EdgeInsets.only(top: 50.0),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        _buildButtonColumn(
-            Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
-        _buildButtonColumn(
-            Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop)
-      ]));
+  Widget _btnSection() {
+    if (!kIsWeb && Platform.isAndroid) {
+      return Container(
+          padding: EdgeInsets.only(top: 50.0),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            _buildButtonColumn(Colors.green, Colors.greenAccent,
+                Icons.play_arrow, 'PLAY', _speak),
+            _buildButtonColumn(
+                Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
+          ]));
+    } else {
+      return Container(
+          padding: EdgeInsets.only(top: 50.0),
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            _buildButtonColumn(Colors.green, Colors.greenAccent,
+                Icons.play_arrow, 'PLAY', _speak),
+            _buildButtonColumn(
+                Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
+            _buildButtonColumn(
+                Colors.blue, Colors.blueAccent, Icons.pause, 'PAUSE', _pause),
+          ]));
+    }
+  }
 
   Widget _languageDropDownSection() => Container(
       padding: EdgeInsets.only(top: 50.0),
