@@ -168,7 +168,7 @@ class FlutterTts {
       IosTextToSpeechAudioCategoryOptions.defaultToSpeaker:
           'iosAudioCategoryOptionsDefaultToSpeaker',
     };
-    if (!Platform.isAndroid) return;
+    if (!Platform.isIOS) return;
     try {
       return _channel
           .invokeMethod<dynamic>('setIosAudioCategory', <String, dynamic>{
