@@ -8,7 +8,7 @@ typedef void ErrorHandler(dynamic message);
 typedef ProgressHandler = void Function(
     String text, int start, int end, String word);
 
-const String iosAudioCategoryOptionsKey = 'iosAudioCategoryOptions';
+const String iosAudioCategoryOptionsKey = 'iosAudioCategoryOptionsKey';
 const String iosAudioCategoryKey = 'iosAudioCategoryKey';
 const String iosAudioCategoryAmbientSolo = 'iosAudioCategoryAmbientSolo';
 const String iosAudioCategoryAmbient = 'iosAudioCategoryAmbient';
@@ -173,7 +173,7 @@ class FlutterTts {
       return _channel
           .invokeMethod<dynamic>('setIosAudioCategory', <String, dynamic>{
         iosAudioCategoryKey: categoryToString[category],
-        iosAudioCategoryOptionsKey: options.map((o) => optionsToString[o])
+        iosAudioCategoryOptionsKey: options.map((o) => optionsToString[o]).toList(),
       });
     } on PlatformException catch (e) {
       print(
