@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.2.3
+
+- iOS: Adding synthesize to file
+- iOS: Fix set category ios
+
 ## 1.2.2
 
 - Web: Adding pause and continue

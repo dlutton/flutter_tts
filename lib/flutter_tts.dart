@@ -173,7 +173,8 @@ class FlutterTts {
       return _channel
           .invokeMethod<dynamic>('setIosAudioCategory', <String, dynamic>{
         iosAudioCategoryKey: categoryToString[category],
-        iosAudioCategoryOptionsKey: options.map((o) => optionsToString[o]).toList(),
+        iosAudioCategoryOptionsKey:
+            options.map((o) => optionsToString[o]).toList(),
       });
     } on PlatformException catch (e) {
       print(
