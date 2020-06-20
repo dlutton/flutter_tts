@@ -14,6 +14,8 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,30 +24,54 @@ import java.util.MissingResourceException;
 import java.util.UUID;
 
 /** FlutterTtsPlugin */
-public class FlutterTtsPlugin implements MethodCallHandler {
+public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private final Handler handler;
-  private final MethodChannel channel;
+  private Context applicationContext;
+  private MethodChannel methodChannel;
   private TextToSpeech tts;
   private final String tag = "TTS";
   private final String googleTtsEngine = "com.google.android.tts";
   private boolean isTtsInitialized = false;
   private ArrayList<Runnable> pendingMethodCalls = new ArrayList<>();
   private final HashMap<String, String> utterances = new HashMap<>();
-  private Context context;
   Bundle bundle;
   private int silencems;
   private static final String SILENCE_PREFIX = "SIL_";
   private static final String SYNTHESIZE_TO_FILE_PREFIX = "STF_";
 
-  /** Plugin registration. */
   private FlutterTtsPlugin(Context context, MethodChannel channel) {
-    this.channel = channel;
-    this.context = context;
-    this.channel.setMethodCallHandler(this);
+    this.methodChannel = channel;
+    this.applicationContext = context;
+    this.methodChannel.setMethodCallHandler(this);
 
     handler = new Handler(Looper.getMainLooper());
     bundle = new Bundle();
-    tts = new TextToSpeech(this.context.getApplicationContext(), onInitListener, googleTtsEngine);
+    tts = new TextToSpeech(this.applicationContext.getApplicationContext(), onInitListener, googleTtsEngine);
+  }
+
+  /** Plugin registration. */
+  public static void registerWith(Registrar registrar) {
+    final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_tts");
+    channel.setMethodCallHandler(new FlutterTtsPlugin(registrar.activeContext(), channel));
+  }
+
+  /** Android Plugin APIs */
+  @Override
+  public void onAttachedToEngine(FlutterPluginBinding binding) {
+    onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
+  }
+
+  private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
+    this.applicationContext = applicationContext;
+    methodChannel = new MethodChannel(messenger, "flutter_tts");
+    methodChannel.setMethodCallHandler(this);
+  }
+
+  @Override
+  public void onDetachedFromEngine(FlutterPluginBinding binding) {
+    this.applicationContext = null;
+    methodChannel.setMethodCallHandler(null);
+    methodChannel = null;
   }
 
   private UtteranceProgressListener utteranceProgressListener =
@@ -148,11 +174,6 @@ public class FlutterTtsPlugin implements MethodCallHandler {
           }
         }
       };
-
-  public static void registerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_tts");
-    channel.setMethodCallHandler(new FlutterTtsPlugin(registrar.activeContext(), channel));
-  }
 
   @Override
   public void onMethodCall(final MethodCall call, final Result result) {
@@ -328,7 +349,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
   }
 
   private void synthesizeToFile(String text, String fileName) {
-    File file = new File(this.context.getApplicationContext().getExternalFilesDir(null), fileName);
+    File file = new File(this.applicationContext.getApplicationContext().getExternalFilesDir(null), fileName);
     String uuid = UUID.randomUUID().toString();
     bundle.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, SYNTHESIZE_TO_FILE_PREFIX + uuid);
 
@@ -345,7 +366,7 @@ public class FlutterTtsPlugin implements MethodCallHandler {
         new Runnable() {
           @Override
           public void run() {
-            channel.invokeMethod(method, arguments);
+            methodChannel.invokeMethod(method, arguments);
           }
         });
   }
