@@ -48,6 +48,15 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       let text: String = call.arguments as! String
       self.speak(text: text, result: result)
       break
+    case "synthesizeToFile":
+      guard let args = call.arguments as? [String: Any] else {
+        result("iOS could not recognize flutter arguments in method: (sendParams)")
+        return
+      }
+      let text = args["text"] as! String
+      let fileName = args["fileName"] as! String
+      self.synthesizeToFile(text: text, fileName: fileName, result: result)
+      break
     case "pause":
       self.pause(result: result)
       break
@@ -128,6 +137,52 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       self.synthesizer.speak(utterance)
       result(1)
     }
+  }
+  
+  private func synthesizeToFile(text: String, fileName: String, result: FlutterResult) {
+    var output: AVAudioFile?
+    var failed = false
+    let utterance = AVSpeechUtterance(string: text)
+
+    if #available(iOS 13.0, *) {
+      self.synthesizer.write(utterance) { (buffer: AVAudioBuffer) in
+        guard let pcmBuffer = buffer as? AVAudioPCMBuffer else {
+            NSLog("unknow buffer type: \(buffer)")
+            failed = true
+            return
+        }
+        print(pcmBuffer.format)
+        if pcmBuffer.frameLength == 0 {
+            // finished
+        } else {
+          // append buffer to file
+          let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
+          NSLog("Saving utterance to file: \(fileURL.absoluteString)")
+            
+          if output == nil {
+            do {
+              output = try AVAudioFile(
+              forWriting: fileURL,
+              settings: pcmBuffer.format.settings, 
+              commonFormat: .pcmFormatInt16,
+              interleaved: false)
+            } catch {
+                NSLog(error.localizedDescription)
+                failed = true
+                return
+            }
+          }
+            
+          try! output!.write(from: pcmBuffer)
+        }
+      }
+    } else {
+        result("Unsupported iOS version")
+    }
+    if failed {
+        result(0)
+    }
+    result(1)
   }
 
   private func pause(result: FlutterResult) {

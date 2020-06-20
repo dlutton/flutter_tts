@@ -19,11 +19,11 @@ A flutter text to speech plugin (Swift,Java)
   - [x] get voices
   - [x] set voice
   - [x] speech marks (requires iOS 7+ and Android 26+)
+  - [x] synthesize to file (requires iOS 13+)
 - [x] iOS, Web
   - [x] pause
 - [x] Android
   - [x] set Silence
-  - [x] synthesize to file
 - [x] iOS
   - [x] set shared instance
   - [x] set audio session category
@@ -108,15 +108,16 @@ await flutterTts.setPitch(1.0);
 
 await flutterTts.isLanguageAvailable("en-US");
 
+// iOS and Web only
+await flutterTts.pause();
+
+// iOS and Android only
+await flutterTts.synthesizeToFile("Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf");
+
 // iOS only
 await flutterTts.setSharedInstance(true);
 
-// iOS and Web
-await flutterTts.pause();
-
 // Android only
-await flutterTts.synthesizeToFile("Hello World", "tts.wav");
-
 await flutterTts.setSilence(2);
 ```
 

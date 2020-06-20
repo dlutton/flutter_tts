@@ -117,7 +117,7 @@ class FlutterTts {
   Future<dynamic> pause() => _channel.invokeMethod('pause');
 
   /// [Future] which invokes the platform specific method for synthesizeToFile
-  /// ***Android supported only***
+  /// ***Android and iOS supported only***
   Future<dynamic> synthesizeToFile(String text, String fileName) =>
       _channel.invokeMethod('synthesizeToFile', <String, dynamic>{
         "text": text,
