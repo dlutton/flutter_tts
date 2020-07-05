@@ -303,11 +303,23 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     }
   }
 
+  private func shouldDeactivateAndNotifyOthers(_ session: AVAudioSession) -> Bool {
+    var options: AVAudioSession.CategoryOptions = .duckOthers
+    if #available(iOS 9.0, *) {
+      options.insert(.interruptSpokenAudioAndMixWithOthers)
+    }
+    options.remove(.mixWithOthers)
+    
+    return !options.isDisjoint(with: session.categoryOptions)
+  }
+  
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-    do {
-      try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
-    } catch {
-      print(error)
+    if shouldDeactivateAndNotifyOthers(audioSession) {
+      do {
+        try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+      } catch {
+        print(error)
+      }
     }
     self.channel.invokeMethod("speak.onComplete", arguments: nil)
   }
