@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 1.2.4
+
+- iOS: Deactivate audio session only when needed
+- Android:  Better exception handling for getLanguages
+- Android:  Adding getEngines
+- Android:  Adding new Android plugin APIs
+
 ## 1.2.3
 
 - iOS: Adding synthesize to file

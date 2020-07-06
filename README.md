@@ -119,6 +119,8 @@ await flutterTts.setSharedInstance(true);
 
 // Android only
 await flutterTts.setSilence(2);
+
+await flutterTts.getEngines();
 ```
 
 ### Listening for platform calls
