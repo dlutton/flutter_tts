@@ -17,6 +17,8 @@ flutter:
         pluginClass: FlutterTtsPlugin
       ios:
         pluginClass: FlutterTtsPlugin
+      macos:
+        pluginClass: FlutterTtsPlugin
       web:
         pluginClass: FlutterTtsPlugin
         fileName: flutter_tts_web.dart
