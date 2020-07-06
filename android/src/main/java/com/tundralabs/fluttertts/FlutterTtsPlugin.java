@@ -9,13 +9,13 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.util.Log;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +46,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
     handler = new Handler(Looper.getMainLooper());
     bundle = new Bundle();
-    tts = new TextToSpeech(this.applicationContext.getApplicationContext(), onInitListener, googleTtsEngine);
+    tts =
+        new TextToSpeech(
+            this.applicationContext.getApplicationContext(), onInitListener, googleTtsEngine);
   }
 
   /** Plugin registration. */
@@ -103,7 +105,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
         @Override
         public void onStop(String utteranceId, boolean interrupted) {
-          Log.d(tag, "Utterance ID has been stopped: " + utteranceId + ". Interrupted: " + interrupted);
+          Log.d(
+              tag,
+              "Utterance ID has been stopped: " + utteranceId + ". Interrupted: " + interrupted);
           invokeMethod("speak.onCancel", true);
         }
 
@@ -220,6 +224,8 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       getVoices(result);
     } else if (call.method.equals("getSpeechRateValidRange")) {
       getSpeechRateValidRange(result);
+    } else if (call.method.equals("getEngines")) {
+      getEngines(result);
     } else if (call.method.equals("setVoice")) {
       String voice = call.arguments.toString();
       setVoice(voice, result);
@@ -316,10 +322,22 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           }
         }
       }
-    } catch (MissingResourceException e) {
+    } catch (MissingResourceException | NullPointerException e) {
       Log.d(tag, "getLanguages: " + e.getMessage());
     }
     result.success(locales);
+  }
+
+  void getEngines(Result result) {
+    ArrayList<String> engines = new ArrayList<>();
+    try {
+      for (TextToSpeech.EngineInfo engineInfo : tts.getEngines()) {
+        engines.add(engineInfo.name);
+      }
+    } catch (Exception e) {
+      Log.d(tag, "getEngines: " + e.getMessage());
+    }
+    result.success(engines);
   }
 
   void getSpeechRateValidRange(Result result) {
@@ -349,7 +367,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   }
 
   private void synthesizeToFile(String text, String fileName) {
-    File file = new File(this.applicationContext.getApplicationContext().getExternalFilesDir(null), fileName);
+    File file =
+        new File(
+            this.applicationContext.getApplicationContext().getExternalFilesDir(null), fileName);
     String uuid = UUID.randomUUID().toString();
     bundle.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, SYNTHESIZE_TO_FILE_PREFIX + uuid);
 

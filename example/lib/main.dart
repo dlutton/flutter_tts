@@ -45,6 +45,10 @@ class _MyAppState extends State<MyApp> {
 
     _getLanguages();
 
+    if (Platform.isAndroid) {
+      _getEngines();
+    }
+
     flutterTts.setStartHandler(() {
       setState(() {
         print("Playing");
@@ -93,6 +97,15 @@ class _MyAppState extends State<MyApp> {
   Future _getLanguages() async {
     languages = await flutterTts.getLanguages;
     if (languages != null) setState(() => languages);
+  }
+
+  Future _getEngines() async {
+    var engines = await flutterTts.getEngines;
+    if (engines != null) {
+      for (dynamic engine in engines) {
+        print(engine);
+      }
+    }
   }
 
   Future _speak() async {
