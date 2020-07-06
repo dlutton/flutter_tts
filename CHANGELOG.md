@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 1.2.5
+
+- macOS: Adding support
+
 ## 1.2.4
 
 - iOS: Deactivate audio session only when needed

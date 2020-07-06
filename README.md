@@ -6,7 +6,7 @@ A flutter text to speech plugin (Swift,Java)
 
 ## Features
 
-- [x] Android, iOS, & Web
+- [x] Android, iOS, Web, & macOS
   - [x] speak
   - [x] stop
   - [x] get languages
@@ -29,6 +29,14 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set audio session category
 
 ## Usage
+
+## macOS
+
+```bash
+OSX version: 10.15
+```
+
+[Example App](https://github.com/dlutton/flutter_tts/tree/macOS_app) from the macOS_app branch
 
 ## Web
 
