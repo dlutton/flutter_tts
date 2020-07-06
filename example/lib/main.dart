@@ -45,8 +45,10 @@ class _MyAppState extends State<MyApp> {
 
     _getLanguages();
 
-    if (Platform.isAndroid) {
-      _getEngines();
+    if (!kIsWeb) {
+      if (Platform.isAndroid) {
+        _getEngines();
+      }
     }
 
     flutterTts.setStartHandler(() {
