@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 1.2.6
+
+- Android: Fixing new API onAttachedToEngine call
+
 ## 1.2.5
 
 - macOS: Adding support
