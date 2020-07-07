@@ -9,8 +9,9 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.util.Log;
-import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import androidx.annotation.NonNull;
 import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -25,9 +26,9 @@ import java.util.UUID;
 
 /** FlutterTtsPlugin */
 public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
-  private final Handler handler;
-  private Context applicationContext;
+  private Handler handler;
   private MethodChannel methodChannel;
+  private Context context;
   private TextToSpeech tts;
   private final String tag = "TTS";
   private final String googleTtsEngine = "com.google.android.tts";
@@ -39,39 +40,30 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private static final String SILENCE_PREFIX = "SIL_";
   private static final String SYNTHESIZE_TO_FILE_PREFIX = "STF_";
 
-  private FlutterTtsPlugin(Context context, MethodChannel channel) {
-    this.methodChannel = channel;
-    this.applicationContext = context;
-    this.methodChannel.setMethodCallHandler(this);
-
-    handler = new Handler(Looper.getMainLooper());
-    bundle = new Bundle();
-    tts =
-        new TextToSpeech(
-            this.applicationContext.getApplicationContext(), onInitListener, googleTtsEngine);
-  }
-
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
-    final MethodChannel channel = new MethodChannel(registrar.messenger(), "flutter_tts");
-    channel.setMethodCallHandler(new FlutterTtsPlugin(registrar.activeContext(), channel));
+    FlutterTtsPlugin instance = new FlutterTtsPlugin();
+    instance.initInstance(registrar.messenger(), registrar.activeContext());
+  }
+
+  private void initInstance(BinaryMessenger messenger, Context context) {
+    this.context = context;
+    methodChannel = new MethodChannel(messenger, "flutter_tts");
+    methodChannel.setMethodCallHandler(this);
+    handler = new Handler(Looper.getMainLooper());
+    bundle = new Bundle();
+    tts = new TextToSpeech(context, onInitListener, googleTtsEngine);
   }
 
   /** Android Plugin APIs */
   @Override
-  public void onAttachedToEngine(FlutterPluginBinding binding) {
-    onAttachedToEngine(binding.getApplicationContext(), binding.getBinaryMessenger());
-  }
-
-  private void onAttachedToEngine(Context applicationContext, BinaryMessenger messenger) {
-    this.applicationContext = applicationContext;
-    methodChannel = new MethodChannel(messenger, "flutter_tts");
-    methodChannel.setMethodCallHandler(this);
+  public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+    initInstance(binding.getBinaryMessenger(), binding.getApplicationContext());
   }
 
   @Override
-  public void onDetachedFromEngine(FlutterPluginBinding binding) {
-    this.applicationContext = null;
+  public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+    context = null;
     methodChannel.setMethodCallHandler(null);
     methodChannel = null;
   }
@@ -180,7 +172,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       };
 
   @Override
-  public void onMethodCall(final MethodCall call, final Result result) {
+  public void onMethodCall(@NonNull final MethodCall call, @NonNull final Result result) {
     // If TTS is still loading
     if (!isTtsInitialized) {
       // Suspend method call until the TTS engine is ready
@@ -193,53 +185,78 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       pendingMethodCalls.add(suspendedCall);
       return;
     }
-    if (call.method.equals("speak")) {
-      String text = call.arguments.toString();
-      speak(text);
-      result.success(1);
-    } else if (call.method.equals("synthesizeToFile")) {
-      String text = call.argument("text");
-      String fileName = call.argument("fileName");
-      synthesizeToFile(text, fileName);
-      result.success(1);
-    } else if (call.method.equals("stop")) {
-      stop();
-      result.success(1);
-    } else if (call.method.equals("setSpeechRate")) {
-      String rate = call.arguments.toString();
-      setSpeechRate(Float.parseFloat(rate));
-      result.success(1);
-    } else if (call.method.equals("setVolume")) {
-      String volume = call.arguments.toString();
-      setVolume(Float.parseFloat(volume), result);
-    } else if (call.method.equals("setPitch")) {
-      String pitch = call.arguments.toString();
-      setPitch(Float.parseFloat(pitch), result);
-    } else if (call.method.equals("setLanguage")) {
-      String language = call.arguments.toString();
-      setLanguage(language, result);
-    } else if (call.method.equals("getLanguages")) {
-      getLanguages(result);
-    } else if (call.method.equals("getVoices")) {
-      getVoices(result);
-    } else if (call.method.equals("getSpeechRateValidRange")) {
-      getSpeechRateValidRange(result);
-    } else if (call.method.equals("getEngines")) {
-      getEngines(result);
-    } else if (call.method.equals("setVoice")) {
-      String voice = call.arguments.toString();
-      setVoice(voice, result);
-    } else if (call.method.equals("isLanguageAvailable")) {
-      String language = call.arguments().toString();
-      Locale locale = Locale.forLanguageTag(language);
-      result.success(isLanguageAvailable(locale));
-    } else if (call.method.equals("setSilence")) {
-      String silencems = call.arguments.toString();
-      this.silencems = Integer.parseInt(silencems);
-    } else if (call.method.equals("setSharedInstance")) {
-      result.success(1);
-    } else {
-      result.notImplemented();
+    switch (call.method) {
+      case "speak":
+        {
+          String text = call.arguments.toString();
+          speak(text);
+          result.success(1);
+          break;
+        }
+      case "synthesizeToFile":
+        {
+          String text = call.argument("text");
+          String fileName = call.argument("fileName");
+          synthesizeToFile(text, fileName);
+          result.success(1);
+          break;
+        }
+      case "stop":
+        stop();
+        result.success(1);
+        break;
+      case "setSpeechRate":
+        String rate = call.arguments.toString();
+        setSpeechRate(Float.parseFloat(rate));
+        result.success(1);
+        break;
+      case "setVolume":
+        String volume = call.arguments.toString();
+        setVolume(Float.parseFloat(volume), result);
+        break;
+      case "setPitch":
+        String pitch = call.arguments.toString();
+        setPitch(Float.parseFloat(pitch), result);
+        break;
+      case "setLanguage":
+        {
+          String language = call.arguments.toString();
+          setLanguage(language, result);
+          break;
+        }
+      case "getLanguages":
+        getLanguages(result);
+        break;
+      case "getVoices":
+        getVoices(result);
+        break;
+      case "getSpeechRateValidRange":
+        getSpeechRateValidRange(result);
+        break;
+      case "getEngines":
+        getEngines(result);
+        break;
+      case "setVoice":
+        String voice = call.arguments.toString();
+        setVoice(voice, result);
+        break;
+      case "isLanguageAvailable":
+        {
+          String language = call.arguments().toString();
+          Locale locale = Locale.forLanguageTag(language);
+          result.success(isLanguageAvailable(locale));
+          break;
+        }
+      case "setSilence":
+        String silencems = call.arguments.toString();
+        this.silencems = Integer.parseInt(silencems);
+        break;
+      case "setSharedInstance":
+        result.success(1);
+        break;
+      default:
+        result.notImplemented();
+        break;
     }
   }
 
@@ -367,9 +384,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   }
 
   private void synthesizeToFile(String text, String fileName) {
-    File file =
-        new File(
-            this.applicationContext.getApplicationContext().getExternalFilesDir(null), fileName);
+    File file = new File(context.getExternalFilesDir(null), fileName);
     String uuid = UUID.randomUUID().toString();
     bundle.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, SYNTHESIZE_TO_FILE_PREFIX + uuid);
 
