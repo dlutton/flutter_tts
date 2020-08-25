@@ -63,7 +63,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-		stop();
+    stop();
     context = null;
     methodChannel.setMethodCallHandler(null);
     methodChannel = null;
