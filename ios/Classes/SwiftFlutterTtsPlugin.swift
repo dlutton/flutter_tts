@@ -144,6 +144,15 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     var failed = false
     let utterance = AVSpeechUtterance(string: text)
 
+    if self.voice != nil {
+      utterance.voice = self.voice!
+    } else {
+      utterance.voice = AVSpeechSynthesisVoice(language: self.language)
+    }
+    utterance.rate = self.rate
+    utterance.volume = self.volume
+    utterance.pitchMultiplier = self.pitch
+
     if #available(iOS 13.0, *) {
       self.synthesizer.write(utterance) { (buffer: AVAudioBuffer) in
         guard let pcmBuffer = buffer as? AVAudioPCMBuffer else {
