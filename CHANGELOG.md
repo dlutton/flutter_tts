@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.2.7
+
+- iOS: Adding utterance settings to synthesizeToFile
+- Android: Fix crash when utterance completes after Engine is detached
+
 ## 1.2.6
 
 - Android: Fixing new API onAttachedToEngine call
