@@ -64,6 +64,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     stop();
+    tts.shutdown();
     context = null;
     methodChannel.setMethodCallHandler(null);
     methodChannel = null;
