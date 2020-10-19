@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 1.3.0
+
+- All: Adding await speak completion
+
 ## 1.2.7
 
 - iOS: Adding utterance settings to synthesizeToFile

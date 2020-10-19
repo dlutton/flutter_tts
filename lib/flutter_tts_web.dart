@@ -10,6 +10,7 @@ enum TtsState { playing, stopped, paused, continued }
 class FlutterTtsPlugin {
   static const String PLATFORM_CHANNEL = "flutter_tts";
   static MethodChannel channel;
+  bool awaitSpeakCompletion = false;
 
   TtsState ttsState = TtsState.stopped;
 
@@ -48,6 +49,9 @@ class FlutterTtsPlugin {
     utterance.onEnd.listen((e) {
       ttsState = TtsState.stopped;
       channel.invokeMethod("speak.onComplete", null);
+      if (awaitSpeakCompletion) {
+        return 1;
+      }
     });
     utterance.onPause.listen((e) {
       ttsState = TtsState.paused;
@@ -57,7 +61,12 @@ class FlutterTtsPlugin {
       ttsState = TtsState.continued;
       channel.invokeMethod("speak.onContinue", null);
     });
-    utterance.onError.listen((e) => channel.invokeMethod("speak.onError", e));
+    utterance.onError.listen((e) {
+      channel.invokeMethod("speak.onError", e);
+      if (awaitSpeakCompletion) {
+        return 0;
+      }
+    });
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
@@ -65,13 +74,21 @@ class FlutterTtsPlugin {
       case 'speak':
         final text = call.arguments as String;
         _speak(text);
+        if (!awaitSpeakCompletion) {
+          return 1;
+        }
+        break;
+      case 'awaitSpeakCompletion':
+        awaitSpeakCompletion = call.arguments as bool;
         return 1;
         break;
       case 'stop':
-        return _stop();
+        _stop();
+        return 1;
         break;
       case 'pause':
-        return _pause();
+        _pause();
+        return 1;
         break;
       case 'setLanguage':
         final language = call.arguments as String;

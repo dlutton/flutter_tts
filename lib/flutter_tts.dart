@@ -109,6 +109,10 @@ class FlutterTts {
     _channel.setMethodCallHandler(platformCallHandler);
   }
 
+  /// [Future] which sets speak's future to return on completion of the utterance
+  Future<dynamic> awaitSpeakCompletion(bool awaitCompletion) =>
+      _channel.invokeMethod('awaitSpeakCompletion', awaitCompletion);
+
   /// [Future] which invokes the platform specific method for speaking
   Future<dynamic> speak(String text) => _channel.invokeMethod('speak', text);
 

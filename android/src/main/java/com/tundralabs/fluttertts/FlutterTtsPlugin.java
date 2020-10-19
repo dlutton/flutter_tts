@@ -28,6 +28,9 @@ import java.util.UUID;
 public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private Handler handler;
   private MethodChannel methodChannel;
+  private MethodChannel.Result speakResult;
+  private boolean awaitSpeakCompletion = false;
+  private boolean speaking = false;
   private Context context;
   private TextToSpeech tts;
   private final String tag = "TTS";
@@ -92,6 +95,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
             invokeMethod("synth.onComplete", true);
           } else {
             Log.d(tag, "Utterance ID has completed: " + utteranceId);
+            if (awaitSpeakCompletion) {
+              speakCompletion(1);
+            }
             invokeMethod("speak.onComplete", true);
           }
           utterances.remove(utteranceId);
@@ -102,6 +108,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           Log.d(
               tag,
               "Utterance ID has been stopped: " + utteranceId + ". Interrupted: " + interrupted);
+          if (awaitSpeakCompletion) {
+            speaking = false;
+          }
           invokeMethod("speak.onCancel", true);
         }
 
@@ -132,6 +141,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
             invokeMethod("synth.onError", "Error from TextToSpeech (synth)");
           } else {
+            if (awaitSpeakCompletion) {
+              speaking = false;
+            }
             invokeMethod("speak.onError", "Error from TextToSpeech (speak)");
           }
         }
@@ -141,10 +153,24 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
             invokeMethod("synth.onError", "Error from TextToSpeech (synth) - " + errorCode);
           } else {
+            if (awaitSpeakCompletion) {
+              speaking = false;
+            }
             invokeMethod("speak.onError", "Error from TextToSpeech (speak) - " + errorCode);
           }
         }
       };
+
+  void speakCompletion(final int success) {
+    speaking = false;
+    handler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            speakResult.success(success);
+          }
+        });
+  }
 
   private TextToSpeech.OnInitListener onInitListener =
       new TextToSpeech.OnInitListener() {
@@ -191,7 +217,22 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       case "speak":
         {
           String text = call.arguments.toString();
+          if (this.speaking) {
+            result.success(0);
+            break;
+          }
           speak(text);
+          if (this.awaitSpeakCompletion) {
+            this.speaking = true;
+            this.speakResult = result;
+          } else {
+            result.success(1);
+          }
+          break;
+        }
+      case "awaitSpeakCompletion":
+        {
+          this.awaitSpeakCompletion = Boolean.parseBoolean(call.arguments.toString());
           result.success(1);
           break;
         }

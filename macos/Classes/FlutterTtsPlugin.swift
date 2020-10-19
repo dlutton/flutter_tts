@@ -13,6 +13,8 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
   var volume: Float = 1.0
   var pitch: Float = 1.0
   var voice: AVSpeechSynthesisVoice?
+  var awaitSpeakCompletion: Bool = false
+  var speakResult: FlutterResult!
 
   var channel = FlutterMethodChannel()
   init(channel: FlutterMethodChannel) {
@@ -39,6 +41,10 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
     case "speak":
       let text: String = call.arguments as! String
       self.speak(text: text, result: result)
+      break
+    case "awaitSpeakCompletion":
+      self.awaitSpeakCompletion = call.arguments as! Bool
+      result(1)
       break
     case "synthesizeToFile":
       guard let args = call.arguments as? [String: Any] else {
@@ -95,10 +101,14 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
     }
   }
 
-  private func speak(text: String, result: FlutterResult) {
+  private func speak(text: String, result: @escaping FlutterResult) {
     if (self.synthesizer.isPaused) {
       if (self.synthesizer.continueSpeaking()) {
-        result(1)
+        if self.awaitSpeakCompletion {
+          self.speakResult = result
+        } else {
+          result(1)
+        }
       } else {
         result(0)
       }
@@ -114,7 +124,11 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
       utterance.pitchMultiplier = self.pitch
       
       self.synthesizer.speak(utterance)
-      result(1)
+      if self.awaitSpeakCompletion {
+        self.speakResult = result
+      } else {
+        result(1)
+      }
     }
   }
   
@@ -259,6 +273,9 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+    if self.awaitSpeakCompletion {
+      self.speakResult(1)
+    }
     self.channel.invokeMethod("speak.onComplete", arguments: nil)
   }
 

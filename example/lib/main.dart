@@ -117,8 +117,8 @@ class _MyAppState extends State<MyApp> {
 
     if (_newVoiceText != null) {
       if (_newVoiceText.isNotEmpty) {
-        var result = await flutterTts.speak(_newVoiceText);
-        if (result == 1) setState(() => ttsState = TtsState.playing);
+        await flutterTts.awaitSpeakCompletion(true);
+        await flutterTts.speak(_newVoiceText);
       }
     }
   }
