@@ -302,7 +302,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     if #available(iOS 9.0, *) {
       let voices = NSMutableArray()
       for voice in AVSpeechSynthesisVoice.speechVoices() {
-        voices.add(voice.name)
+        voices.add(voice.identifier)
       }
       result(voices)
     } else {
@@ -314,7 +314,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func setVoice(voiceName: String, result: FlutterResult) {
     if #available(iOS 9.0, *) {
-      if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.name == voiceName }) {
+      if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.identifier == voiceName }) {
         self.voice = voice
         self.language = voice.language
         result(1)
