@@ -90,6 +90,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     case "getLanguages":
       self.getLanguages(result: result)
       break
+    case "getLanguageForVoice":
+        let voiceIdentifier: String = call.arguments as! String
+        self.getLanguageForVoice(voiceIdentifier: voiceIdentifier, result: result)
+        break
     case "getSpeechRateValidRange":
       self.getSpeechRateValidRange(result: result)
       break
@@ -276,6 +280,21 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     self.synthesizer.stopSpeaking(at: AVSpeechBoundary.immediate)
   }
 
+  private func getLanguageForVoice(voiceIdentifier: String, result: FlutterResult) {
+    if #available(iOS 9.0, *) {
+        if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.identifier == voiceIdentifier }) {
+          
+          result(voice.language)
+          return
+        } else {
+            result("en-GB")
+        }
+    }
+    else {
+        result("en-GB")
+    }
+  }
+    
   private func getLanguages(result: FlutterResult) {
     result(Array(self.languages))
   }

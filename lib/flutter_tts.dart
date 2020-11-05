@@ -207,6 +207,11 @@ class FlutterTts {
     return languages;
   }
 
+  Future<String> getLanguageForVoice(String voiceIdentifier) async {
+    final language = await _channel.invokeMethod('getLanguageForVoice', voiceIdentifier);
+    return language;
+  }
+
   /// [Future] which invokes the platform specific method for getEngines
   /// Returns a list of installed TTS engines
   /// ***Android supported only***
