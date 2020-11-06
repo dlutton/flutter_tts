@@ -319,7 +319,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     String lang = "error";
     try {
       for (Voice voice : tts.getVoices()) {
-        if (voice.getName() == voiceName) {
+        if (voice.getName().equals(voiceName)) {
           lang = voice.getLocale().toString();
           break;
         } 
