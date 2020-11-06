@@ -283,7 +283,6 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   private func getLanguageForVoice(voiceIdentifier: String, result: FlutterResult) {
     if #available(iOS 9.0, *) {
         if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.identifier == voiceIdentifier }) {
-          
           result(voice.language)
           return
         } else {
