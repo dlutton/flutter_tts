@@ -320,7 +320,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     try {
       for (Voice voice : tts.getVoices()) {
         if (voice.getName() == voiceName) {
-          lang = voice.getLocale();
+          lang = voice.getLocale().toString();
           break;
         } 
       }
