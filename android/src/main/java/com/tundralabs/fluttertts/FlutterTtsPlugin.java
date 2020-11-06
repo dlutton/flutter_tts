@@ -270,6 +270,10 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       case "getLanguages":
         getLanguages(result);
         break;
+      case "getLanguageForVoice":
+        String voiceName = call.arguments.toString();
+        getLanguageForVoice(voiceName, result);
+        break;
       case "getVoices":
         getVoices(result);
         break;
@@ -309,6 +313,22 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   Boolean isLanguageAvailable(Locale locale) {
     return tts.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE;
+  }
+
+  void getLanguageForVoice(String voiceName, Result result) {
+    String lang = "error";
+    try {
+      for (Voice voice : tts.getVoices()) {
+        if (voice.getName() == voiceName) {
+          lang = voice.getLocale();
+          break;
+        } 
+      }
+      result.success(lang);
+    } catch (NullPointerException e) {
+      Log.d(tag, "getVoices: " + e.getMessage());
+      result.success(null);
+    }
   }
 
   void setLanguage(String language, Result result) {
