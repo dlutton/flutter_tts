@@ -339,7 +339,6 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       Voice voiceToCheck = null;
       for (Voice v : tts.getVoices()) {
         if (v.getLocale().equals(locale) && !v.isNetworkConnectionRequired()) {
-          Log.e("tts", "match");
           voiceToCheck = v;
           break;
         }
@@ -347,15 +346,12 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       if (voiceToCheck != null) {
         Set<String> features = voiceToCheck.getFeatures();
         if (features == null || features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)) {
-          Log.e("tts", "No");
           return false;
         } else {
-          Log.e("tts", "Yes");
           return true;
         }
       }
     }
-    Log.e("tts", "Not found");
     return false;
   }
 
