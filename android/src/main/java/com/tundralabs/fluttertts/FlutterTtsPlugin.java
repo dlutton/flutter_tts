@@ -9,7 +9,17 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.Set;
+import java.util.UUID;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
@@ -17,12 +27,6 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.UUID;
 
 /** FlutterTtsPlugin */
 public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
@@ -297,6 +301,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       case "setSharedInstance":
         result.success(1);
         break;
+      case "isLanguageInstalled":
+        String language = call.arguments().toString();
+        result.success(isLanguageInstalled(language));
       default:
         result.notImplemented();
         break;
@@ -309,6 +316,32 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   Boolean isLanguageAvailable(Locale locale) {
     return tts.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE;
+  }
+
+  boolean isLanguageInstalled(String language) {
+    Locale locale = Locale.forLanguageTag(language);
+    if (isLanguageAvailable(locale)) {
+      Voice voiceToCheck = null;
+      for (Voice v : tts.getVoices()) {
+        if (v.getLocale().equals(locale) && !v.isNetworkConnectionRequired()) {
+          Log.e("tts", "match");
+          voiceToCheck = v;
+          break;
+        }
+      }
+      if (voiceToCheck != null) {
+        Set<String> features = voiceToCheck.getFeatures();
+        if (features == null || features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)) {
+          Log.e("tts", "No");
+          return false;
+        } else {
+          Log.e("tts", "Yes");
+          return true;
+        }
+      }
+    }
+    Log.e("tts", "Not found");
+    return false;
   }
 
   void setLanguage(String language, Result result) {
