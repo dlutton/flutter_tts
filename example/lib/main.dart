@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart' show kIsWeb;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -143,7 +143,8 @@ class _MyAppState extends State<MyApp> {
   List<DropdownMenuItem<String>> getLanguageDropDownMenuItems() {
     var items = List<DropdownMenuItem<String>>();
     for (dynamic type in languages) {
-      items.add(DropdownMenuItem(value: type as String, child: Text(type as String)));
+      items.add(
+          DropdownMenuItem(value: type as String, child: Text(type as String)));
     }
     return items;
   }
@@ -173,7 +174,12 @@ class _MyAppState extends State<MyApp> {
             ),
             body: SingleChildScrollView(
                 scrollDirection: Axis.vertical,
-                child: Column(children: [_inputSection(), _btnSection(), languages != null ? _languageDropDownSection() : Text(""), _buildSliders()]))));
+                child: Column(children: [
+                  _inputSection(),
+                  _btnSection(),
+                  languages != null ? _languageDropDownSection() : Text(""),
+                  _buildSliders()
+                ]))));
   }
 
   Widget _inputSection() => Container(
@@ -189,17 +195,24 @@ class _MyAppState extends State<MyApp> {
     if (!kIsWeb && Platform.isAndroid) {
       return Container(
           padding: EdgeInsets.only(top: 50.0),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            _buildButtonColumn(Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
-            _buildButtonColumn(Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
+          child:
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            _buildButtonColumn(Colors.green, Colors.greenAccent,
+                Icons.play_arrow, 'PLAY', _speak),
+            _buildButtonColumn(
+                Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
           ]));
     } else {
       return Container(
           padding: EdgeInsets.only(top: 50.0),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            _buildButtonColumn(Colors.green, Colors.greenAccent, Icons.play_arrow, 'PLAY', _speak),
-            _buildButtonColumn(Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
-            _buildButtonColumn(Colors.blue, Colors.blueAccent, Icons.pause, 'PAUSE', _pause),
+          child:
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            _buildButtonColumn(Colors.green, Colors.greenAccent,
+                Icons.play_arrow, 'PLAY', _speak),
+            _buildButtonColumn(
+                Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
+            _buildButtonColumn(
+                Colors.blue, Colors.blueAccent, Icons.pause, 'PAUSE', _pause),
           ]));
     }
   }
@@ -218,11 +231,25 @@ class _MyAppState extends State<MyApp> {
         ),
       ]));
 
-  Column _buildButtonColumn(Color color, Color splashColor, IconData icon, String label, Function func) {
-    return Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
-      IconButton(icon: Icon(icon), color: color, splashColor: splashColor, onPressed: () => func()),
-      Container(margin: const EdgeInsets.only(top: 8.0), child: Text(label, style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.w400, color: color)))
-    ]);
+  Column _buildButtonColumn(Color color, Color splashColor, IconData icon,
+      String label, Function func) {
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+              icon: Icon(icon),
+              color: color,
+              splashColor: splashColor,
+              onPressed: () => func()),
+          Container(
+              margin: const EdgeInsets.only(top: 8.0),
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w400,
+                      color: color)))
+        ]);
   }
 
   Widget _buildSliders() {
