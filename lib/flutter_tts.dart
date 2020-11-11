@@ -227,6 +227,12 @@ class FlutterTts {
   Future<dynamic> isLanguageAvailable(String language) =>
       _channel.invokeMethod('isLanguageAvailable', language);
 
+  /// [Future] which invokes the platform specific method for isLanguageInstalled
+  /// Returns `true` or `false`
+  /// ***Android supported only***
+  Future<dynamic> isLanguageInstalled(String language) =>
+      _channel.invokeMethod('isLanguageInstalled', language);
+
   Future<SpeechRateValidRange> get getSpeechRateValidRange async {
     final validRange = await _channel.invokeMethod('getSpeechRateValidRange')
         as Map<dynamic, dynamic>;
