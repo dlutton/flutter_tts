@@ -345,11 +345,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       }
       if (voiceToCheck != null) {
         Set<String> features = voiceToCheck.getFeatures();
-        if (features == null || features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)) {
-          return false;
-        } else {
-          return true;
-        }
+        return features != null && !features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED);
       }
     }
     return false;
