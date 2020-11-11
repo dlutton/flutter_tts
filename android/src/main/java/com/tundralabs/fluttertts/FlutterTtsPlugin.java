@@ -15,7 +15,9 @@ import androidx.annotation.NonNull;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.UUID;
@@ -304,6 +306,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       case "isLanguageInstalled":
         String language = call.arguments().toString();
         result.success(isLanguageInstalled(language));
+        break;
+      case "areLanguagesInstalled":
+        List<String> languages = call.arguments();
+        result.success(areLanguagesInstalled(languages));
+        break;
       default:
         result.notImplemented();
         break;
@@ -316,6 +323,14 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   Boolean isLanguageAvailable(Locale locale) {
     return tts.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE;
+  }
+
+  Map<String, Boolean> areLanguagesInstalled(List<String> languages) {
+    Map<String, Boolean> result = new HashMap<>();
+    for(String language : languages) {
+      result.put(language, isLanguageInstalled(language));
+    }
+    return result;
   }
 
   boolean isLanguageInstalled(String language) {
