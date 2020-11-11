@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   double volume = 0.5;
   double pitch = 1.0;
   double rate = 0.5;
+  bool isCurrentLanguageInstalled = false;
 
   String _newVoiceText;
 
@@ -152,6 +153,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       language = selectedType;
       flutterTts.setLanguage(language);
+      flutterTts.isLanguageInstalled(language).then((value) => isCurrentLanguageInstalled = (value as bool));
     });
   }
 
@@ -220,7 +222,8 @@ class _MyAppState extends State<MyApp> {
           value: language,
           items: getLanguageDropDownMenuItems(),
           onChanged: changedLanguageDropDownItem,
-        )
+        ),
+        Text("Is installed: $isCurrentLanguageInstalled"),
       ]));
 
   Column _buildButtonColumn(Color color, Color splashColor, IconData icon,
