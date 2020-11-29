@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 2.0.0-nullsafety.0
+
+- Adding null safety
+
 ## 1.3.0
 
 - All: Adding await speak completion

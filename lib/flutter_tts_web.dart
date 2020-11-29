@@ -9,8 +9,8 @@ enum TtsState { playing, stopped, paused, continued }
 
 class FlutterTtsPlugin {
   static const String PLATFORM_CHANNEL = "flutter_tts";
-  static MethodChannel channel;
-  bool awaitSpeakCompletion = false;
+  static late MethodChannel channel;
+  bool? awaitSpeakCompletion = false;
 
   TtsState ttsState = TtsState.stopped;
 
@@ -29,10 +29,10 @@ class FlutterTtsPlugin {
     channel.setMethodCallHandler(instance.handleMethodCall);
   }
 
-  html.SpeechSynthesis synth;
-  html.SpeechSynthesisUtterance utterance;
-  List<dynamic> voices;
-  List<String> languages;
+  html.SpeechSynthesis? synth;
+  late html.SpeechSynthesisUtterance utterance;
+  List<dynamic>? voices;
+  List<String?>? languages;
 
   FlutterTtsPlugin() {
     utterance = html.SpeechSynthesisUtterance();
@@ -49,9 +49,6 @@ class FlutterTtsPlugin {
     utterance.onEnd.listen((e) {
       ttsState = TtsState.stopped;
       channel.invokeMethod("speak.onComplete", null);
-      if (awaitSpeakCompletion) {
-        return 1;
-      }
     });
     utterance.onPause.listen((e) {
       ttsState = TtsState.paused;
@@ -63,60 +60,48 @@ class FlutterTtsPlugin {
     });
     utterance.onError.listen((e) {
       channel.invokeMethod("speak.onError", e);
-      if (awaitSpeakCompletion) {
-        return 0;
-      }
     });
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'speak':
-        final text = call.arguments as String;
+        final text = call.arguments as String?;
         _speak(text);
-        if (!awaitSpeakCompletion) {
+        if (!awaitSpeakCompletion!) {
           return 1;
         }
         break;
       case 'awaitSpeakCompletion':
-        awaitSpeakCompletion = call.arguments as bool;
+        awaitSpeakCompletion = call.arguments as bool?;
         return 1;
-        break;
       case 'stop':
         _stop();
         return 1;
-        break;
       case 'pause':
         _pause();
         return 1;
-        break;
       case 'setLanguage':
-        final language = call.arguments as String;
+        final language = call.arguments as String?;
         _setLanguage(language);
         return 1;
-        break;
       case 'getLanguages':
         return _getLanguages();
-        break;
       case 'setSpeechRate':
         final rate = call.arguments as num;
         _setRate(rate);
         return 1;
-        break;
       case 'setVolume':
-        final volume = call.arguments as num;
+        final volume = call.arguments as num?;
         _setVolume(volume);
         return 1;
-        break;
       case 'setPitch':
-        final pitch = call.arguments as num;
+        final pitch = call.arguments as num?;
         _setPitch(pitch);
         return 1;
-        break;
       case 'isLanguageAvailable':
-        final lang = call.arguments as String;
+        final lang = call.arguments as String?;
         return _isLanguageAvailable(lang);
-        break;
       default:
         throw PlatformException(
             code: 'Unimplemented',
@@ -125,44 +110,44 @@ class FlutterTtsPlugin {
     }
   }
 
-  void _speak(String text) {
+  void _speak(String? text) {
     if (ttsState == TtsState.stopped || ttsState == TtsState.paused) {
       utterance.text = text;
       if (ttsState == TtsState.paused) {
-        synth.resume();
+        synth!.resume();
       } else {
-        synth.speak(utterance);
+        synth!.speak(utterance);
       }
     }
   }
 
   void _stop() {
     if (ttsState != TtsState.stopped) {
-      synth.cancel();
+      synth!.cancel();
     }
   }
 
   void _pause() {
     if (ttsState == TtsState.playing || ttsState == TtsState.continued) {
-      synth.pause();
+      synth!.pause();
     }
   }
 
   void _setRate(num rate) => utterance.rate = rate * 2.0;
-  void _setVolume(num volume) => utterance.volume = volume;
-  void _setPitch(num pitch) => utterance.pitch = pitch;
-  void _setLanguage(String language) => utterance.lang = language;
+  void _setVolume(num? volume) => utterance.volume = volume;
+  void _setPitch(num? pitch) => utterance.pitch = pitch;
+  void _setLanguage(String? language) => utterance.lang = language;
 
-  bool _isLanguageAvailable(String language) {
+  bool _isLanguageAvailable(String? language) {
     if (voices?.isEmpty ?? true) _setVoices();
     if (languages?.isEmpty ?? true) _setLanguages();
-    for (var lang in languages) {
-      if (lang.toLowerCase() == language.toLowerCase()) return true;
+    for (var lang in languages!) {
+      if (lang!.toLowerCase() == language!.toLowerCase()) return true;
     }
     return false;
   }
 
-  List<String> _getLanguages() {
+  List<String?>? _getLanguages() {
     if (voices?.isEmpty ?? true) _setVoices();
     if (languages?.isEmpty ?? true) _setLanguages();
     return languages;
@@ -170,13 +155,13 @@ class FlutterTtsPlugin {
 
   void _setVoices() {
     voices =
-        context['speechSynthesis'].callMethod('getVoices') as JsArray<dynamic>;
+        context['speechSynthesis'].callMethod('getVoices') as JsArray<dynamic>?;
   }
 
   void _setLanguages() {
-    var langs = Set<String>();
-    for (var v in voices) {
-      langs.add(v['lang'] as String);
+    var langs = Set<String?>();
+    for (var v in voices!) {
+      langs.add(v['lang'] as String?);
     }
 
     languages = langs.toList();

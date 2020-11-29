@@ -15,14 +15,14 @@ class MyApp extends StatefulWidget {
 enum TtsState { playing, stopped, paused, continued }
 
 class _MyAppState extends State<MyApp> {
-  FlutterTts flutterTts;
+  late FlutterTts flutterTts;
   dynamic languages;
-  String language;
+  String? language;
   double volume = 0.5;
   double pitch = 1.0;
   double rate = 0.5;
 
-  String _newVoiceText;
+  String? _newVoiceText;
 
   TtsState ttsState = TtsState.stopped;
 
@@ -116,9 +116,9 @@ class _MyAppState extends State<MyApp> {
     await flutterTts.setPitch(pitch);
 
     if (_newVoiceText != null) {
-      if (_newVoiceText.isNotEmpty) {
+      if (_newVoiceText!.isNotEmpty) {
         await flutterTts.awaitSpeakCompletion(true);
-        await flutterTts.speak(_newVoiceText);
+        await flutterTts.speak(_newVoiceText!);
       }
     }
   }
@@ -140,18 +140,18 @@ class _MyAppState extends State<MyApp> {
   }
 
   List<DropdownMenuItem<String>> getLanguageDropDownMenuItems() {
-    var items = List<DropdownMenuItem<String>>();
+    var items = <DropdownMenuItem<String>>[];
     for (dynamic type in languages) {
-      items.add(
-          DropdownMenuItem(value: type as String, child: Text(type as String)));
+      items.add(DropdownMenuItem(
+          value: type as String?, child: Text(type as String)));
     }
     return items;
   }
 
-  void changedLanguageDropDownItem(String selectedType) {
+  void changedLanguageDropDownItem(String? selectedType) {
     setState(() {
       language = selectedType;
-      flutterTts.setLanguage(language);
+      flutterTts.setLanguage(language!);
     });
   }
 
