@@ -28,12 +28,13 @@ class _MyAppState extends State<MyApp> {
   TtsState ttsState = TtsState.stopped;
 
   get isPlaying => ttsState == TtsState.playing;
-
   get isStopped => ttsState == TtsState.stopped;
-
   get isPaused => ttsState == TtsState.paused;
-
   get isContinued => ttsState == TtsState.continued;
+
+  bool get isIOS => !kIsWeb && Platform.isIOS;
+  bool get isAndroid => !kIsWeb && Platform.isAndroid;
+  bool get isWeb => kIsWeb;
 
   @override
   initState() {
@@ -46,10 +47,8 @@ class _MyAppState extends State<MyApp> {
 
     _getLanguages();
 
-    if (!kIsWeb) {
-      if (Platform.isAndroid) {
-        _getEngines();
-      }
+    if (isAndroid) {
+      _getEngines();
     }
 
     flutterTts.setStartHandler(() {
@@ -73,7 +72,7 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
-    if (kIsWeb || Platform.isIOS) {
+    if (isWeb || isIOS) {
       flutterTts.setPauseHandler(() {
         setState(() {
           print("Paused");
@@ -153,8 +152,10 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       language = selectedType;
       flutterTts.setLanguage(language);
-      if (Platform.isAndroid) {
-        flutterTts.isLanguageInstalled(language).then((value) => isCurrentLanguageInstalled = (value as bool));
+      if (isAndroid) {
+        flutterTts
+            .isLanguageInstalled(language)
+            .then((value) => isCurrentLanguageInstalled = (value as bool));
       }
     });
   }
@@ -192,11 +193,11 @@ class _MyAppState extends State<MyApp> {
       ));
 
   Widget _btnSection() {
-    if (!kIsWeb && Platform.isAndroid) {
+    if (isAndroid) {
       return Container(
           padding: EdgeInsets.only(top: 50.0),
           child:
-          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             _buildButtonColumn(Colors.green, Colors.greenAccent,
                 Icons.play_arrow, 'PLAY', _speak),
             _buildButtonColumn(
@@ -206,7 +207,7 @@ class _MyAppState extends State<MyApp> {
       return Container(
           padding: EdgeInsets.only(top: 50.0),
           child:
-          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             _buildButtonColumn(Colors.green, Colors.greenAccent,
                 Icons.play_arrow, 'PLAY', _speak),
             _buildButtonColumn(
@@ -226,7 +227,7 @@ class _MyAppState extends State<MyApp> {
           onChanged: changedLanguageDropDownItem,
         ),
         Visibility(
-          visible: Platform.isAndroid,
+          visible: isAndroid,
           child: Text("Is installed: $isCurrentLanguageInstalled"),
         ),
       ]));
