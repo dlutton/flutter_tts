@@ -1,5 +1,15 @@
 # ChangeLog
 
+## 2.0.0
+
+### Features
+
+- **Android:** Adding installed language check
+
+### BREAKING CHANGES
+
+- **iOS/Android:** Adding voice name and locale to voice methods
+
 ## 1.3.0
 
 - All: Adding await speak completion

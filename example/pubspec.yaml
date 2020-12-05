@@ -57,3 +57,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies, 
   # see https://flutter.io/custom-fonts/#from-packages
+
+environment:                                                            
+  sdk: '>=2.10.0 <3.0.0'

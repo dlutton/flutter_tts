@@ -24,6 +24,9 @@ A flutter text to speech plugin (Swift,Java)
   - [x] pause
 - [x] Android
   - [x] set Silence
+  - [x] is lanaguage installed
+  - [x] are languages installed
+  - [x] get engines
 - [x] iOS
   - [x] set shared instance
   - [x] set audio session category
@@ -137,6 +140,10 @@ await flutterTts.setSharedInstance(true);
 await flutterTts.setSilence(2);
 
 await flutterTts.getEngines();
+
+await flutterTts.isLanguageInstalled("en-AU");
+
+await flutterTts.areLanguagesInstalled(["en-AU", "en-US"]);
 ```
 
 ### Listening for platform calls
