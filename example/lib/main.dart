@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   double volume = 0.5;
   double pitch = 1.0;
   double rate = 0.5;
+  bool isCurrentLanguageInstalled = false;
 
   String _newVoiceText;
 
@@ -152,6 +153,9 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       language = selectedType;
       flutterTts.setLanguage(language);
+      if (Platform.isAndroid) {
+        flutterTts.isLanguageInstalled(language).then((value) => isCurrentLanguageInstalled = (value as bool));
+      }
     });
   }
 
@@ -192,7 +196,7 @@ class _MyAppState extends State<MyApp> {
       return Container(
           padding: EdgeInsets.only(top: 50.0),
           child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             _buildButtonColumn(Colors.green, Colors.greenAccent,
                 Icons.play_arrow, 'PLAY', _speak),
             _buildButtonColumn(
@@ -202,7 +206,7 @@ class _MyAppState extends State<MyApp> {
       return Container(
           padding: EdgeInsets.only(top: 50.0),
           child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             _buildButtonColumn(Colors.green, Colors.greenAccent,
                 Icons.play_arrow, 'PLAY', _speak),
             _buildButtonColumn(
@@ -220,7 +224,11 @@ class _MyAppState extends State<MyApp> {
           value: language,
           items: getLanguageDropDownMenuItems(),
           onChanged: changedLanguageDropDownItem,
-        )
+        ),
+        Visibility(
+          visible: Platform.isAndroid,
+          child: Text("Is installed: $isCurrentLanguageInstalled"),
+        ),
       ]));
 
   Column _buildButtonColumn(Color color, Color splashColor, IconData icon,
