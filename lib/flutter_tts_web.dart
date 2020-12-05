@@ -10,7 +10,7 @@ enum TtsState { playing, stopped, paused, continued }
 class FlutterTtsPlugin {
   static const String PLATFORM_CHANNEL = "flutter_tts";
   static late MethodChannel channel;
-  bool? awaitSpeakCompletion = false;
+  bool awaitSpeakCompletion = false;
 
   TtsState ttsState = TtsState.stopped;
 
@@ -73,7 +73,7 @@ class FlutterTtsPlugin {
         }
         break;
       case 'awaitSpeakCompletion':
-        awaitSpeakCompletion = call.arguments as bool?;
+        awaitSpeakCompletion = (call.arguments as bool?) ?? false;
         return 1;
       case 'stop':
         _stop();

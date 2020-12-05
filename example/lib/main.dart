@@ -16,7 +16,7 @@ enum TtsState { playing, stopped, paused, continued }
 
 class _MyAppState extends State<MyApp> {
   late FlutterTts flutterTts;
-  dynamic languages;
+  late List<String> languages;
   String? language;
   double volume = 0.5;
   double pitch = 1.0;
@@ -97,8 +97,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future _getLanguages() async {
-    languages = await flutterTts.getLanguages;
-    if (languages != null) setState(() => languages);
+    languages = await flutterTts.getLanguages as List<String>;
+    setState(() => languages);
   }
 
   Future _getEngines() async {
