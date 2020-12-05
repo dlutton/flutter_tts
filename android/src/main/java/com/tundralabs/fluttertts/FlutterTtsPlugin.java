@@ -280,7 +280,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         getEngines(result);
         break;
       case "setVoice":
-        String voice = call.arguments.toString();
+        HashMap<String, String> voice = call.arguments();
         setVoice(voice, result);
         break;
       case "isLanguageAvailable":
@@ -321,9 +321,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     }
   }
 
-  void setVoice(String voice, Result result) {
+  void setVoice(HashMap<String, String> voice, Result result) {
     for (Voice ttsVoice : tts.getVoices()) {
-      if (ttsVoice.getName().equals(voice)) {
+      if (ttsVoice.getName().equals(voice.get("name")) && ttsVoice.getLocale().toLanguageTag().equals(voice.get("locale"))) {
         tts.setVoice(ttsVoice);
         result.success(1);
         return;
@@ -354,10 +354,13 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   }
 
   void getVoices(Result result) {
-    ArrayList<String> voices = new ArrayList<>();
+    ArrayList<HashMap<String, String>> voices = new ArrayList<>();
     try {
       for (Voice voice : tts.getVoices()) {
-        voices.add(voice.getName());
+        HashMap<String, String> voiceMap = new HashMap<>();
+        voiceMap.put("name", voice.getName());
+        voiceMap.put("locale", voice.getLocale().toLanguageTag());
+        voices.add(voiceMap);
       }
       result.success(voices);
     } catch (NullPointerException e) {
