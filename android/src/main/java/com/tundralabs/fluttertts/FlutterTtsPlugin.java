@@ -48,6 +48,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private int silencems;
   private static final String SILENCE_PREFIX = "SIL_";
   private static final String SYNTHESIZE_TO_FILE_PREFIX = "STF_";
+  private int queueMode = TextToSpeech.QUEUE_FLUSH;
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
@@ -311,6 +312,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         List<String> languages = call.arguments();
         result.success(areLanguagesInstalled(languages));
         break;
+      case "setQueueMode":
+        String queueMode = call.arguments.toString();
+        this.queueMode = Integer.parseInt(queueMode);
+        result.success(1);
+        break;
       default:
         result.notImplemented();
         break;
@@ -461,7 +467,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       tts.playSilentUtterance(silencems, TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid);
       tts.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid);
     } else {
-      tts.speak(text, TextToSpeech.QUEUE_FLUSH, bundle, uuid);
+      tts.speak(text, this.queueMode, bundle, uuid);
     }
   }
 

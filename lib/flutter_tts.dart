@@ -260,6 +260,14 @@ class FlutterTts {
   Future<dynamic> setSilence(int timems) async =>
       _channel.invokeMethod('setSilence', timems ?? 0);
 
+  /// [Future] which invokes the platform specific method for setQueueMode
+  /// 0 means QUEUE_FLUSH - Queue mode where all entries in the playback queue (media to be played and text to be synthesized) are dropped and replaced by the new entry.
+  /// Queues are flushed with respect to a given calling app. Entries in the queue from other callees are not discarded.
+  /// 1 means QUEUE_ADD - Queue mode where the new entry is added at the end of the playback queue.
+  /// ***Android supported only***
+  Future<dynamic> setQueueMode(int queueMode) async =>
+      _channel.invokeMethod('setQueueMode', queueMode ?? 0);
+
   void setStartHandler(VoidCallback callback) {
     startHandler = callback;
   }
