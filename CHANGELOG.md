@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 2.1.0
+
+### Features
+
+- **Android:** Adding the ability to set the queue mode
+
 ## 2.0.0
 
 ### Features
