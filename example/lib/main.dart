@@ -140,7 +140,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   List<DropdownMenuItem<String>> getLanguageDropDownMenuItems() {
-    var items = List<DropdownMenuItem<String>>();
+    var items = <DropdownMenuItem<String>>[];
     for (dynamic type in languages) {
       items.add(
           DropdownMenuItem(value: type as String, child: Text(type as String)));

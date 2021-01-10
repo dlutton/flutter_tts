@@ -23,8 +23,8 @@ class FlutterTtsPlugin {
   get isContinued => ttsState == TtsState.continued;
 
   static void registerWith(Registrar registrar) {
-    channel = MethodChannel(
-        PLATFORM_CHANNEL, const StandardMethodCodec(), registrar.messenger);
+    channel =
+        MethodChannel(PLATFORM_CHANNEL, const StandardMethodCodec(), registrar);
     final instance = FlutterTtsPlugin();
     channel.setMethodCallHandler(instance.handleMethodCall);
   }
