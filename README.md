@@ -23,7 +23,11 @@ A flutter text to speech plugin (Swift,Java)
 - [x] iOS, Web
   - [x] pause
 - [x] Android
-  - [x] set Silence
+  - [x] set silence
+  - [x] is lanaguage installed
+  - [x] are languages installed
+  - [x] get engines
+  - [x] set queue mode
 - [x] iOS
   - [x] set shared instance
   - [x] set audio session category
@@ -91,7 +95,13 @@ await flutterTts
     ]);
 ```
 
-### speak, stop, getLanguages, setLanguage, setSpeechRate, setVolume, setPitch, isLanguageAvailable, setSharedInstance
+To await speak completion.
+
+```dart
+await flutterTts.awaitSpeakCompletion(true);
+```
+
+### speak, stop, getLanguages, setLanguage, setSpeechRate, setVoice, setVolume, setPitch, isLanguageAvailable, setSharedInstance
 
 ```dart
 Future _speak() async{
@@ -119,8 +129,10 @@ await flutterTts.isLanguageAvailable("en-US");
 // iOS and Web only
 await flutterTts.pause();
 
-// iOS and Android only
+// iOS, macOS, and Android only
 await flutterTts.synthesizeToFile("Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf");
+
+await flutterTts.setVoice({"name": "Karen", "locale": "en-AU"});
 
 // iOS only
 await flutterTts.setSharedInstance(true);
@@ -129,6 +141,12 @@ await flutterTts.setSharedInstance(true);
 await flutterTts.setSilence(2);
 
 await flutterTts.getEngines();
+
+await flutterTts.isLanguageInstalled("en-AU");
+
+await flutterTts.areLanguagesInstalled(["en-AU", "en-US"]);
+
+await flutterTts.setQueueMode(1);
 ```
 
 ### Listening for platform calls

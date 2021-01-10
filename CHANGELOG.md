@@ -1,8 +1,26 @@
 # ChangeLog
 
-## 2.0.0-nullsafety.0
+## 3.0.0-nullsafety.0
+
+### Features
 
 - Adding null safety
+
+## 2.1.0
+
+### Features
+
+- **Android:** Adding the ability to set the queue mode
+
+## 2.0.0
+
+### Features
+
+- **Android:** Adding installed language check
+
+### BREAKING CHANGES
+
+- **iOS/Android:** Adding voice name and locale to voice methods
 
 ## 1.3.0
 

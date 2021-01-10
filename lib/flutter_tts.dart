@@ -110,41 +110,42 @@ class FlutterTts {
   }
 
   /// [Future] which sets speak's future to return on completion of the utterance
-  Future<dynamic> awaitSpeakCompletion(bool awaitCompletion) =>
+  Future<dynamic> awaitSpeakCompletion(bool awaitCompletion) async =>
       _channel.invokeMethod('awaitSpeakCompletion', awaitCompletion);
 
   /// [Future] which invokes the platform specific method for speaking
-  Future<dynamic> speak(String text) => _channel.invokeMethod('speak', text);
+  Future<dynamic> speak(String text) async =>
+      _channel.invokeMethod('speak', text);
 
   /// [Future] which invokes the platform specific method for pause
   /// ***iOS supported only***
-  Future<dynamic> pause() => _channel.invokeMethod('pause');
+  Future<dynamic> pause() async => _channel.invokeMethod('pause');
 
   /// [Future] which invokes the platform specific method for synthesizeToFile
   /// ***Android and iOS supported only***
-  Future<dynamic> synthesizeToFile(String text, String fileName) =>
+  Future<dynamic> synthesizeToFile(String text, String fileName) async =>
       _channel.invokeMethod('synthesizeToFile', <String, dynamic>{
         "text": text,
         "fileName": fileName,
       });
 
   /// [Future] which invokes the platform specific method for setLanguage
-  Future<dynamic> setLanguage(String language) =>
+  Future<dynamic> setLanguage(String language) async =>
       _channel.invokeMethod('setLanguage', language);
 
   /// [Future] which invokes the platform specific method for setSpeechRate
   /// Allowed values are in the range from 0.0 (slowest) to 1.0 (fastest)
-  Future<dynamic> setSpeechRate(double rate) =>
+  Future<dynamic> setSpeechRate(double rate) async =>
       _channel.invokeMethod('setSpeechRate', rate);
 
   /// [Future] which invokes the platform specific method for setVolume
   /// Allowed values are in the range from 0.0 (silent) to 1.0 (loudest)
-  Future<dynamic> setVolume(double volume) =>
+  Future<dynamic> setVolume(double volume) async =>
       _channel.invokeMethod('setVolume', volume);
 
   /// [Future] which invokes the platform specific method for shared instance
   /// ***iOS supported only***
-  Future<dynamic> setSharedInstance(bool sharedSession) =>
+  Future<dynamic> setSharedInstance(bool sharedSession) async =>
       _channel.invokeMethod('setSharedInstance', sharedSession);
 
   /// [Future] which invokes the platform specific method for setting audio category
@@ -188,16 +189,16 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
-  Future<dynamic> setPitch(double pitch) =>
+  Future<dynamic> setPitch(double pitch) async =>
       _channel.invokeMethod('setPitch', pitch);
 
   /// [Future] which invokes the platform specific method for setVoice
-  /// ***Android supported only***
-  Future<dynamic> setVoice(String voice) =>
+  /// ***Android, iOS, and macOS supported only***
+  Future<dynamic> setVoice(Map<String, String> voice) async =>
       _channel.invokeMethod('setVoice', voice);
 
   /// [Future] which invokes the platform specific method for stop
-  Future<dynamic> stop() => _channel.invokeMethod('stop');
+  Future<dynamic> stop() async => _channel.invokeMethod('stop');
 
   /// [Future] which invokes the platform specific method for getLanguages
   /// Android issues with API 21 & 22
@@ -216,7 +217,8 @@ class FlutterTts {
   }
 
   /// [Future] which invokes the platform specific method for getVoices
-  /// Returns a `List` of voice names
+  /// Returns a `List` of `Maps` containing a voice name and locale
+  /// ***Android, iOS, and macOS supported only***
   Future<dynamic> get getVoices async {
     final voices = await _channel.invokeMethod('getVoices');
     return voices;
@@ -224,8 +226,20 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for isLanguageAvailable
   /// Returns `true` or `false`
-  Future<dynamic> isLanguageAvailable(String language) =>
+  Future<dynamic> isLanguageAvailable(String language) async =>
       _channel.invokeMethod('isLanguageAvailable', language);
+
+  /// [Future] which invokes the platform specific method for isLanguageInstalled
+  /// Returns `true` or `false`
+  /// ***Android supported only***
+  Future<dynamic> isLanguageInstalled(String language) =>
+      _channel.invokeMethod('isLanguageInstalled', language);
+
+  /// [Future] which invokes the platform specific method for areLanguagesInstalled
+  /// Returns a HashMap with `true` or `false` for each submitted language.
+  /// ***Android supported only***
+  Future<dynamic> areLanguagesInstalled(List<String> languages) =>
+      _channel.invokeMethod('areLanguagesInstalled', languages);
 
   Future<SpeechRateValidRange> get getSpeechRateValidRange async {
     final validRange = await _channel.invokeMethod('getSpeechRateValidRange')
@@ -243,8 +257,16 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for setSilence
   /// 0 means start the utterance immediately. If the value is greater than zero a silence period in milliseconds is set according to the parameter
   /// ***Android supported only***
-  Future<dynamic> setSilence(int timems) =>
+  Future<dynamic> setSilence(int timems) async =>
       _channel.invokeMethod('setSilence', timems);
+
+  /// [Future] which invokes the platform specific method for setQueueMode
+  /// 0 means QUEUE_FLUSH - Queue mode where all entries in the playback queue (media to be played and text to be synthesized) are dropped and replaced by the new entry.
+  /// Queues are flushed with respect to a given calling app. Entries in the queue from other callees are not discarded.
+  /// 1 means QUEUE_ADD - Queue mode where the new entry is added at the end of the playback queue.
+  /// ***Android supported only***
+  Future<dynamic> setQueueMode(int queueMode) async =>
+      _channel.invokeMethod('setQueueMode', queueMode ?? 0);
 
   void setStartHandler(VoidCallback callback) {
     startHandler = callback;

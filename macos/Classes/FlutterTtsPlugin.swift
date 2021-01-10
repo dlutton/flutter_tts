@@ -93,8 +93,11 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
       self.getVoices(result: result)
       break
     case "setVoice":
-      let voiceName = call.arguments as! String
-      self.setVoice(voiceName: voiceName, result: result)
+      guard let args = call.arguments as? [String: String] else {
+        result("iOS could not recognize flutter arguments in method: (sendParams)")
+        return
+      }
+      self.setVoice(voice: args, result: result)
       break
     default:
       result(FlutterMethodNotImplemented)
@@ -247,8 +250,11 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
   private func getVoices(result: FlutterResult) {
     if #available(iOS 9.0, *) {
       let voices = NSMutableArray()
+      var voiceDict: [String: String] = [:]
       for voice in AVSpeechSynthesisVoice.speechVoices() {
-        voices.add(voice.name)
+        voiceDict["name"] = voice.name
+        voiceDict["locale"] = voice.language
+        voices.add(voiceDict)
       }
       result(voices)
     } else {
@@ -258,9 +264,9 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
     }
   }
 
-  private func setVoice(voiceName: String, result: FlutterResult) {
+  private func setVoice(voice: [String:String], result: FlutterResult) {
     if #available(iOS 9.0, *) {
-      if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.name == voiceName }) {
+      if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.name == voice["name"]! && $0.language == voice["locale"]! }) {
         self.voice = voice
         self.language = voice.language
         result(1)
@@ -268,7 +274,7 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
       }
       result(0)
     } else {
-      setLanguage(language: voiceName, result: result)
+      setLanguage(language: voice["name"]!, result: result)
     }
   }
 

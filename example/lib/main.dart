@@ -21,18 +21,20 @@ class _MyAppState extends State<MyApp> {
   double volume = 0.5;
   double pitch = 1.0;
   double rate = 0.5;
+  bool isCurrentLanguageInstalled = false;
 
   String? _newVoiceText;
 
   TtsState ttsState = TtsState.stopped;
 
   get isPlaying => ttsState == TtsState.playing;
-
   get isStopped => ttsState == TtsState.stopped;
-
   get isPaused => ttsState == TtsState.paused;
-
   get isContinued => ttsState == TtsState.continued;
+
+  bool get isIOS => !kIsWeb && Platform.isIOS;
+  bool get isAndroid => !kIsWeb && Platform.isAndroid;
+  bool get isWeb => kIsWeb;
 
   @override
   initState() {
@@ -45,10 +47,8 @@ class _MyAppState extends State<MyApp> {
 
     _getLanguages();
 
-    if (!kIsWeb) {
-      if (Platform.isAndroid) {
-        _getEngines();
-      }
+    if (isAndroid) {
+      _getEngines();
     }
 
     flutterTts.setStartHandler(() {
@@ -72,7 +72,7 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
-    if (kIsWeb || Platform.isIOS) {
+    if (isWeb || isIOS) {
       flutterTts.setPauseHandler(() {
         setState(() {
           print("Paused");
@@ -151,7 +151,12 @@ class _MyAppState extends State<MyApp> {
   void changedLanguageDropDownItem(String? selectedType) {
     setState(() {
       language = selectedType;
-      flutterTts.setLanguage(language!);
+      flutterTts.setLanguage(language);
+      if (isAndroid) {
+        flutterTts
+            .isLanguageInstalled(language)
+            .then((value) => isCurrentLanguageInstalled = (value as bool));
+      }
     });
   }
 
@@ -188,7 +193,7 @@ class _MyAppState extends State<MyApp> {
       ));
 
   Widget _btnSection() {
-    if (!kIsWeb && Platform.isAndroid) {
+    if (isAndroid) {
       return Container(
           padding: EdgeInsets.only(top: 50.0),
           child:
@@ -220,7 +225,11 @@ class _MyAppState extends State<MyApp> {
           value: language,
           items: getLanguageDropDownMenuItems(),
           onChanged: changedLanguageDropDownItem,
-        )
+        ),
+        Visibility(
+          visible: isAndroid,
+          child: Text("Is installed: $isCurrentLanguageInstalled"),
+        ),
       ]));
 
   Column _buildButtonColumn(Color color, Color splashColor, IconData icon,

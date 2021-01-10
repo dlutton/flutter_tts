@@ -9,7 +9,19 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Set;
+import java.util.UUID;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.MethodCall;
@@ -17,12 +29,6 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.UUID;
 
 /** FlutterTtsPlugin */
 public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
@@ -42,6 +48,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private int silencems;
   private static final String SILENCE_PREFIX = "SIL_";
   private static final String SYNTHESIZE_TO_FILE_PREFIX = "STF_";
+  private int queueMode = TextToSpeech.QUEUE_FLUSH;
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
@@ -280,7 +287,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         getEngines(result);
         break;
       case "setVoice":
-        String voice = call.arguments.toString();
+        HashMap<String, String> voice = call.arguments();
         setVoice(voice, result);
         break;
       case "isLanguageAvailable":
@@ -297,6 +304,19 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       case "setSharedInstance":
         result.success(1);
         break;
+      case "isLanguageInstalled":
+        String language = call.arguments().toString();
+        result.success(isLanguageInstalled(language));
+        break;
+      case "areLanguagesInstalled":
+        List<String> languages = call.arguments();
+        result.success(areLanguagesInstalled(languages));
+        break;
+      case "setQueueMode":
+        String queueMode = call.arguments.toString();
+        this.queueMode = Integer.parseInt(queueMode);
+        result.success(1);
+        break;
       default:
         result.notImplemented();
         break;
@@ -311,6 +331,32 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     return tts.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE;
   }
 
+  Map<String, Boolean> areLanguagesInstalled(List<String> languages) {
+    Map<String, Boolean> result = new HashMap<>();
+    for(String language : languages) {
+      result.put(language, isLanguageInstalled(language));
+    }
+    return result;
+  }
+
+  boolean isLanguageInstalled(String language) {
+    Locale locale = Locale.forLanguageTag(language);
+    if (isLanguageAvailable(locale)) {
+      Voice voiceToCheck = null;
+      for (Voice v : tts.getVoices()) {
+        if (v.getLocale().equals(locale) && !v.isNetworkConnectionRequired()) {
+          voiceToCheck = v;
+          break;
+        }
+      }
+      if (voiceToCheck != null) {
+        Set<String> features = voiceToCheck.getFeatures();
+        return features != null && !features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED);
+      }
+    }
+    return false;
+  }
+
   void setLanguage(String language, Result result) {
     Locale locale = Locale.forLanguageTag(language);
     if (isLanguageAvailable(locale)) {
@@ -321,9 +367,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     }
   }
 
-  void setVoice(String voice, Result result) {
+  void setVoice(HashMap<String, String> voice, Result result) {
     for (Voice ttsVoice : tts.getVoices()) {
-      if (ttsVoice.getName().equals(voice)) {
+      if (ttsVoice.getName().equals(voice.get("name")) && ttsVoice.getLocale().toLanguageTag().equals(voice.get("locale"))) {
         tts.setVoice(ttsVoice);
         result.success(1);
         return;
@@ -354,10 +400,13 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   }
 
   void getVoices(Result result) {
-    ArrayList<String> voices = new ArrayList<>();
+    ArrayList<HashMap<String, String>> voices = new ArrayList<>();
     try {
       for (Voice voice : tts.getVoices()) {
-        voices.add(voice.getName());
+        HashMap<String, String> voiceMap = new HashMap<>();
+        voiceMap.put("name", voice.getName());
+        voiceMap.put("locale", voice.getLocale().toLanguageTag());
+        voices.add(voiceMap);
       }
       result.success(voices);
     } catch (NullPointerException e) {
@@ -418,7 +467,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       tts.playSilentUtterance(silencems, TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid);
       tts.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid);
     } else {
-      tts.speak(text, TextToSpeech.QUEUE_FLUSH, bundle, uuid);
+      tts.speak(text, this.queueMode, bundle, uuid);
     }
   }
 
