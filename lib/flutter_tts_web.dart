@@ -68,7 +68,7 @@ class FlutterTtsPlugin {
       case 'speak':
         final text = call.arguments as String?;
         _speak(text);
-        if (!awaitSpeakCompletion!) {
+        if (!awaitSpeakCompletion) {
           return 1;
         }
         break;

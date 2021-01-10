@@ -151,10 +151,10 @@ class _MyAppState extends State<MyApp> {
   void changedLanguageDropDownItem(String? selectedType) {
     setState(() {
       language = selectedType;
-      flutterTts.setLanguage(language);
+      flutterTts.setLanguage(language!);
       if (isAndroid) {
         flutterTts
-            .isLanguageInstalled(language)
+            .isLanguageInstalled(language!)
             .then((value) => isCurrentLanguageInstalled = (value as bool));
       }
     });

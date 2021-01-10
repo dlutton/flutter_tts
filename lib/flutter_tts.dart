@@ -266,7 +266,7 @@ class FlutterTts {
   /// 1 means QUEUE_ADD - Queue mode where the new entry is added at the end of the playback queue.
   /// ***Android supported only***
   Future<dynamic> setQueueMode(int queueMode) async =>
-      _channel.invokeMethod('setQueueMode', queueMode ?? 0);
+      _channel.invokeMethod('setQueueMode', queueMode);
 
   void setStartHandler(VoidCallback callback) {
     startHandler = callback;
