@@ -77,12 +77,13 @@ class FlutterTtsPlugin {
     switch (call.method) {
       case 'speak':
         final text = call.arguments as String;
-        _speechCompleter = Completer();
-        _speak(text);
-        if (!awaitSpeakCompletion) {
-          _speechCompleter.complete();
+        if (awaitSpeakCompletion) {
+          _speechCompleter = Completer();
         }
-        return _speechCompleter.future;
+        _speak(text);
+        if (awaitSpeakCompletion) {
+          return _speechCompleter.future;
+        }
         break;
       case 'awaitSpeakCompletion':
         awaitSpeakCompletion = call.arguments as bool;
