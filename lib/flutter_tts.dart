@@ -97,13 +97,13 @@ class SpeechRateValidRange {
 class FlutterTts {
   static const MethodChannel _channel = const MethodChannel('flutter_tts');
 
-  VoidCallback startHandler;
-  VoidCallback completionHandler;
-  VoidCallback pauseHandler;
-  VoidCallback continueHandler;
-  VoidCallback cancelHandler;
-  ProgressHandler progressHandler;
-  ErrorHandler errorHandler;
+  VoidCallback? startHandler;
+  VoidCallback? completionHandler;
+  VoidCallback? pauseHandler;
+  VoidCallback? continueHandler;
+  VoidCallback? cancelHandler;
+  ProgressHandler? progressHandler;
+  ErrorHandler? errorHandler;
 
   FlutterTts() {
     _channel.setMethodCallHandler(platformCallHandler);
@@ -258,7 +258,7 @@ class FlutterTts {
   /// 0 means start the utterance immediately. If the value is greater than zero a silence period in milliseconds is set according to the parameter
   /// ***Android supported only***
   Future<dynamic> setSilence(int timems) async =>
-      _channel.invokeMethod('setSilence', timems ?? 0);
+      _channel.invokeMethod('setSilence', timems);
 
   /// [Future] which invokes the platform specific method for setQueueMode
   /// 0 means QUEUE_FLUSH - Queue mode where all entries in the playback queue (media to be played and text to be synthesized) are dropped and replaced by the new entry.
@@ -266,7 +266,7 @@ class FlutterTts {
   /// 1 means QUEUE_ADD - Queue mode where the new entry is added at the end of the playback queue.
   /// ***Android supported only***
   Future<dynamic> setQueueMode(int queueMode) async =>
-      _channel.invokeMethod('setQueueMode', queueMode ?? 0);
+      _channel.invokeMethod('setQueueMode', queueMode);
 
   void setStartHandler(VoidCallback callback) {
     startHandler = callback;
@@ -301,48 +301,48 @@ class FlutterTts {
     switch (call.method) {
       case "speak.onStart":
         if (startHandler != null) {
-          startHandler();
+          startHandler!();
         }
         break;
       case "synth.onStart":
         if (startHandler != null) {
-          startHandler();
+          startHandler!();
         }
         break;
       case "speak.onComplete":
         if (completionHandler != null) {
-          completionHandler();
+          completionHandler!();
         }
         break;
       case "synth.onComplete":
         if (completionHandler != null) {
-          completionHandler();
+          completionHandler!();
         }
         break;
       case "speak.onPause":
         if (pauseHandler != null) {
-          pauseHandler();
+          pauseHandler!();
         }
         break;
       case "speak.onContinue":
         if (continueHandler != null) {
-          continueHandler();
+          continueHandler!();
         }
         break;
       case "speak.onCancel":
         if (cancelHandler != null) {
-          cancelHandler();
+          cancelHandler!();
         }
         break;
       case "speak.onError":
         if (errorHandler != null) {
-          errorHandler(call.arguments);
+          errorHandler!(call.arguments);
         }
         break;
       case 'speak.onProgress':
         if (progressHandler != null) {
           final args = call.arguments as Map<dynamic, dynamic>;
-          progressHandler(
+          progressHandler!(
             args['text'].toString(),
             int.parse(args['start'].toString()),
             int.parse(args['end'].toString()),
@@ -352,7 +352,7 @@ class FlutterTts {
         break;
       case "synth.onError":
         if (errorHandler != null) {
-          errorHandler(call.arguments);
+          errorHandler!(call.arguments);
         }
         break;
       default:

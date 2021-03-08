@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.0.0
+
+### Features
+
+- Adding null safety
+
 ## 2.1.0
 
 ### Features

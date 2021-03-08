@@ -15,15 +15,14 @@ class MyApp extends StatefulWidget {
 enum TtsState { playing, stopped, paused, continued }
 
 class _MyAppState extends State<MyApp> {
-  FlutterTts flutterTts;
-  dynamic languages;
-  String language;
+  late FlutterTts flutterTts;
+  String? language;
   double volume = 0.5;
   double pitch = 1.0;
   double rate = 0.5;
   bool isCurrentLanguageInstalled = false;
 
-  String _newVoiceText;
+  String? _newVoiceText;
 
   TtsState ttsState = TtsState.stopped;
 
@@ -44,8 +43,6 @@ class _MyAppState extends State<MyApp> {
 
   initTts() {
     flutterTts = FlutterTts();
-
-    _getLanguages();
 
     if (isAndroid) {
       _getEngines();
@@ -96,10 +93,7 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future _getLanguages() async {
-    languages = await flutterTts.getLanguages;
-    if (languages != null) setState(() => languages);
-  }
+  Future<dynamic> _getLanguages() => flutterTts.getLanguages;
 
   Future _getEngines() async {
     var engines = await flutterTts.getEngines;
@@ -116,9 +110,9 @@ class _MyAppState extends State<MyApp> {
     await flutterTts.setPitch(pitch);
 
     if (_newVoiceText != null) {
-      if (_newVoiceText.isNotEmpty) {
+      if (_newVoiceText!.isNotEmpty) {
         await flutterTts.awaitSpeakCompletion(true);
-        await flutterTts.speak(_newVoiceText);
+        await flutterTts.speak(_newVoiceText!);
       }
     }
   }
@@ -139,22 +133,23 @@ class _MyAppState extends State<MyApp> {
     flutterTts.stop();
   }
 
-  List<DropdownMenuItem<String>> getLanguageDropDownMenuItems() {
+  List<DropdownMenuItem<String>> getLanguageDropDownMenuItems(
+      dynamic languages) {
     var items = <DropdownMenuItem<String>>[];
     for (dynamic type in languages) {
-      items.add(
-          DropdownMenuItem(value: type as String, child: Text(type as String)));
+      items.add(DropdownMenuItem(
+          value: type as String?, child: Text(type as String)));
     }
     return items;
   }
 
-  void changedLanguageDropDownItem(String selectedType) {
+  void changedLanguageDropDownItem(String? selectedType) {
     setState(() {
       language = selectedType;
-      flutterTts.setLanguage(language);
+      flutterTts.setLanguage(language!);
       if (isAndroid) {
         flutterTts
-            .isLanguageInstalled(language)
+            .isLanguageInstalled(language!)
             .then((value) => isCurrentLanguageInstalled = (value as bool));
       }
     });
@@ -178,10 +173,21 @@ class _MyAppState extends State<MyApp> {
                 child: Column(children: [
                   _inputSection(),
                   _btnSection(),
-                  languages != null ? _languageDropDownSection() : Text(""),
+                  _futureBuilder(),
                   _buildSliders()
                 ]))));
   }
+
+  Widget _futureBuilder() => FutureBuilder<dynamic>(
+      future: _getLanguages(),
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        if (snapshot.hasData) {
+          return _languageDropDownSection(snapshot.data);
+        } else if (snapshot.hasError) {
+          return Text('Error loading languages...');
+        } else
+          return Text('Loading Languages...');
+      });
 
   Widget _inputSection() => Container(
       alignment: Alignment.topCenter,
@@ -218,12 +224,12 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Widget _languageDropDownSection() => Container(
+  Widget _languageDropDownSection(dynamic languages) => Container(
       padding: EdgeInsets.only(top: 50.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         DropdownButton(
           value: language,
-          items: getLanguageDropDownMenuItems(),
+          items: getLanguageDropDownMenuItems(languages),
           onChanged: changedLanguageDropDownItem,
         ),
         Visibility(
