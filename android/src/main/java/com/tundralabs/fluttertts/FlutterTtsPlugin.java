@@ -51,6 +51,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private int queueMode = TextToSpeech.QUEUE_FLUSH;
 
   /** Plugin registration. */
+  @SuppressWarnings("deprecation")
   public static void registerWith(Registrar registrar) {
     FlutterTtsPlugin instance = new FlutterTtsPlugin();
     instance.initInstance(registrar.messenger(), registrar.activeContext());
