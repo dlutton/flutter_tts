@@ -40,7 +40,6 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private Context context;
   private TextToSpeech tts;
   private final String tag = "TTS";
-  private final String googleTtsEngine = "com.google.android.tts";
   private boolean isTtsInitialized = false;
   private ArrayList<Runnable> pendingMethodCalls = new ArrayList<>();
   private final HashMap<String, String> utterances = new HashMap<>();
@@ -62,7 +61,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     methodChannel.setMethodCallHandler(this);
     handler = new Handler(Looper.getMainLooper());
     bundle = new Bundle();
-    tts = new TextToSpeech(context, onInitListener, googleTtsEngine);
+    tts = new TextToSpeech(context, onInitListener);
   }
 
   /** Android Plugin APIs */
@@ -255,6 +254,10 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         stop();
         result.success(1);
         break;
+      case "setEngine" :
+        String engine = call.arguments.toString();
+        setEngine(engine, result);
+        break;
       case "setSpeechRate":
         String rate = call.arguments.toString();
         setSpeechRate(Float.parseFloat(rate));
@@ -285,6 +288,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         break;
       case "getEngines":
         getEngines(result);
+        break;
+      case "getDefaultEngine":
+        getDefaultEngine(result);
         break;
       case "setVoice":
         HashMap<String, String> voice = call.arguments();
@@ -355,6 +361,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       }
     }
     return false;
+  }
+
+  void setEngine(String engine, Result result) {
+    tts = new TextToSpeech(context, onInitListener, engine);
+    result.success(1);
   }
 
   void setLanguage(String language, Result result) {
@@ -447,6 +458,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       Log.d(tag, "getEngines: " + e.getMessage());
     }
     result.success(engines);
+  }
+
+  void getDefaultEngine(Result result) {
+    final String defaultEngine = tts.getDefaultEngine();
+    result.success(defaultEngine);
   }
 
   void getSpeechRateValidRange(Result result) {
