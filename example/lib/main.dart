@@ -17,6 +17,7 @@ enum TtsState { playing, stopped, paused, continued }
 class _MyAppState extends State<MyApp> {
   late FlutterTts flutterTts;
   String? language;
+  String? engine;
   double volume = 0.5;
   double pitch = 1.0;
   double rate = 0.5;
@@ -45,7 +46,7 @@ class _MyAppState extends State<MyApp> {
     flutterTts = FlutterTts();
 
     if (isAndroid) {
-      _getEngines();
+      _getDefaultEngine();
     }
 
     flutterTts.setStartHandler(() {
@@ -95,12 +96,12 @@ class _MyAppState extends State<MyApp> {
 
   Future<dynamic> _getLanguages() => flutterTts.getLanguages;
 
-  Future _getEngines() async {
-    var engines = await flutterTts.getEngines;
-    if (engines != null) {
-      for (dynamic engine in engines) {
-        print(engine);
-      }
+  Future<dynamic> _getEngines() => flutterTts.getEngines;
+
+  Future _getDefaultEngine() async {
+    var engine = await flutterTts.getDefaultEngine;
+    if (engine != null) {
+      print(engine);
     }
   }
 
@@ -131,6 +132,23 @@ class _MyAppState extends State<MyApp> {
   void dispose() {
     super.dispose();
     flutterTts.stop();
+  }
+
+  List<DropdownMenuItem<String>> getEnginesDropDownMenuItems(dynamic engines) {
+    var items = <DropdownMenuItem<String>>[];
+    for (dynamic type in engines) {
+      items.add(DropdownMenuItem(
+          value: type as String?, child: Text(type as String)));
+    }
+    return items;
+  }
+
+  void changedEnginesDropDownItem(String? selectedEngine) {
+    flutterTts.setEngine(selectedEngine!);
+    language = null;
+    setState(() {
+      engine = selectedEngine;
+    });
   }
 
   List<DropdownMenuItem<String>> getLanguageDropDownMenuItems(
@@ -173,9 +191,26 @@ class _MyAppState extends State<MyApp> {
                 child: Column(children: [
                   _inputSection(),
                   _btnSection(),
+                  _engineSection(),
                   _futureBuilder(),
                   _buildSliders()
                 ]))));
+  }
+
+  Widget _engineSection() {
+    if (isAndroid) {
+      return FutureBuilder<dynamic>(
+          future: _getEngines(),
+          builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+            if (snapshot.hasData) {
+              return _enginesDropDownSection(snapshot.data);
+            } else if (snapshot.hasError) {
+              return Text('Error loading engines...');
+            } else
+              return Text('Loading engines...');
+          });
+    } else
+      return Container(width: 0, height: 0);
   }
 
   Widget _futureBuilder() => FutureBuilder<dynamic>(
@@ -224,8 +259,17 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Widget _enginesDropDownSection(dynamic engines) => Container(
+        padding: EdgeInsets.only(top: 50.0),
+        child: DropdownButton(
+          value: engine,
+          items: getEnginesDropDownMenuItems(engines),
+          onChanged: changedEnginesDropDownItem,
+        ),
+      );
+
   Widget _languageDropDownSection(dynamic languages) => Container(
-      padding: EdgeInsets.only(top: 50.0),
+      padding: EdgeInsets.only(top: 10.0),
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
         DropdownButton(
           value: language,

@@ -187,6 +187,11 @@ class FlutterTts {
     }
   }
 
+  /// [Future] which invokes the platform specific method for setEngine
+  /// ***Android supported only***
+  Future<dynamic> setEngine(String engine) =>
+      _channel.invokeMethod('setEngine', engine);
+
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
   Future<dynamic> setPitch(double pitch) async =>
@@ -214,6 +219,14 @@ class FlutterTts {
   Future<dynamic> get getEngines async {
     final engines = await _channel.invokeMethod('getEngines');
     return engines;
+  }
+
+  /// [Future] which invokes the platform specific method for getDefaultEngine
+  /// Returns a `String` of the default engine name
+  /// ***Android supported only ***
+  Future<dynamic> get getDefaultEngine async {
+    final engineName = await _channel.invokeMethod('getDefaultEngine');
+    return engineName;
   }
 
   /// [Future] which invokes the platform specific method for getVoices
