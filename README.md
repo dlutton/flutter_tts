@@ -35,6 +35,8 @@ A flutter text to speech plugin (Swift,Java)
   - [x] is lanaguage installed
   - [x] are languages installed
   - [x] get engines
+  - [x] set engine
+  - [x] get default engine
   - [x] set queue mode
 - [x] iOS
   - [x] set shared instance
@@ -61,6 +63,8 @@ Change the minimum Android sdk version to 21 (or higher) in your `android/app/bu
 ```java
 minSdkVersion 21
 ```
+
+Apps targeting Android 11 that use text-to-speech should declare TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE in the queries elements of their manifest.
 
 ## iOS
 

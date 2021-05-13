@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.1.0
+
+### Features
+
+- **Android:** Adding set engine and get default engine
+
 ## 3.0.0
 
 ### Features

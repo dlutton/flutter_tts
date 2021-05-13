@@ -9,9 +9,14 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry.Registrar;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,14 +26,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.UUID;
-
-import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.plugin.common.BinaryMessenger;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 /** FlutterTtsPlugin */
 public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
@@ -40,6 +37,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private Context context;
   private TextToSpeech tts;
   private final String tag = "TTS";
+  private final String googleTtsEngine = "com.google.android.tts";
   private boolean isTtsInitialized = false;
   private ArrayList<Runnable> pendingMethodCalls = new ArrayList<>();
   private final HashMap<String, String> utterances = new HashMap<>();
@@ -62,7 +60,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     methodChannel.setMethodCallHandler(this);
     handler = new Handler(Looper.getMainLooper());
     bundle = new Bundle();
-    tts = new TextToSpeech(context, onInitListener);
+    tts = new TextToSpeech(context, onInitListener, googleTtsEngine);
   }
 
   /** Android Plugin APIs */
@@ -255,7 +253,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         stop();
         result.success(1);
         break;
-      case "setEngine" :
+      case "setEngine":
         String engine = call.arguments.toString();
         setEngine(engine, result);
         break;
@@ -340,7 +338,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   Map<String, Boolean> areLanguagesInstalled(List<String> languages) {
     Map<String, Boolean> result = new HashMap<>();
-    for(String language : languages) {
+    for (String language : languages) {
       result.put(language, isLanguageInstalled(language));
     }
     return result;
@@ -358,7 +356,8 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
       }
       if (voiceToCheck != null) {
         Set<String> features = voiceToCheck.getFeatures();
-        return features != null && !features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED);
+        return features != null
+            && !features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED);
       }
     }
     return false;
@@ -381,7 +380,8 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   void setVoice(HashMap<String, String> voice, Result result) {
     for (Voice ttsVoice : tts.getVoices()) {
-      if (ttsVoice.getName().equals(voice.get("name")) && ttsVoice.getLocale().toLanguageTag().equals(voice.get("locale"))) {
+      if (ttsVoice.getName().equals(voice.get("name"))
+          && ttsVoice.getLocale().toLanguageTag().equals(voice.get("locale"))) {
         tts.setVoice(ttsVoice);
         result.success(1);
         return;
