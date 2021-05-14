@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.UUID;
+import java.lang.reflect.Field;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -228,7 +229,17 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
             result.success(0);
             break;
           }
-          speak(text);
+          boolean b = speak(text);
+          if (!b) {
+            final Runnable suspendedCall =
+                    new Runnable() {
+                      public void run() {
+                        onMethodCall(call, result);
+                      }
+                    };
+            pendingMethodCalls.add(suspendedCall);
+            return;
+          }
           if (this.awaitSpeakCompletion) {
             this.speaking = true;
             this.speakResult = result;
@@ -460,14 +471,20 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     result.success(data);
   }
 
-  private void speak(String text) {
+  private boolean speak(String text) {
     String uuid = UUID.randomUUID().toString();
     utterances.put(uuid, text);
-    if (silencems > 0) {
-      tts.playSilentUtterance(silencems, TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid);
-      tts.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid);
+    if (ismServiceConnectionUsable(tts)) {
+      if (silencems > 0) {
+        tts.playSilentUtterance(silencems, TextToSpeech.QUEUE_FLUSH, SILENCE_PREFIX + uuid);
+        return tts.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid) == 0;
+      } else {
+        return tts.speak(text, this.queueMode, bundle, uuid) == 0;
+      }
     } else {
-      tts.speak(text, this.queueMode, bundle, uuid);
+      isTtsInitialized = false;
+      tts = new TextToSpeech(context, onInitListener, googleTtsEngine);
+      return false;
     }
   }
 
@@ -497,4 +514,32 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           }
         });
   }
+
+  private boolean ismServiceConnectionUsable(TextToSpeech tts) {
+
+    boolean isBindConnection = true;
+    if (tts == null) {
+      return false;
+    }
+    Field[] fields = tts.getClass().getDeclaredFields();
+    for (int j = 0; j < fields.length; j++) {
+      fields[j].setAccessible(true);
+      if ("mServiceConnection".equals(fields[j].getName()) && "android.speech.tts.TextToSpeech$Connection".equals(fields[j].getType().getName())) {
+        try {
+          if (fields[j].get(tts) == null) {
+            isBindConnection = false;
+            Log.e(tag, "*******TTS -> mServiceConnection == null*******");
+          }
+        } catch (IllegalArgumentException e) {
+          e.printStackTrace();
+        } catch (IllegalAccessException e) {
+          e.printStackTrace();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return isBindConnection;
+  }
+
 }
