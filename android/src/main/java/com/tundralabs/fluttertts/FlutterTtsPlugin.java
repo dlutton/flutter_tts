@@ -259,7 +259,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         break;
       case "setSpeechRate":
         String rate = call.arguments.toString();
-        setSpeechRate(Float.parseFloat(rate));
+        setSpeechRate(Float.parseFloat(rate) * 2);
         result.success(1);
         break;
       case "setVolume":
@@ -466,7 +466,8 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     result.success(defaultEngine);
   }
 
-  void getSpeechRateValidRange(Result result) {
+  void getSpeech
+    ValidRange(Result result) {
     // Valid values available in the android documentation.
     // https://developer.android.com/reference/android/speech/tts/TextToSpeech#setSpeechRate(float)
     final HashMap<String, String> data = new HashMap<String, String>();
