@@ -122,7 +122,7 @@ class FlutterTts {
   Future<dynamic> pause() async => _channel.invokeMethod('pause');
 
   /// [Future] which invokes the platform specific method for getMaxSpeechInputLength
-  /// ***Android and iOS supported only***
+  /// ***Android supported only***
   Future<int?> get getMaxSpeechInputLength async {
     return await _channel.invokeMethod<int?>('getMaxSpeechInputLength');
   }
