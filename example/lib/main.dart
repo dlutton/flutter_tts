@@ -183,20 +183,25 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: Scaffold(
-            appBar: AppBar(
-              title: Text('Flutter TTS'),
-            ),
-            body: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(children: [
-                  _inputSection(),
-                  _btnSection(),
-                  _engineSection(),
-                  _futureBuilder(),
-                  _buildSliders(),
-                  _getMaxSpeechInputLengthSection(),
-                ]))));
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Flutter TTS'),
+        ),
+        body: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: [
+              _inputSection(),
+              _btnSection(),
+              _engineSection(),
+              _futureBuilder(),
+              _buildSliders(),
+              if (Platform.isAndroid) _getMaxSpeechInputLengthSection(),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _engineSection() {
