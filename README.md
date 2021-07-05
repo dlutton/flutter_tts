@@ -38,6 +38,7 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set engine
   - [x] get default engine
   - [x] set queue mode
+  - [x] get max speech input length
 - [x] iOS
   - [x] set shared instance
   - [x] set audio session category
@@ -165,6 +166,8 @@ await flutterTts.isLanguageInstalled("en-AU");
 await flutterTts.areLanguagesInstalled(["en-AU", "en-US"]);
 
 await flutterTts.setQueueMode(1);
+
+await flutterTts.getMaxSpeechInputLength;
 ```
 
 ### Listening for platform calls

@@ -1,5 +1,17 @@
 # ChangeLog
 
+## 3.2.0
+
+### Features
+
+- **Android:** Adding get max speech input length
+- **Android:** Changed Android speed rate mapping
+- **iOS/macOS/Android:** Adding awaitSynthCompletion for synthesize to file
+
+### Fixes
+
+- **Android:** Fix tts connection disconnection after long running time
+
 ## 3.1.0
 
 ### Features

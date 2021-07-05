@@ -18,6 +18,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.UUID;
-import java.lang.reflect.Field;
 
 /** FlutterTtsPlugin */
 public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
@@ -254,11 +254,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           boolean b = speak(text);
           if (!b) {
             final Runnable suspendedCall =
-                    new Runnable() {
-                      public void run() {
-                        onMethodCall(call, result);
-                      }
-                    };
+                new Runnable() {
+                  public void run() {
+                    onMethodCall(call, result);
+                  }
+                };
             pendingMethodCalls.add(suspendedCall);
             return;
           }
@@ -283,11 +283,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           break;
         }
       case "getMaxSpeechInputLength":
-      {
-        int res = getMaxSpeechInputLength();
-        result.success(res);
-        break;
-      }
+        {
+          int res = getMaxSpeechInputLength();
+          result.success(res);
+          break;
+        }
       case "synthesizeToFile":
         {
           String text = call.argument("text");
@@ -315,7 +315,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         break;
       case "setSpeechRate":
         String rate = call.arguments.toString();
-        // To make the FlutterTts API consistent across platforms, 
+        // To make the FlutterTts API consistent across platforms,
         // Android 1.0 is mapped to flutter 0.5.
         setSpeechRate(Float.parseFloat(rate) * 2.0f);
         result.success(1);
@@ -527,7 +527,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   void getSpeechRateValidRange(Result result) {
     // Valid values available in the android documentation.
     // https://developer.android.com/reference/android/speech/tts/TextToSpeech#setSpeechRate(float)
-    // To make the FlutterTts API consistent across platforms, 
+    // To make the FlutterTts API consistent across platforms,
     // we map Android 1.0 to flutter 0.5 and so on.
     final HashMap<String, String> data = new HashMap<String, String>();
     data.put("min", "0");
@@ -594,7 +594,8 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     Field[] fields = tts.getClass().getDeclaredFields();
     for (int j = 0; j < fields.length; j++) {
       fields[j].setAccessible(true);
-      if ("mServiceConnection".equals(fields[j].getName()) && "android.speech.tts.TextToSpeech$Connection".equals(fields[j].getType().getName())) {
+      if ("mServiceConnection".equals(fields[j].getName())
+          && "android.speech.tts.TextToSpeech$Connection".equals(fields[j].getType().getName())) {
         try {
           if (fields[j].get(tts) == null) {
             isBindConnection = false;
@@ -611,5 +612,4 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
     }
     return isBindConnection;
   }
-
 }
