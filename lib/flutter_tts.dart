@@ -113,6 +113,11 @@ class FlutterTts {
   Future<dynamic> awaitSpeakCompletion(bool awaitCompletion) async =>
       _channel.invokeMethod('awaitSpeakCompletion', awaitCompletion);
 
+  /// [Future] which sets synthesize to file's future to return on completion of the synthesize
+  /// ***Android, iOS, and macOS supported only***
+  Future<dynamic> awaitSynthCompletion(bool awaitCompletion) async =>
+      _channel.invokeMethod('awaitSynthCompletion', awaitCompletion);
+
   /// [Future] which invokes the platform specific method for speaking
   Future<dynamic> speak(String text) async =>
       _channel.invokeMethod('speak', text);

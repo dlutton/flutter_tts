@@ -32,8 +32,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   private Handler handler;
   private MethodChannel methodChannel;
   private MethodChannel.Result speakResult;
+  private MethodChannel.Result synthResult;
   private boolean awaitSpeakCompletion = false;
   private boolean speaking = false;
+  private boolean awaitSynthCompletion = false;
+  private boolean synth = false;
   private Context context;
   private TextToSpeech tts;
   private final String tag = "TTS";
@@ -97,6 +100,10 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         public void onDone(String utteranceId) {
           if (utteranceId != null && utteranceId.startsWith(SILENCE_PREFIX)) return;
           if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            Log.d(tag, "Utterance ID has completed: " + utteranceId);
+            if (awaitSynthCompletion) {
+              synthCompletion(1);
+            }
             invokeMethod("synth.onComplete", true);
           } else {
             Log.d(tag, "Utterance ID has completed: " + utteranceId);
@@ -144,6 +151,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         @Deprecated
         public void onError(String utteranceId) {
           if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            if (awaitSynthCompletion) {
+              synth = false;
+            }
             invokeMethod("synth.onError", "Error from TextToSpeech (synth)");
           } else {
             if (awaitSpeakCompletion) {
@@ -156,6 +166,9 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         @Override
         public void onError(String utteranceId, int errorCode) {
           if (utteranceId != null && utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+            if (awaitSynthCompletion) {
+              synth = false;
+            }
             invokeMethod("synth.onError", "Error from TextToSpeech (synth) - " + errorCode);
           } else {
             if (awaitSpeakCompletion) {
@@ -173,6 +186,17 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           @Override
           public void run() {
             speakResult.success(success);
+          }
+        });
+  }
+
+  void synthCompletion(final int success) {
+    synth = false;
+    handler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            synthResult.success(success);
           }
         });
   }
@@ -241,12 +265,27 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           result.success(1);
           break;
         }
+      case "awaitSynthCompletion":
+        {
+          this.awaitSynthCompletion = Boolean.parseBoolean(call.arguments.toString());
+          result.success(1);
+          break;
+        }
       case "synthesizeToFile":
         {
           String text = call.argument("text");
+          if (this.synth) {
+            result.success(0);
+            break;
+          }
           String fileName = call.argument("fileName");
           synthesizeToFile(text, fileName);
-          result.success(1);
+          if (this.awaitSynthCompletion) {
+            this.synth = true;
+            this.synthResult = result;
+          } else {
+            result.success(1);
+          }
           break;
         }
       case "stop":

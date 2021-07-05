@@ -113,6 +113,12 @@ To await speak completion.
 await flutterTts.awaitSpeakCompletion(true);
 ```
 
+To await synthesize to file completion.
+
+```dart
+await flutterTts.awaitSynthCompletion(true);
+```
+
 ### speak, stop, getLanguages, setLanguage, setSpeechRate, setVoice, setVolume, setPitch, isLanguageAvailable, setSharedInstance
 
 ```dart

@@ -14,7 +14,9 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
   var pitch: Float = 1.0
   var voice: AVSpeechSynthesisVoice?
   var awaitSpeakCompletion: Bool = false
+  var awaitSynthCompletion: Bool = false
   var speakResult: FlutterResult!
+  var synthResult: FlutterResult!
 
   var channel = FlutterMethodChannel()
   init(channel: FlutterMethodChannel) {
@@ -44,6 +46,10 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
       break
     case "awaitSpeakCompletion":
       self.awaitSpeakCompletion = call.arguments as! Bool
+      result(1)
+      break
+    case "awaitSynthCompletion":
+      self.awaitSynthCompletion = call.arguments as! Bool
       result(1)
       break
     case "synthesizeToFile":
@@ -135,7 +141,7 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
     }
   }
   
-  private func synthesizeToFile(text: String, fileName: String, result: FlutterResult) {
+  private func synthesizeToFile(text: String, fileName: String, result: @escaping FlutterResult) {
     var output: AVAudioFile?
     var failed = false
     let utterance = AVSpeechUtterance(string: text)
@@ -147,7 +153,6 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
             failed = true
             return
         }
-        print(pcmBuffer.format)
         if pcmBuffer.frameLength == 0 {
             // finished
         } else {
@@ -160,7 +165,7 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
               output = try AVAudioFile(
               forWriting: fileURL,
               settings: pcmBuffer.format.settings, 
-              commonFormat: .pcmFormatInt16,
+              commonFormat: .pcmFormatFloat32,
               interleaved: false)
             } catch {
                 NSLog(error.localizedDescription)
@@ -178,7 +183,11 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
     if failed {
         result(0)
     }
-    result(1)
+    if self.awaitSynthCompletion {
+      self.synthResult = result
+    } else {
+      result(1)
+    }
   }
 
   private func pause(result: FlutterResult) {
@@ -281,6 +290,9 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
     if self.awaitSpeakCompletion {
       self.speakResult(1)
+    }
+    if self.awaitSynthCompletion {
+      self.synthResult(1)
     }
     self.channel.invokeMethod("speak.onComplete", arguments: nil)
   }
