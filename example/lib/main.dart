@@ -24,6 +24,7 @@ class _MyAppState extends State<MyApp> {
   bool isCurrentLanguageInstalled = false;
 
   String? _newVoiceText;
+  int? _inputLength;
 
   TtsState ttsState = TtsState.stopped;
 
@@ -182,19 +183,25 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: Scaffold(
-            appBar: AppBar(
-              title: Text('Flutter TTS'),
-            ),
-            body: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(children: [
-                  _inputSection(),
-                  _btnSection(),
-                  _engineSection(),
-                  _futureBuilder(),
-                  _buildSliders()
-                ]))));
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Flutter TTS'),
+        ),
+        body: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: [
+              _inputSection(),
+              _btnSection(),
+              _engineSection(),
+              _futureBuilder(),
+              _buildSliders(),
+              if (Platform.isAndroid) _getMaxSpeechInputLengthSection(),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _engineSection() {
@@ -301,6 +308,22 @@ class _MyAppState extends State<MyApp> {
                       fontWeight: FontWeight.w400,
                       color: color)))
         ]);
+  }
+
+  Widget _getMaxSpeechInputLengthSection() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          child: Text('Get max speech input length'),
+          onPressed: () async {
+            _inputLength = await flutterTts.getMaxSpeechInputLength;
+            setState(() {});
+          },
+        ),
+        Text("$_inputLength characters"),
+      ],
+    );
   }
 
   Widget _buildSliders() {

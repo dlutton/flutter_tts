@@ -282,6 +282,12 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
           result.success(1);
           break;
         }
+      case "getMaxSpeechInputLength":
+      {
+        int res = getMaxSpeechInputLength();
+        result.success(res);
+        break;
+      }
       case "synthesizeToFile":
         {
           String text = call.argument("text");
@@ -546,6 +552,10 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   private void stop() {
     tts.stop();
+  }
+
+  private int getMaxSpeechInputLength() {
+    return TextToSpeech.getMaxSpeechInputLength();
   }
 
   private void synthesizeToFile(String text, String fileName) {
