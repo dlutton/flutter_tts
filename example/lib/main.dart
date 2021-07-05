@@ -196,7 +196,7 @@ class _MyAppState extends State<MyApp> {
               _engineSection(),
               _futureBuilder(),
               _buildSliders(),
-              if (Platform.isAndroid) _getMaxSpeechInputLengthSection(),
+              if (isAndroid) _getMaxSpeechInputLengthSection(),
             ],
           ),
         ),
