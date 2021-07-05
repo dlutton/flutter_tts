@@ -32,7 +32,7 @@ A flutter text to speech plugin (Swift,Java)
   - [x] pause
 - [x] Android
   - [x] set silence
-  - [x] is lanaguage installed
+  - [x] is language installed
   - [x] are languages installed
   - [x] get engines
   - [x] set engine
