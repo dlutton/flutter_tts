@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.2.1
+
+### Fixes
+
+- **Android:** Fix deprecation warning
+
 ## 3.2.0
 
 ### Features

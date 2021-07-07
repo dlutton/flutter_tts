@@ -16,7 +16,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
 
   /** Plugin registration. */
   @SuppressWarnings("deprecation")
-  public static void registerWith(Registrar registrar) {
+  public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
     FlutterTtsPlugin instance = new FlutterTtsPlugin();
     instance.initInstance(registrar.messenger(), registrar.activeContext());
   }

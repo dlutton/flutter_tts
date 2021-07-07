@@ -1,5 +1,7 @@
 def PLUGIN = "flutter_tts";
 def ANDROIDX_WARNING = "flutterPluginsAndroidXWarning";
+def args = ["-Xlint:deprecation"]
+
 gradle.buildFinished { buildResult ->
     if (buildResult.failure && !rootProject.ext.has(ANDROIDX_WARNING)) {
         println '         *********************************************************'
@@ -30,6 +32,10 @@ rootProject.allprojects {
         google()
         jcenter()
     }
+}
+
+project.getTasks().withType(JavaCompile){
+    options.compilerArgs.addAll(args)
 }
 
 apply plugin: 'com.android.library'
