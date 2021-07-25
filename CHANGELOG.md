@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.2.2
+
+### Fixes
+
+- **Android:** Android 11 fix
+
 ## 3.2.1
 
 ### Fixes
