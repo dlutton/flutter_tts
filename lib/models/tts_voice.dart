@@ -50,4 +50,13 @@ extension TTSVoiceGenderFromString on TTSVoiceGender {
         return TTSVoiceGender.unspecified;
     }
   }
+
+  /// Helper to determine if value is male.
+  bool get isMale => this == TTSVoiceGender.male;
+
+  /// Helper to determine if value is female.
+  bool get isFemale => this == TTSVoiceGender.female;
+
+  /// Helper to determine if value is unspecified.
+  bool get isUnspecified => this == TTSVoiceGender.unspecified;
 }
