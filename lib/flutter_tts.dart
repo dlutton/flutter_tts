@@ -3,7 +3,9 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_tts/models/tts_voice.dart';
+import 'package:flutter_tts/models/models.dart';
+
+export 'package:flutter_tts/models/models.dart';
 
 typedef void ErrorHandler(dynamic message);
 typedef ProgressHandler = void Function(
