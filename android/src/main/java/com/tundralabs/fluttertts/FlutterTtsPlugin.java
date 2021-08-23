@@ -475,6 +475,10 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         HashMap<String, String> voiceMap = new HashMap<>();
         voiceMap.put("name", voice.getName());
         voiceMap.put("locale", voice.getLocale().toLanguageTag());
+
+        String gender = voice.getName().contains("female") ? "female"
+                : voice.getName().contains("male") ? "male" : "unspecified";
+        voiceMap.put("gender", gender);
         voices.add(voiceMap);
       }
       result.success(voices);
