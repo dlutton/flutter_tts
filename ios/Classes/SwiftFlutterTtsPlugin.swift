@@ -318,6 +318,15 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       for voice in AVSpeechSynthesisVoice.speechVoices() {
         voiceDict["name"] = voice.name
         voiceDict["locale"] = voice.language
+
+        if #available(iOS 13.0, *) { 
+          let gender = voice.gender == AVSpeechSynthesisVoiceGender.female ? "female" 
+                      : voice.gender == AVSpeechSynthesisVoiceGender.male ? "male" : "unspecified"
+          voiceDict["gender"] = gender
+        } else {
+          voiceDict["gender"] = "unspecified"
+        }
+        
         voices.add(voiceDict)
       }
       result(voices)

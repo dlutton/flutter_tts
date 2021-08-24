@@ -3,6 +3,9 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/models/models.dart';
+
+export 'package:flutter_tts/models/models.dart';
 
 typedef void ErrorHandler(dynamic message);
 typedef ProgressHandler = void Function(
@@ -210,8 +213,8 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for setVoice
   /// ***Android, iOS, and macOS supported only***
-  Future<dynamic> setVoice(Map<String, String> voice) async =>
-      _channel.invokeMethod('setVoice', voice);
+  Future<void> setVoice(TTSVoice voice) async =>
+      _channel.invokeMethod('setVoice', voice.asVoiceMap);
 
   /// [Future] which invokes the platform specific method for stop
   Future<dynamic> stop() async => _channel.invokeMethod('stop');
@@ -241,10 +244,16 @@ class FlutterTts {
   }
 
   /// [Future] which invokes the platform specific method for getVoices
-  /// Returns a `List` of `Maps` containing a voice name and locale
+  /// Returns a `List` of [TTSVoice] containing a voice object
   /// ***Android, iOS, and macOS supported only***
-  Future<dynamic> get getVoices async {
-    final voices = await _channel.invokeMethod('getVoices');
+  Future<List<TTSVoice>> get getVoices async {
+    final voicesObjs = await _channel.invokeMethod('getVoices') as List;
+    // Parse voices to class.
+    final voices = voicesObjs.map<TTSVoice>((Object? voiceObj) {
+      final voiceMap = voiceObj as Map?;
+
+      return TTSVoice.fromMap(voiceMap!);
+    }).toList();
     return voices;
   }
 
