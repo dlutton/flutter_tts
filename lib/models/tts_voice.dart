@@ -29,6 +29,11 @@ class TTSVoice {
 
   /// The tts_voice's gender.
   final TTSVoiceGender gender;
+
+  Map<String, String> get asVoiceMap => {
+        'name': name,
+        'locale': locale,
+      };
 }
 
 enum TTSVoiceGender {

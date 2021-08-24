@@ -213,8 +213,8 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for setVoice
   /// ***Android, iOS, and macOS supported only***
-  Future<dynamic> setVoice(Map<String, String> voice) async =>
-      _channel.invokeMethod('setVoice', voice);
+  Future<void> setVoice(TTSVoice voice) async =>
+      _channel.invokeMethod('setVoice', voice.asVoiceMap);
 
   /// [Future] which invokes the platform specific method for stop
   Future<dynamic> stop() async => _channel.invokeMethod('stop');
