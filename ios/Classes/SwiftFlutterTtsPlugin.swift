@@ -353,13 +353,13 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
   
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-    if shouldDeactivateAndNotifyOthers(audioSession) {
-      do {
-        try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
-      } catch {
-        print(error)
-      }
-    }
+    // if shouldDeactivateAndNotifyOthers(audioSession) {
+    //   do {
+    //     try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
+    //   } catch {
+    //     print(error)
+    //   }
+    // }
     if self.awaitSpeakCompletion {
       self.speakResult(1)
     }
