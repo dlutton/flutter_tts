@@ -278,7 +278,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     
     do {
         if #available(iOS 12.0, *) {        
-            try audioSession.setCategory(category, mode: AVAudioSessionMode.VoicePrompt, options: options)
+            try audioSession.setCategory(category, mode: .voicePrompt, options: options)
         } else {
             try audioSession.setCategory(category, options: options)            
         }
