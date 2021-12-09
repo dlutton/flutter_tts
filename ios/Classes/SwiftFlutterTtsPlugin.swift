@@ -124,15 +124,6 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       }
       let audioCategory = args["iosAudioCategoryKey"] as? String
       let audioOptions = args[iosAudioCategoryOptionsKey] as? Array<String>
-      self.setAudioCategory(audioCategory: audioCategory, audioOptions: audioOptions, audioMode: nil, result: result)
-      break
-    case "setIosAudioCategoryAndMode":
-      guard let args = call.arguments as? [String: Any] else {
-        result("iOS could not recognize flutter arguments in method: (sendParams)")
-        return
-      }
-      let audioCategory = args["iosAudioCategoryKey"] as? String
-      let audioOptions = args[iosAudioCategoryOptionsKey] as? Array<String>
       let audioModes = args[iosAudioModeKey] as? String
       self.setAudioCategory(audioCategory: audioCategory, audioOptions: audioOptions, audioMode: audioModes, result: result)
       break
