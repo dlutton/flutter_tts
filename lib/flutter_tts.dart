@@ -194,46 +194,7 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for setting audio category
   /// ***Ios supported only***
   Future<dynamic> setIosAudioCategory(IosTextToSpeechAudioCategory category,
-      List<IosTextToSpeechAudioCategoryOptions> options) async {
-    const categoryToString = <IosTextToSpeechAudioCategory, String>{
-      IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
-      IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
-      IosTextToSpeechAudioCategory.playback: iosAudioCategoryPlayback
-    };
-    const optionsToString = {
-      IosTextToSpeechAudioCategoryOptions.mixWithOthers:
-          'iosAudioCategoryOptionsMixWithOthers',
-      IosTextToSpeechAudioCategoryOptions.duckOthers:
-          'iosAudioCategoryOptionsDuckOthers',
-      IosTextToSpeechAudioCategoryOptions.interruptSpokenAudioAndMixWithOthers:
-          'iosAudioCategoryOptionsInterruptSpokenAudioAndMixWithOthers',
-      IosTextToSpeechAudioCategoryOptions.allowBluetooth:
-          'iosAudioCategoryOptionsAllowBluetooth',
-      IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP:
-          'iosAudioCategoryOptionsAllowBluetoothA2DP',
-      IosTextToSpeechAudioCategoryOptions.allowAirPlay:
-          'iosAudioCategoryOptionsAllowAirPlay',
-      IosTextToSpeechAudioCategoryOptions.defaultToSpeaker:
-          'iosAudioCategoryOptionsDefaultToSpeaker',
-    };
-    if (!Platform.isIOS) return;
-    try {
-      return _channel
-          .invokeMethod<dynamic>('setIosAudioCategory', <String, dynamic>{
-        iosAudioCategoryKey: categoryToString[category],
-        iosAudioCategoryOptionsKey:
-            options.map((o) => optionsToString[o]).toList(),
-      });
-    } on PlatformException catch (e) {
-      print(
-          'setIosAudioCategory error, category: $category, error: ${e.message}');
-    }
-  }
-
-  /// [Future] which invokes the platform specific method for setting audio category
-  /// ***Ios supported only***
-  Future<dynamic> setIosAudioCategoryAndMode(IosTextToSpeechAudioCategory category,
-      List<IosTextToSpeechAudioCategoryOptions> options, IosTextToSpeechAudioMode mode) async {
+    List<IosTextToSpeechAudioCategoryOptions> options, [IosTextToSpeechAudioMode mode = IosTextToSpeechAudioMode.defaultMode]) async {
     const categoryToString = <IosTextToSpeechAudioCategory, String>{
       IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
       IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
@@ -269,7 +230,7 @@ class FlutterTts {
     if (!Platform.isIOS) return;
     try {
       return _channel
-          .invokeMethod<dynamic>('setIosAudioCategoryAndMode', <String, dynamic>{
+          .invokeMethod<dynamic>('setIosAudioCategory', <String, dynamic>{
         iosAudioCategoryKey: categoryToString[category],
         iosAudioCategoryOptionsKey:
             options.map((o) => optionsToString[o]).toList(),
