@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.2.3
+
+### Fixes
+
+- **Android:** Fix await speak completion when queue mode is set to 1
+
 ## 3.2.2
 
 ### Fixes

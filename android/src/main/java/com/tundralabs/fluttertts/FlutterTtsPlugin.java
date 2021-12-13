@@ -107,7 +107,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
             invokeMethod("synth.onComplete", true);
           } else {
             Log.d(tag, "Utterance ID has completed: " + utteranceId);
-            if (awaitSpeakCompletion) {
+            if (awaitSpeakCompletion && queueMode == TextToSpeech.QUEUE_FLUSH) {
               speakCompletion(1);
             }
             invokeMethod("speak.onComplete", true);
@@ -247,8 +247,11 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
         {
           String text = call.arguments.toString();
           if (this.speaking) {
-            result.success(0);
-            break;
+            // If TTS is set to queue mode, allow the utterance to be queued up rather than discarded
+            if (this.queueMode == TextToSpeech.QUEUE_FLUSH) {
+              result.success(0);
+              break;
+            }
           }
           boolean b = speak(text);
           if (!b) {
@@ -261,7 +264,8 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
             pendingMethodCalls.add(suspendedCall);
             return;
           }
-          if (this.awaitSpeakCompletion) {
+          // Only use await speak completion if queueMode is set to QUEUE_FLUSH
+          if (this.awaitSpeakCompletion && this.queueMode == TextToSpeech.QUEUE_FLUSH) {
             this.speaking = true;
             this.speakResult = result;
           } else {
