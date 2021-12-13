@@ -26,12 +26,13 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     self.channel = channel
     synthesizer.delegate = self
     setLanguages()
+    
     // Allow audio playback when the Ring/Silent switch is set to silent
-    do {
-        try audioSession.setCategory(.playAndRecord, options: [.defaultToSpeaker])
-    } catch {
-      print(error)
-    }
+    // do {
+    //     try audioSession.setCategory(.playAndRecord, options: [.defaultToSpeaker])
+    // } catch {
+    //   print(error)
+    // }
   }
 
   private func setLanguages() {
