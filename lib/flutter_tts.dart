@@ -238,7 +238,7 @@ class FlutterTts {
       });
     } on PlatformException catch (e) {
       print(
-          'setIosAudioCategoryAndMode error, category: $category, mode: $mode, error: ${e.message}');
+          'setIosAudioCategory error, category: $category, mode: $mode, error: ${e.message}');
     }
   }
 
