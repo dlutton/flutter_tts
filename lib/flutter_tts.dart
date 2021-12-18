@@ -10,6 +10,7 @@ typedef ProgressHandler = void Function(
 
 const String iosAudioCategoryOptionsKey = 'iosAudioCategoryOptionsKey';
 const String iosAudioCategoryKey = 'iosAudioCategoryKey';
+const String iosAudioModeKey = 'iosAudioModeKey';
 const String iosAudioCategoryAmbientSolo = 'iosAudioCategoryAmbientSolo';
 const String iosAudioCategoryAmbient = 'iosAudioCategoryAmbient';
 const String iosAudioCategoryPlayback = 'iosAudioCategoryPlayback';
@@ -31,6 +32,25 @@ const String iosAudioCategoryOptionsAllowAirPlay =
 const String iosAudioCategoryOptionsDefaultToSpeaker =
     'iosAudioCategoryOptionsDefaultToSpeaker';
 
+const String iosAudioModeDefault =
+    'iosAudioModeDefault';
+const String iosAudioModeGameChat =
+    'iosAudioModeGameChat';
+const String iosAudioModeMeasurement =
+    'iosAudioModeMeasurement';
+const String iosAudioModeMoviePlayback =
+    'iosAudioModeMoviePlayback';
+const String iosAudioModeSpokenAudio =
+    'iosAudioModeSpokenAudio';
+const String iosAudioModeVideoChat =
+    'iosAudioModeVideoChat';
+const String iosAudioModeVideoRecording =
+    'iosAudioModeVideoRecording';
+const String iosAudioModeVoiceChat =
+    'iosAudioModeVoiceChat';
+const String iosAudioModeVoicePrompt =
+    'iosAudioModeVoicePrompt';
+
 enum TextToSpeechPlatform { android, ios }
 
 enum IosTextToSpeechAudioCategory {
@@ -51,6 +71,18 @@ enum IosTextToSpeechAudioCategory {
   ///  such as for a Voice over Internet Protocol (VoIP) app.
   /// The default value.
   playAndRecord,
+}
+
+enum IosTextToSpeechAudioMode {
+  defaultMode,
+  gameChat,
+  measurement,
+  moviePlayback,
+  spokenAudio,
+  videoChat,
+  videoRecording,
+  voiceChat,
+  voicePrompt,
 }
 
 enum IosTextToSpeechAudioCategoryOptions {
@@ -162,7 +194,7 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for setting audio category
   /// ***Ios supported only***
   Future<dynamic> setIosAudioCategory(IosTextToSpeechAudioCategory category,
-      List<IosTextToSpeechAudioCategoryOptions> options) async {
+    List<IosTextToSpeechAudioCategoryOptions> options, [IosTextToSpeechAudioMode mode = IosTextToSpeechAudioMode.defaultMode]) async {
     const categoryToString = <IosTextToSpeechAudioCategory, String>{
       IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
       IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
@@ -183,7 +215,18 @@ class FlutterTts {
           'iosAudioCategoryOptionsAllowAirPlay',
       IosTextToSpeechAudioCategoryOptions.defaultToSpeaker:
           'iosAudioCategoryOptionsDefaultToSpeaker',
-    };
+        };
+        const modeToString = <IosTextToSpeechAudioMode, String> {
+          IosTextToSpeechAudioMode.defaultMode: iosAudioModeDefault,
+          IosTextToSpeechAudioMode.gameChat: iosAudioModeGameChat,
+          IosTextToSpeechAudioMode.measurement: iosAudioModeMeasurement,
+          IosTextToSpeechAudioMode.moviePlayback: iosAudioModeMoviePlayback,
+          IosTextToSpeechAudioMode.spokenAudio: iosAudioModeSpokenAudio,
+          IosTextToSpeechAudioMode.videoChat: iosAudioModeVideoChat,
+          IosTextToSpeechAudioMode.videoRecording: iosAudioModeVideoRecording,
+          IosTextToSpeechAudioMode.voiceChat: iosAudioModeVoiceChat,
+          IosTextToSpeechAudioMode.voicePrompt: iosAudioModeVoicePrompt,
+        };
     if (!Platform.isIOS) return;
     try {
       return _channel
@@ -191,10 +234,11 @@ class FlutterTts {
         iosAudioCategoryKey: categoryToString[category],
         iosAudioCategoryOptionsKey:
             options.map((o) => optionsToString[o]).toList(),
+        iosAudioModeKey: modeToString[mode],
       });
     } on PlatformException catch (e) {
       print(
-          'setIosAudioCategory error, category: $category, error: ${e.message}');
+          'setIosAudioCategory error, category: $category, mode: $mode, error: ${e.message}');
     }
   }
 
