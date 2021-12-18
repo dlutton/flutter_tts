@@ -41,12 +41,11 @@ project.getTasks().withType(JavaCompile){
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
 
     defaultConfig {
         minSdkVersion 21
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        targetSdkVersion 27
     }
     lintOptions {
         disable 'InvalidPackage'

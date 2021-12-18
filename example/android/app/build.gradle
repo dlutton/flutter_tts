@@ -15,7 +15,7 @@ apply plugin: 'com.android.application'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
 
     lintOptions {
         disable 'InvalidPackage'
@@ -24,7 +24,7 @@ android {
     defaultConfig {
         applicationId "com.tundralabs.flutterttsexample"
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
