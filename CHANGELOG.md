@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.2.4
+
+### Fixes
+
+- **Android:** Fix compileSDK version
+
 ## 3.2.3
 
 ### Fixes
