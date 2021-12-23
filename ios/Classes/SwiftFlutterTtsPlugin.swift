@@ -5,7 +5,8 @@ import AVFoundation
 public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDelegate {
   final var iosAudioCategoryKey = "iosAudioCategoryKey"
   final var iosAudioCategoryOptionsKey = "iosAudioCategoryOptionsKey"
-  
+  final var iosAudioModeKey = "iosAudioModeKey"
+
   let synthesizer = AVSpeechSynthesizer()
   var language: String = AVSpeechSynthesisVoice.currentLanguageCode()
   var rate: Float = AVSpeechUtteranceDefaultSpeechRate
@@ -17,7 +18,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var awaitSynthCompletion: Bool = false
   var speakResult: FlutterResult!
   var synthResult: FlutterResult!
-  
+
   var channel = FlutterMethodChannel()
   lazy var audioSession = AVAudioSession.sharedInstance()
   init(channel: FlutterMethodChannel) {
@@ -25,13 +26,6 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     self.channel = channel
     synthesizer.delegate = self
     setLanguages()
-    
-    // Allow audio playback when the Ring/Silent switch is set to silent
-    do {
-        try audioSession.setCategory(.playAndRecord, options: [.defaultToSpeaker])
-    } catch {
-      print(error)
-    }
   }
 
   private func setLanguages() {
@@ -124,7 +118,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       }
       let audioCategory = args["iosAudioCategoryKey"] as? String
       let audioOptions = args[iosAudioCategoryOptionsKey] as? Array<String>
-      self.setAudioCategory(audioCategory: audioCategory, audioOptions: audioOptions, result: result)
+      let audioModes = args[iosAudioModeKey] as? String
+      self.setAudioCategory(audioCategory: audioCategory, audioOptions: audioOptions, audioMode: audioModes, result: result)
       break
     default:
       result(FlutterMethodNotImplemented)
@@ -152,7 +147,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       utterance.rate = self.rate
       utterance.volume = self.volume
       utterance.pitchMultiplier = self.pitch
-      
+
       self.synthesizer.speak(utterance)
       if self.awaitSpeakCompletion {
         self.speakResult = result
@@ -161,7 +156,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       }
     }
   }
-  
+
   private func synthesizeToFile(text: String, fileName: String, result: @escaping FlutterResult) {
     var output: AVAudioFile?
     var failed = false
@@ -190,12 +185,12 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
           // append buffer to file
           let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
           NSLog("Saving utterance to file: \(fileURL.absoluteString)")
-            
+
           if output == nil {
             do {
               output = try AVAudioFile(
               forWriting: fileURL,
-              settings: pcmBuffer.format.settings, 
+              settings: pcmBuffer.format.settings,
               commonFormat: .pcmFormatInt16,
               interleaved: false)
             } catch {
@@ -204,7 +199,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
                 return
             }
           }
-            
+
           try! output!.write(from: pcmBuffer)
         }
       }
@@ -260,7 +255,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       result(0)
     }
   }
-    
+
   private func setSharedInstance(sharedInstance: Bool, result: FlutterResult) {
       do {
           try AVAudioSession.sharedInstance().setActive(sharedInstance)
@@ -269,15 +264,22 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
           result(0)
       }
   }
-  
-  private func setAudioCategory(audioCategory: String?, audioOptions: Array<String>?, result: FlutterResult){
+
+  private func setAudioCategory(audioCategory: String?, audioOptions: Array<String>?, audioMode: String?, result: FlutterResult){
     let category: AVAudioSession.Category = AudioCategory(rawValue: audioCategory ?? "")?.toAVAudioSessionCategory() ?? audioSession.category
     let options: AVAudioSession.CategoryOptions = audioOptions?.reduce([], { (result, option) -> AVAudioSession.CategoryOptions in
-      return result.union(AudioCategoryOptions(rawValue: option)?.toAVAudioSessionCategoryOptions() ?? [])
-    }) ?? []
-    
+      return result.union(AudioCategoryOptions(rawValue: option)?.toAVAudioSessionCategoryOptions() ?? [])}) ?? []
     do {
-      try audioSession.setCategory(category, options: options)
+        if #available(iOS 12.0, *) {
+            if audioMode == nil {
+                try audioSession.setCategory(category, options: options)
+            } else {
+                let mode: AVAudioSession.Mode? = AudioModes(rawValue: audioMode ?? "")?.toAVAudioSessionMode() ?? AVAudioSession.Mode.default
+                try audioSession.setCategory(category, mode: mode!, options: options)
+            }
+        } else {
+            try audioSession.setCategory(category, options: options)
+        }
       result(1)
     } catch {
       print(error)
@@ -348,10 +350,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       options.insert(.interruptSpokenAudioAndMixWithOthers)
     }
     options.remove(.mixWithOthers)
-    
+
     return !options.isDisjoint(with: session.categoryOptions)
   }
-  
+
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
     if shouldDeactivateAndNotifyOthers(audioSession) {
       do {
