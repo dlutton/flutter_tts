@@ -97,15 +97,17 @@ To set shared audio [instance](https://developer.apple.com/documentation/avfound
 await flutterTts.setSharedInstance(true);
 ```
 
-To set audio [category and options](https://developer.apple.com/documentation/avfoundation/avaudiosession) (iOS only):
+To set audio [category and options](https://developer.apple.com/documentation/avfoundation/avaudiosession) with optional [mode](https://developer.apple.com/documentation/avfaudio/avaudiosession/mode) (iOS only). The following setup allows background music and in-app audio session to continue simultaneously:
 
 ```dart
-await flutterTts
-        .setIosAudioCategory(IosTextToSpeechAudioCategory.playAndRecord, [
-      IosTextToSpeechAudioCategoryOptions.allowBluetooth,
-      IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-      IosTextToSpeechAudioCategoryOptions.mixWithOthers
-    ]);
+await flutterTts.setIosAudioCategory(IosTextToSpeechAudioCategory.ambient,
+     [
+          IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+          IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+          IosTextToSpeechAudioCategoryOptions.mixWithOthers
+     ],
+     IosTextToSpeechAudioMode.voicePrompt
+);
 ```
 
 To await speak completion.

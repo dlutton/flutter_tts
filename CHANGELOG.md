@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.3.0
+
+### Features
+
+- **iOS:** Adding support for AVAudioSession.Mode
+
 ## 3.2.4
 
 ### Fixes
