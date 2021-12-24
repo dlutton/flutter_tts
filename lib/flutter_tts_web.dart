@@ -14,6 +14,8 @@ class FlutterTtsPlugin {
 
   TtsState ttsState = TtsState.stopped;
 
+  late Completer? _speechCompleter;
+
   get isPlaying => ttsState == TtsState.playing;
 
   get isStopped => ttsState == TtsState.stopped;
@@ -48,6 +50,10 @@ class FlutterTtsPlugin {
     });
     utterance.onEnd.listen((e) {
       ttsState = TtsState.stopped;
+      if (_speechCompleter != null) {
+        _speechCompleter?.complete();
+        _speechCompleter = null;
+      }
       channel.invokeMethod("speak.onComplete", null);
     });
     utterance.onPause.listen((e) {
@@ -59,6 +65,10 @@ class FlutterTtsPlugin {
       channel.invokeMethod("speak.onContinue", null);
     });
     utterance.onError.listen((e) {
+      if (_speechCompleter != null) {
+        _speechCompleter?.completeError(e);
+        _speechCompleter = null;
+      }
       channel.invokeMethod("speak.onError", e);
     });
   }
@@ -67,9 +77,12 @@ class FlutterTtsPlugin {
     switch (call.method) {
       case 'speak':
         final text = call.arguments as String?;
+        if (awaitSpeakCompletion) {
+          _speechCompleter = Completer();
+        }
         _speak(text);
-        if (!awaitSpeakCompletion) {
-          return 1;
+        if (awaitSpeakCompletion) {
+          return _speechCompleter?.future;
         }
         break;
       case 'awaitSpeakCompletion':
