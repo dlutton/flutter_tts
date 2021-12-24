@@ -44,6 +44,8 @@ class _MyAppState extends State<MyApp> {
   initTts() {
     flutterTts = FlutterTts();
 
+    _setAwaitOptions();
+
     if (isAndroid) {
       _getEngines();
     }
@@ -111,10 +113,13 @@ class _MyAppState extends State<MyApp> {
 
     if (_newVoiceText != null) {
       if (_newVoiceText!.isNotEmpty) {
-        await flutterTts.awaitSpeakCompletion(true);
         await flutterTts.speak(_newVoiceText!);
       }
     }
+  }
+
+  Future _setAwaitOptions() async {
+    await flutterTts.awaitSpeakCompletion(true);
   }
 
   Future _stop() async {
