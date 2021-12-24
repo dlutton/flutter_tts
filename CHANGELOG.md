@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.3.3
+
+### Fixes
+
+- **iOS:** Fix synthesizeToFile fatal error
+
 ## 3.3.2
 
 ### Fixes
