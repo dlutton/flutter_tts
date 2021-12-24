@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.3.1
+
+### Fixes
+
+- **Web:** Fix awaitSpeakCompletion
+
 ## 3.3.0
 
 ### Features
