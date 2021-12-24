@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.3.2
+
+### Fixes
+
+- **Android:** Fix build.gradle missing property
+
 ## 3.3.1
 
 ### Fixes
