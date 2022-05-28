@@ -4,14 +4,6 @@
 
 A flutter text to speech plugin (Swift,Java)
 
-## Compatibility Status
-
-[![Latest compatibility result for Stable channel](https://img.shields.io/endpoint?url=https://pub.green/packages/flutter_tts/badge?channel=stable)](https://pub.green/packages/flutter_tts)
-
-[![Latest compatibility result for Beta channel](https://img.shields.io/endpoint?url=https://pub.green/packages/flutter_tts/badge?channel=beta)](https://pub.green/packages/flutter_tts)
-
-[![Latest compatibility result for Dev channel](https://img.shields.io/endpoint?url=https://pub.green/packages/flutter_tts/badge?channel=dev)](https://pub.green/packages/flutter_tts)
-
 ## Features
 
 - [x] Android, iOS, Web, Windows & macOS

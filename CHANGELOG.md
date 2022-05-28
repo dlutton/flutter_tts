@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.4.0
+
+### Features
+
+- **Windows:** - Adding Windows Support
+
 ## 3.3.3
 
 ### Fixes
