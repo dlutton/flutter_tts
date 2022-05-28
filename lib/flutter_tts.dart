@@ -32,24 +32,15 @@ const String iosAudioCategoryOptionsAllowAirPlay =
 const String iosAudioCategoryOptionsDefaultToSpeaker =
     'iosAudioCategoryOptionsDefaultToSpeaker';
 
-const String iosAudioModeDefault =
-    'iosAudioModeDefault';
-const String iosAudioModeGameChat =
-    'iosAudioModeGameChat';
-const String iosAudioModeMeasurement =
-    'iosAudioModeMeasurement';
-const String iosAudioModeMoviePlayback =
-    'iosAudioModeMoviePlayback';
-const String iosAudioModeSpokenAudio =
-    'iosAudioModeSpokenAudio';
-const String iosAudioModeVideoChat =
-    'iosAudioModeVideoChat';
-const String iosAudioModeVideoRecording =
-    'iosAudioModeVideoRecording';
-const String iosAudioModeVoiceChat =
-    'iosAudioModeVoiceChat';
-const String iosAudioModeVoicePrompt =
-    'iosAudioModeVoicePrompt';
+const String iosAudioModeDefault = 'iosAudioModeDefault';
+const String iosAudioModeGameChat = 'iosAudioModeGameChat';
+const String iosAudioModeMeasurement = 'iosAudioModeMeasurement';
+const String iosAudioModeMoviePlayback = 'iosAudioModeMoviePlayback';
+const String iosAudioModeSpokenAudio = 'iosAudioModeSpokenAudio';
+const String iosAudioModeVideoChat = 'iosAudioModeVideoChat';
+const String iosAudioModeVideoRecording = 'iosAudioModeVideoRecording';
+const String iosAudioModeVoiceChat = 'iosAudioModeVoiceChat';
+const String iosAudioModeVoicePrompt = 'iosAudioModeVoicePrompt';
 
 enum TextToSpeechPlatform { android, ios }
 
@@ -194,7 +185,9 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for setting audio category
   /// ***Ios supported only***
   Future<dynamic> setIosAudioCategory(IosTextToSpeechAudioCategory category,
-    List<IosTextToSpeechAudioCategoryOptions> options, [IosTextToSpeechAudioMode mode = IosTextToSpeechAudioMode.defaultMode]) async {
+      List<IosTextToSpeechAudioCategoryOptions> options,
+      [IosTextToSpeechAudioMode mode =
+          IosTextToSpeechAudioMode.defaultMode]) async {
     const categoryToString = <IosTextToSpeechAudioCategory, String>{
       IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
       IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
@@ -215,18 +208,18 @@ class FlutterTts {
           'iosAudioCategoryOptionsAllowAirPlay',
       IosTextToSpeechAudioCategoryOptions.defaultToSpeaker:
           'iosAudioCategoryOptionsDefaultToSpeaker',
-        };
-        const modeToString = <IosTextToSpeechAudioMode, String> {
-          IosTextToSpeechAudioMode.defaultMode: iosAudioModeDefault,
-          IosTextToSpeechAudioMode.gameChat: iosAudioModeGameChat,
-          IosTextToSpeechAudioMode.measurement: iosAudioModeMeasurement,
-          IosTextToSpeechAudioMode.moviePlayback: iosAudioModeMoviePlayback,
-          IosTextToSpeechAudioMode.spokenAudio: iosAudioModeSpokenAudio,
-          IosTextToSpeechAudioMode.videoChat: iosAudioModeVideoChat,
-          IosTextToSpeechAudioMode.videoRecording: iosAudioModeVideoRecording,
-          IosTextToSpeechAudioMode.voiceChat: iosAudioModeVoiceChat,
-          IosTextToSpeechAudioMode.voicePrompt: iosAudioModeVoicePrompt,
-        };
+    };
+    const modeToString = <IosTextToSpeechAudioMode, String>{
+      IosTextToSpeechAudioMode.defaultMode: iosAudioModeDefault,
+      IosTextToSpeechAudioMode.gameChat: iosAudioModeGameChat,
+      IosTextToSpeechAudioMode.measurement: iosAudioModeMeasurement,
+      IosTextToSpeechAudioMode.moviePlayback: iosAudioModeMoviePlayback,
+      IosTextToSpeechAudioMode.spokenAudio: iosAudioModeSpokenAudio,
+      IosTextToSpeechAudioMode.videoChat: iosAudioModeVideoChat,
+      IosTextToSpeechAudioMode.videoRecording: iosAudioModeVideoRecording,
+      IosTextToSpeechAudioMode.voiceChat: iosAudioModeVoiceChat,
+      IosTextToSpeechAudioMode.voicePrompt: iosAudioModeVoicePrompt,
+    };
     if (!Platform.isIOS) return;
     try {
       return _channel
