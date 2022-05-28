@@ -14,7 +14,7 @@ A flutter text to speech plugin (Swift,Java)
 
 ## Features
 
-- [x] Android, iOS, Web, & macOS
+- [x] Android, iOS, Web, Windows & macOS
   - [x] speak
   - [x] stop
   - [x] get languages
@@ -22,13 +22,15 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set speech rate
   - [x] set speech volume
   - [x] set speech pitch
+- [x] Android, iOS, Web & macOS
   - [x] is language available
-- [x] Android, iOS
+- [x] Android, iOS, Windows
   - [x] get voices
   - [x] set voice
+- [x] Android, iOS
   - [x] speech marks (requires iOS 7+ and Android 26+)
   - [x] synthesize to file (requires iOS 13+)
-- [x] iOS, Web
+- [x] iOS, Web, Windows
   - [x] pause
 - [x] Android
   - [x] set silence

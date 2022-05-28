@@ -35,6 +35,7 @@ class _MyAppState extends State<MyApp> {
 
   bool get isIOS => !kIsWeb && Platform.isIOS;
   bool get isAndroid => !kIsWeb && Platform.isAndroid;
+  bool get isWindows => !kIsWeb && Platform.isWindows;
   bool get isWeb => kIsWeb;
 
   @override
@@ -73,7 +74,7 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
-    if (isWeb || isIOS) {
+    if (isWeb || isIOS || isWindows) {
       flutterTts.setPauseHandler(() {
         setState(() {
           print("Paused");

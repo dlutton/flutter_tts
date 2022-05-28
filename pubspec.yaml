@@ -19,6 +19,11 @@ flutter:
         pluginClass: FlutterTtsPlugin
       macos:
         pluginClass: FlutterTtsPlugin
+      windows:
+        pluginClass: FlutterTtsPlugin
+        supportedVariants:
+          - uwp
+          - win32
       web:
         pluginClass: FlutterTtsPlugin
         fileName: flutter_tts_web.dart
