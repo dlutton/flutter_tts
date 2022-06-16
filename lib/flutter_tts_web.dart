@@ -140,7 +140,10 @@ class FlutterTtsPlugin {
 
   void _stop() {
     if (ttsState != TtsState.stopped) {
-      synth.callMethod('cancel');
+      synth.callMethod('pause');
+      Future.delayed(Duration(milliseconds: 500), () {
+        synth.callMethod('cancel');
+      });
     }
   }
 
@@ -150,7 +153,7 @@ class FlutterTtsPlugin {
     }
   }
 
-  void _setRate(num rate) => utterance['rate'] = rate * 2.0;
+  void _setRate(num rate) => utterance['rate'] = rate;
   void _setVolume(num? volume) => utterance['volume'] = volume;
   void _setPitch(num? pitch) => utterance['pitch'] = pitch;
   void _setLanguage(String? language) => utterance['lang'] = language;
