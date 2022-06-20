@@ -34,6 +34,7 @@ class FlutterTtsPlugin {
   late js.JsObject utterance;
   List<dynamic>? voices;
   List<String?>? languages;
+  Timer? t;
 
   FlutterTtsPlugin() {
     utterance = new js.JsObject(js.context["SpeechSynthesisUtterance"] as js.JsFunction, [""]);
@@ -46,6 +47,17 @@ class FlutterTtsPlugin {
     utterance["onstart"] = (e) {
       ttsState = TtsState.playing;
       channel.invokeMethod("speak.onStart", null);
+      var bLocal = (utterance['voice']?["localService"] ?? false);
+      if (bLocal is bool && !bLocal) {
+        t = Timer.periodic(Duration(seconds: 14), (t) {
+          if (ttsState == TtsState.playing) {
+            synth.callMethod('pause');
+            synth.callMethod('resume');
+          } else {
+            t.cancel();
+          }
+        });
+      }
     };
     // js.JsFunction.withThis((e) {
     //   ttsState = TtsState.playing;
@@ -57,48 +69,28 @@ class FlutterTtsPlugin {
         _speechCompleter?.complete();
         _speechCompleter = null;
       }
+      t?.cancel();
       channel.invokeMethod("speak.onComplete", null);
     };
-    // js.JsFunction.withThis((e) {
-    //   ttsState = TtsState.stopped;
-    //   if (_speechCompleter != null) {
-    //     _speechCompleter?.complete();
-    //     _speechCompleter = null;
-    //   }
-    //   channel.invokeMethod("speak.onComplete", null);
-    // });
+
     utterance["onpause"] = (e) {
       ttsState = TtsState.paused;
       channel.invokeMethod("speak.onPause", null);
     };
 
-    // js.JsFunction.withThis((e) {
-    //   ttsState = TtsState.paused;
-    //   channel.invokeMethod("speak.onPause", null);
-    // });
     utterance["onresume"] = (e) {
       ttsState = TtsState.continued;
       channel.invokeMethod("speak.onContinue", null);
     };
 
-    // js.JsFunction.withThis((e) {
-    //   ttsState = TtsState.continued;
-    //   channel.invokeMethod("speak.onContinue", null);
-    // });
     utterance["onerror"] = (e) {
       if (_speechCompleter != null) {
         _speechCompleter?.completeError(e as js.JsObject);
         _speechCompleter = null;
       }
+      t?.cancel();
       channel.invokeMethod("speak.onError", e);
     };
-    // js.JsFunction.withThis((e) {
-    //   if (_speechCompleter != null) {
-    //     _speechCompleter?.completeError(e as js.JsObject);
-    //     _speechCompleter = null;
-    //   }
-    //   channel.invokeMethod("speak.onError", e);
-    // });
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
