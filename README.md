@@ -16,7 +16,7 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set speech pitch
 - [x] Android, iOS, Web & macOS
   - [x] is language available
-- [x] Android, iOS, Windows
+- [x] Android, iOS, Web, & Windows
   - [x] get voices
   - [x] set voice
 - [x] Android, iOS

@@ -1,5 +1,15 @@
 # ChangeLog
 
+## 3.5.0
+
+### Features
+
+- **Web:** - Adding setVoice support
+
+### Fixes
+
+- **Web:** Fix chrome bug
+
 ## 3.4.0
 
 ### Features
