@@ -25,7 +25,8 @@ class FlutterTtsPlugin {
   get isContinued => ttsState == TtsState.continued;
 
   static void registerWith(Registrar registrar) {
-    channel = MethodChannel(PLATFORM_CHANNEL, const StandardMethodCodec(), registrar);
+    channel =
+        MethodChannel(PLATFORM_CHANNEL, const StandardMethodCodec(), registrar);
     final instance = FlutterTtsPlugin();
     channel.setMethodCallHandler(instance.handleMethodCall);
   }
@@ -37,8 +38,10 @@ class FlutterTtsPlugin {
   Timer? t;
 
   FlutterTtsPlugin() {
-    utterance = new js.JsObject(js.context["SpeechSynthesisUtterance"] as js.JsFunction, [""]);
-    synth = new js.JsObject.fromBrowserObject(js.context["speechSynthesis"] as js.JsObject);
+    utterance = new js.JsObject(
+        js.context["SpeechSynthesisUtterance"] as js.JsFunction, [""]);
+    synth = new js.JsObject.fromBrowserObject(
+        js.context["speechSynthesis"] as js.JsObject);
 
     _listeners();
   }
@@ -123,7 +126,8 @@ class FlutterTtsPlugin {
       case 'getVoices':
         return getVoices();
       case 'setVoice':
-        final tmpVoiceMap = Map<String, String>.from(call.arguments as LinkedHashMap);
+        final tmpVoiceMap =
+            Map<String, String>.from(call.arguments as LinkedHashMap);
         return _setVoice(tmpVoiceMap);
       case 'setSpeechRate':
         final rate = call.arguments as num;
