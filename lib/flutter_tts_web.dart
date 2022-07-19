@@ -14,7 +14,7 @@ class FlutterTtsPlugin {
 
   TtsState ttsState = TtsState.stopped;
 
-  late Completer? _speechCompleter;
+  Completer? _speechCompleter;
 
   get isPlaying => ttsState == TtsState.playing;
 
