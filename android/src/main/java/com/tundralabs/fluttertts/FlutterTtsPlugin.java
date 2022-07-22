@@ -425,6 +425,7 @@ public class FlutterTtsPlugin implements MethodCallHandler, FlutterPlugin {
   }
 
   void setEngine(String engine, Result result) {
+    isTtsInitialized = false;
     tts = new TextToSpeech(context, onInitListener, engine);
     result.success(1);
   }
