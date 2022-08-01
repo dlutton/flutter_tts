@@ -92,7 +92,7 @@ class FlutterTtsPlugin {
         _speechCompleter = null;
       }
       t?.cancel();
-      channel.invokeMethod("speak.onError", e);
+      channel.invokeMethod("speak.onError", e.toString());
     };
   }
 
