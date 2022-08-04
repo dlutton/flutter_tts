@@ -1,12 +1,20 @@
 cmake_minimum_required(VERSION 3.14)
 set(PROJECT_NAME "flutter_tts")
 project(${PROJECT_NAME} LANGUAGES CXX)
+include(FetchContent)
 
 ################ NuGet intall begin ################
+FetchContent_Declare(nuget
+  URL "https://dist.nuget.org/win-x86-commandline/v6.0.0/nuget.exe"
+  URL_HASH SHA256=04eb6c4fe4213907e2773e1be1bbbd730e9a655a3c9c58387ce8d4a714a5b9e1
+  DOWNLOAD_NO_EXTRACT true
+)
+
 find_program(NUGET_EXE NAMES nuget)
 if(NOT NUGET_EXE)
-	message("NUGET.EXE not found.")
-	message(FATAL_ERROR "Please install this executable, and run CMake again.")
+  message("Nuget.exe not found, trying to download or use cached version.")
+  FetchContent_MakeAvailable(nuget)
+  set(NUGET_EXE ${nuget_SOURCE_DIR}/nuget.exe)
 endif()
 
 exec_program(${NUGET_EXE}
