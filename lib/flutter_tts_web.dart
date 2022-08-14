@@ -14,7 +14,7 @@ class FlutterTtsPlugin {
 
   TtsState ttsState = TtsState.stopped;
 
-  late Completer? _speechCompleter;
+  Completer? _speechCompleter;
 
   get isPlaying => ttsState == TtsState.playing;
 
@@ -92,7 +92,7 @@ class FlutterTtsPlugin {
         _speechCompleter = null;
       }
       t?.cancel();
-      channel.invokeMethod("speak.onError", e);
+      channel.invokeMethod("speak.onError", e.toString());
     };
   }
 
