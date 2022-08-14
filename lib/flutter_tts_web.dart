@@ -213,7 +213,7 @@ class FlutterTtsPlugin {
 
   getVoices() async {
     var tmpVoices = synth.callMethod("getVoices");
-    List<Map<String, String>> voiceList = [];
+    var voiceList = <Map<String, String>>[];
     for (var voice in tmpVoices) {
       voiceList.add({
         "name": voice["name"] as String,
