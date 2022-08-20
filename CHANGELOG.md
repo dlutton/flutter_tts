@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.5.1
+
+### Fixes
+
+- **Web:** Fixing late variable and updating value being passed through a message channel to a primitive type
+
 ## 3.5.0
 
 ### Features
