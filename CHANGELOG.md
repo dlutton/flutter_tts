@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.5.2
+
+### Updates
+
+- **Android:** Converting Java to Kotlin and package upgrades
+
 ## 3.5.1
 
 ### Fixes
