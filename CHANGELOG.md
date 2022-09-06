@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.5.3
+
+### Features
+
+- **Android:** Adding getDefaultVoice
+
 ## 3.5.2
 
 ### Updates

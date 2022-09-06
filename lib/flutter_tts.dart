@@ -277,6 +277,14 @@ class FlutterTts {
     return engineName;
   }
 
+  /// [Future] which invokes the platform specific method for getDefaultVoice
+  /// Returns a `Map` containing a voice name and locale
+  /// ***Android supported only ***
+  Future<dynamic> get getDefaultVoice async {
+    final voice = await _channel.invokeMethod('getDefaultVoice');
+    return voice;
+  }
+
   /// [Future] which invokes the platform specific method for getVoices
   /// Returns a `List` of `Maps` containing a voice name and locale
   /// ***Android, iOS, and macOS supported only***

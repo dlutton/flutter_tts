@@ -31,6 +31,7 @@ A flutter text to speech plugin (Swift,Kotlin)
   - [x] get engines
   - [x] set engine
   - [x] get default engine
+  - [x] get default voice
   - [x] set queue mode
   - [x] get max speech input length
 - [x] iOS
@@ -155,7 +156,9 @@ await flutterTts.setSharedInstance(true);
 // Android only
 await flutterTts.setSilence(2);
 
-await flutterTts.getEngines();
+await flutterTts.getEngines;
+
+await flutterTts.getDefaultVoice;
 
 await flutterTts.isLanguageInstalled("en-AU");
 

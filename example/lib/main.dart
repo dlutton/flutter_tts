@@ -51,6 +51,7 @@ class _MyAppState extends State<MyApp> {
 
     if (isAndroid) {
       _getDefaultEngine();
+      _getDefaultVoice();
     }
 
     flutterTts.setStartHandler(() {
@@ -106,6 +107,13 @@ class _MyAppState extends State<MyApp> {
     var engine = await flutterTts.getDefaultEngine;
     if (engine != null) {
       print(engine);
+    }
+  }
+
+  Future _getDefaultVoice() async {
+    var voice = await flutterTts.getDefaultVoice;
+    if (voice != null) {
+      print(voice);
     }
   }
 

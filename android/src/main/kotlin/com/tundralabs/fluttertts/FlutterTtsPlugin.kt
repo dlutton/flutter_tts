@@ -278,6 +278,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             "getSpeechRateValidRange" -> getSpeechRateValidRange(result)
             "getEngines" -> getEngines(result)
             "getDefaultEngine" -> getDefaultEngine(result)
+            "getDefaultVoice" -> getDefaultVoice(result)
             "setVoice" -> {
                 val voice: HashMap<String?, String>? = call.arguments()
                 setVoice(voice!!, result)
@@ -447,6 +448,16 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private fun getDefaultEngine(result: Result) {
         val defaultEngine: String = tts!!.defaultEngine
         result.success(defaultEngine)
+    }
+
+    private fun getDefaultVoice(result: Result) {
+        val defaultVoice: Voice? = tts!!.defaultVoice
+        val voice = HashMap<String, String>()
+        if (defaultVoice != null) {
+            voice["name"] = defaultVoice.name
+            voice["locale"] = defaultVoice.locale.toLanguageTag()
+        }
+        result.success(voice)
     }
 
     private fun getSpeechRateValidRange(result: Result) {
