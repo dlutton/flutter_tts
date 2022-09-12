@@ -85,10 +85,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             override fun onDone(utteranceIdLocal: String) {
-                if ((textToSpeakArrayPosition + 1) != textToSpeakLength) {
+                if (textToSpeakArrayPosition < textToSpeakLength) {
                     continueReading()
                     return
                 }
+                speaking = false
                 val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 if (utteranceId.startsWith(SILENCE_PREFIX)) return
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
@@ -203,7 +204,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun continueReading() {
-        if ((textToSpeakArrayPosition + 1) == textToSpeakLength) {
+        if (textToSpeakArrayPosition >= textToSpeakLength) {
             return
         }
         if (isPaused) return
@@ -263,6 +264,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 if (isPaused) {
                     isPaused = false;
                     continueReading()
+                    result.success(1)
                     return
                 }
                 isPaused = false
@@ -566,11 +568,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 )
             textToSpeakLength = textToSpeakArray.size
 
-            return tts!!.playSilentUtterance(
-                silencems.toLong(),
-                TextToSpeech.QUEUE_FLUSH,
-                SILENCE_PREFIX + uuid
-            ) == 0
+            val sentence: String = textToSpeakArray[textToSpeakArrayPosition]
+            textToSpeakArrayPosition = textToSpeakArrayPosition + 1
+            return tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
         }
         isTtsInitialized = false
         tts = TextToSpeech(context, onInitListener, googleTtsEngine)
