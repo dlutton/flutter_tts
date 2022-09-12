@@ -123,7 +123,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
                 val startAndEndAt = calculateStartAndEndAt(textToSpeakArrayPosition)
                 val startAt: Int = startAndEndAt.get("startAt")!!
+                startAt = startAt + startAtLocal
                 val endAt: Int = startAndEndAt.get("endAt")!!
+                endAt = startAt + endAtLocal
 
                 val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 if (utteranceId != null && !utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
@@ -148,7 +150,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
                 val startAndEndAt = calculateStartAndEndAt(textToSpeakArrayPosition)
                 val startAt: Int = startAndEndAt.get("startAt")!!
+                startAt = startAt + startAtLocal
                 val endAt: Int = startAndEndAt.get("endAt")!!
+                endAt = startAt + endAtLocal
 
                 if (!utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     super.onRangeStart(utteranceId, startAt, endAt, frame)
@@ -205,11 +209,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         if (isPaused) return
 
         val uuid: String = UUID.randomUUID().toString()
-        val word: String = textToSpeakArray[textToSpeakArrayPosition]
+        val sentence: String = textToSpeakArray[textToSpeakArrayPosition]
         //keep talking until we finish all
         if (lastWordWasSilence) {
             lastWordWasSilence = false;
-            tts!!.speak(word, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
+            tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
             textToSpeakArrayPosition = textToSpeakArrayPosition + 1;
         } else {
             lastWordWasSilence = true;
@@ -562,7 +566,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 )
             textToSpeakLength = textToSpeakArray.size
 
-            val word: String = textToSpeakArray[textToSpeakArrayPosition]
+            val sentence: String = textToSpeakArray[textToSpeakArrayPosition]
 
             tts!!.playSilentUtterance(
                 silencems.toLong(),
@@ -570,10 +574,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 SILENCE_PREFIX + uuid
             )
 
-            //if it was the first word, skip so that we don't read it again
+            //if it was the first sentence, skip so that we don't read it again
             textToSpeakArrayPosition = textToSpeakArrayPosition + 1;
 
-            return tts!!.speak(word, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
+            return tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
         }
         isTtsInitialized = false
         tts = TextToSpeech(context, onInitListener, googleTtsEngine)
@@ -649,10 +653,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
     }
 
+    //returns where the sentence we are reading 
+    //starts in the text and wher it ends
     private fun calculateStartAndEndAt(position: Int): HashMap<String, Int> {
         val pos = HashMap<String, Int>()
         var startAt = 0
-        val currentWord: String = textToSpeakArray[position];
+        val currentSentence: String = textToSpeakArray[position]
 
         for (i in 0..position) {
             if (i == position) break
@@ -660,7 +666,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
 
         pos.put("startAt", startAt)
-        pos.put("endAt", startAt + currentWord.length)
+        pos.put("endAt", startAt + currentSentence.length)
         return pos
     }
 }
