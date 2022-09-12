@@ -249,7 +249,7 @@ class _MyAppState extends State<MyApp> {
       alignment: Alignment.topCenter,
       padding: EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
       child: TextField(
-        maxLines: 23,
+        maxLines: 11,
         minLines: 6,
         onChanged: (String value) {
           _onChange(value);
@@ -257,28 +257,20 @@ class _MyAppState extends State<MyApp> {
       ));
 
   Widget _btnSection() {
-    // if (isAndroid) {
-    //   return Container(
-    //       padding: EdgeInsets.only(top: 50.0),
-    //       child:
-    //           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-    //         _buildButtonColumn(Colors.green, Colors.greenAccent,
-    //             Icons.play_arrow, 'PLAY', _speak),
-    //         _buildButtonColumn(
-    //             Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
-    //       ]));
-    // } else {
     return Container(
-        padding: EdgeInsets.only(top: 50.0),
-        child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+      padding: EdgeInsets.only(top: 50.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
           _buildButtonColumn(Colors.green, Colors.greenAccent, Icons.play_arrow,
               'PLAY', _speak),
           _buildButtonColumn(
               Colors.red, Colors.redAccent, Icons.stop, 'STOP', _stop),
           _buildButtonColumn(
               Colors.blue, Colors.blueAccent, Icons.pause, 'PAUSE', _pause),
-        ]));
-    // }
+        ],
+      ),
+    );
   }
 
   Widget _enginesDropDownSection(dynamic engines) => Container(

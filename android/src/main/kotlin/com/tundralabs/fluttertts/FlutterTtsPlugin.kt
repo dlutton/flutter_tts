@@ -203,6 +203,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             return
         }
         if (isPaused) return
+
+        //if it was the first word, skip so that we don't read it again
+        if(textToSpeakArrayPosition == 0){
+            textToSpeakArrayPosition = textToSpeakArrayPosition + 1;
+        }
+
         val uuid: String = UUID.randomUUID().toString()
         val word: String = textToSpeakArray[textToSpeakArrayPosition]
         //keep talking until we finish all
@@ -556,7 +562,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             //break long text to sentence and start reading.
             textToSpeakArray = ArrayList(
                     text.split(
-                        Regex("[.?]+")
+                        Regex("[.?!:;]+")
                     )
                 )
             textToSpeakLength = textToSpeakArray.size
