@@ -199,7 +199,6 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun continueReading() {
-        // return
         if ((textToSpeakArrayPosition + 1) == textToSpeakLength) {
             return
         }
@@ -554,8 +553,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             val uuid: String = UUID.randomUUID().toString()
             utterances[uuid] = text
 
-            // return tts!!.speak(text, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
-            textToSpeakArray = ArrayList(text.split("."))
+            //break long text to sentence and start reading.
+            textToSpeakArray = ArrayList(
+                    text.split(
+                        Regex("[.?]+")
+                    )
+                )
             textToSpeakLength = textToSpeakArray.size
 
             val word: String = textToSpeakArray[textToSpeakArrayPosition]
