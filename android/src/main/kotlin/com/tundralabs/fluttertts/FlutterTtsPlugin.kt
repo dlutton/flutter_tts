@@ -265,8 +265,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     continueReading()
                     return
                 }
-                textToSpeakArrayPosition = 0
                 isPaused = false
+                textToSpeakArrayPosition = 0
                 textToSpeak = call.arguments.toString()
                 if (speaking) {
                     // If TTS is set to queue mode, allow the utterance to be queued up rather than discarded
@@ -557,7 +557,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         if (ismServiceConnectionUsable(tts)) {
             val uuid: String = UUID.randomUUID().toString()
             utterances[uuid] = text
-
+            
             //break long text to sentence and start reading.
             textToSpeakArray = ArrayList(
                     text.split(
@@ -566,18 +566,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 )
             textToSpeakLength = textToSpeakArray.size
 
-            val sentence: String = textToSpeakArray[textToSpeakArrayPosition]
-
-            tts!!.playSilentUtterance(
+            return tts!!.playSilentUtterance(
                 silencems.toLong(),
                 TextToSpeech.QUEUE_FLUSH,
                 SILENCE_PREFIX + uuid
-            )
-
-            //if it was the first sentence, skip so that we don't read it again
-            textToSpeakArrayPosition = textToSpeakArrayPosition + 1;
-
-            return tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
+            ) == 0
         }
         isTtsInitialized = false
         tts = TextToSpeech(context, onInitListener, googleTtsEngine)
