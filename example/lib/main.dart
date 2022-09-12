@@ -121,6 +121,7 @@ class _MyAppState extends State<MyApp> {
     await flutterTts.setVolume(volume);
     await flutterTts.setSpeechRate(rate);
     await flutterTts.setPitch(pitch);
+    // await flutterTts.setSilence(0);
 
     if (_newVoiceText != null) {
       if (_newVoiceText!.isNotEmpty) {
