@@ -122,9 +122,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             private fun onProgress(utteranceIdLocal: String?, startAtLocal: Int, endAtLocal: Int) {
 
                 val startAndEndAt = calculateStartAndEndAt(textToSpeakArrayPosition)
-                val startAt: Int = startAndEndAt.get("startAt")!!
+                var startAt: Int = startAndEndAt.get("startAt")!!
                 startAt = startAt + startAtLocal
-                val endAt: Int = startAndEndAt.get("endAt")!!
+                var endAt: Int = startAndEndAt.get("endAt")!!
                 endAt = startAt + endAtLocal
 
                 val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
@@ -149,9 +149,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
 
                 val startAndEndAt = calculateStartAndEndAt(textToSpeakArrayPosition)
-                val startAt: Int = startAndEndAt.get("startAt")!!
+                var startAt: Int = startAndEndAt.get("startAt")!!
                 startAt = startAt + startAtLocal
-                val endAt: Int = startAndEndAt.get("endAt")!!
+                var endAt: Int = startAndEndAt.get("endAt")!!
                 endAt = startAt + endAtLocal
 
                 if (!utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
