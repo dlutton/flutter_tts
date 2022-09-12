@@ -34,11 +34,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val googleTtsEngine = "com.google.android.tts"
     private var isTtsInitialized = false
     private var isPaused = false
-    private var speechPosition = 0
+    private var textToSpeakArrayPosition = 0
     private var textToSpeak: String = ""
-    private var spokenTextLength = 0
-    private var splitspeech = ArrayList<String>()
-    private var lastWordWasASilence = false
+    private var textToSpeakLength = 0
+    private var textToSpeakArray = ArrayList<String>()
+    private var lastWordWasSilence = false
     private val pendingMethodCalls = ArrayList<Runnable>()
     private val utterances = HashMap<String, String>()
     private var bundle: Bundle? = null
@@ -69,10 +69,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val utteranceProgressListener: UtteranceProgressListener =
         object : UtteranceProgressListener() {
             override fun onStart(utteranceIdLocal: String) {
-                if (speechPosition > 0) {
+                if (textToSpeakArrayPosition > 0) {
                     return
                 }
-                val utteranceId = splitspeech[speechPosition]
+                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     invokeMethod("synth.onStart", true)
                 } else {
@@ -85,11 +85,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             override fun onDone(utteranceIdLocal: String) {
-                if ((speechPosition + 1) != spokenTextLength) {
+                if ((textToSpeakArrayPosition + 1) != textToSpeakLength) {
                     continueReading()
                     return
                 }
-                val utteranceId = splitspeech[speechPosition]
+                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 if (utteranceId.startsWith(SILENCE_PREFIX)) return
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     Log.d(tag, "Utterance ID has completed: $utteranceId")
@@ -108,7 +108,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             override fun onStop(utteranceIdLocal: String, interrupted: Boolean) {
-                val utteranceId = splitspeech[speechPosition]
+                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 Log.d(
                     tag,
                     "Utterance ID has been stopped: $utteranceId. Interrupted: $interrupted"
@@ -121,18 +121,18 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             private fun onProgress(utteranceIdLocal: String?, startAtLocal: Int, endAtLocal: Int) {
 
-                val startAndEndAt = calculateStartAndEndAt(speechPosition)
+                val startAndEndAt = calculateStartAndEndAt(textToSpeakArrayPosition)
                 val startAt: Int = startAndEndAt.get("startAt")!!
                 val endAt: Int = startAndEndAt.get("endAt")!!
 
-                val utteranceId = splitspeech[speechPosition]
+                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 if (utteranceId != null && !utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     val text = utterances[utteranceId]
                     val data = HashMap<String, String?>()
                     data["text"] = text
-                    data["start"] = speechPosition.toString()
+                    data["start"] = startAt.toString()
                     data["end"] = endAt.toString()
-                    data["word"] = text!!.substring(speechPosition, endAt)
+                    data["word"] = text!!.substring(startAt, endAt)
                     invokeMethod("speak.onProgress", data)
                 }
             }
@@ -144,9 +144,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 endAtLocal: Int,
                 frame: Int
             ) {
-                val utteranceId = splitspeech[speechPosition]
+                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
 
-                val startAndEndAt = calculateStartAndEndAt(speechPosition)
+                val startAndEndAt = calculateStartAndEndAt(textToSpeakArrayPosition)
                 val startAt: Int = startAndEndAt.get("startAt")!!
                 val endAt: Int = startAndEndAt.get("endAt")!!
 
@@ -158,7 +158,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             @Deprecated("")
             override fun onError(utteranceIdLocal: String) {
-                val utteranceId = splitspeech[speechPosition]
+                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     if (awaitSynthCompletion) {
                         synth = false
@@ -173,7 +173,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             override fun onError(utteranceIdLocal: String, errorCode: Int) {
-                val utteranceId = splitspeech[speechPosition]
+                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     if (awaitSynthCompletion) {
                         synth = false
@@ -200,19 +200,19 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     private fun continueReading() {
 
-        if ((speechPosition + 1) == spokenTextLength) {
+        if ((textToSpeakArrayPosition + 1) == textToSpeakLength) {
             return
         }
         if (isPaused) return
         val uuid: String = UUID.randomUUID().toString()
-        val word: String = splitspeech[speechPosition]
+        val word: String = textToSpeakArray[textToSpeakArrayPosition]
         //keep talking until we finish all
-        if (lastWordWasASilence) {
-            lastWordWasASilence = false;
+        if (lastWordWasSilence) {
+            lastWordWasSilence = false;
             tts!!.speak(word, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
-            speechPosition = speechPosition + 1;
+            textToSpeakArrayPosition = textToSpeakArrayPosition + 1;
         } else {
-            lastWordWasASilence = true;
+            lastWordWasSilence = true;
             tts!!.playSilentUtterance(
                 silencems.toLong(),
                 TextToSpeech.QUEUE_FLUSH,
@@ -261,7 +261,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     continueReading()
                     return
                 }
-                speechPosition = 0
+                textToSpeakArrayPosition = 0
                 isPaused = false
                 textToSpeak = call.arguments.toString()
                 if (speaking) {
@@ -317,7 +317,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 }
             }
             "stop" -> {
-                speechPosition = 0
+                textToSpeakArrayPosition = 0
                 stop()
                 result.success(1)
             }
@@ -549,10 +549,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             val uuid: String = UUID.randomUUID().toString()
             utterances[uuid] = text
 
-            splitspeech = ArrayList(text.split(" "))
-            spokenTextLength = splitspeech.size
+            textToSpeakArray = ArrayList(text.split(" "))
+            textToSpeakLength = textToSpeakArray.size
 
-            val word: String = splitspeech[speechPosition]
+            val word: String = textToSpeakArray[textToSpeakArrayPosition]
 
             tts!!.playSilentUtterance(
                 silencems.toLong(),
@@ -639,11 +639,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private fun calculateStartAndEndAt(position: Int): HashMap<String, Int> {
         val pos = HashMap<String, Int>()
         var startAt = 0
-        val currentWord: String = splitspeech[position];
+        val currentWord: String = textToSpeakArray[position];
 
         for (i in 0..position) {
             if (i == position) break
-            startAt += splitspeech[i].length
+            startAt += textToSpeakArray[i].length
         }
 
         pos.put("startAt", startAt)
