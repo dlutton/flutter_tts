@@ -118,7 +118,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     speaking = false
                 }
                 if(isPaused){                    
-                    invokeMethod("speak.onStart", true)
+                    invokeMethod("speak.onPause", true)
                 }else{
                     invokeMethod("speak.onCancel", true)
                 }
