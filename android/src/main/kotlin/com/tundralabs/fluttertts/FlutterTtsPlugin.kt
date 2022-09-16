@@ -72,7 +72,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 if (textToSpeakArrayPosition > 0) {
                     return
                 }
-                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
+                val utteranceId = getCurrentSentence()
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     invokeMethod("synth.onStart", true)
                 } else {
@@ -90,7 +90,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     return
                 }
                 speaking = false
-                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
+                val utteranceId = getCurrentSentence()
                 if (utteranceId.startsWith(SILENCE_PREFIX)) return
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     Log.d(tag, "Utterance ID has completed: $utteranceId")
@@ -109,7 +109,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             override fun onStop(utteranceIdLocal: String, interrupted: Boolean) {
-                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
+                val utteranceId = getCurrentSentence()
                 Log.d(
                     tag,
                     "Utterance ID has been stopped: $utteranceId. Interrupted: $interrupted"
@@ -128,7 +128,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 var endAt: Int = startAndEndAt.get("endAt")!!
                 endAt = startAt + endAtLocal
 
-                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
+                val utteranceId = getCurrentSentence()
                 if (utteranceId != null && !utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     val text = utterances[utteranceId]
                     val data = HashMap<String, String?>()
@@ -147,7 +147,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 endAtLocal: Int,
                 frame: Int
             ) {
-                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
+                val utteranceId = getCurrentSentence()
 
                 val startAndEndAt = calculateStartAndEndAt(textToSpeakArrayPosition)
                 var startAt: Int = startAndEndAt.get("startAt")!!
@@ -163,7 +163,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             @Deprecated("")
             override fun onError(utteranceIdLocal: String) {
-                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
+                val utteranceId = getCurrentSentence()
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     if (awaitSynthCompletion) {
                         synth = false
@@ -178,7 +178,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             override fun onError(utteranceIdLocal: String, errorCode: Int) {
-                val utteranceId = textToSpeakArray[textToSpeakArrayPosition]
+                val utteranceId = getCurrentSentence()
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     if (awaitSynthCompletion) {
                         synth = false
@@ -210,14 +210,14 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         if (isPaused) return
 
         val uuid: String = UUID.randomUUID().toString()
-        val sentence: String = textToSpeakArray[textToSpeakArrayPosition]
+        val sentence: String = getCurrentSentence()
         //keep talking until we finish all
         if (lastWordWasSilence) {
-            lastWordWasSilence = false;
+            lastWordWasSilence = false
             tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
-            textToSpeakArrayPosition = textToSpeakArrayPosition + 1;
+            textToSpeakArrayPosition = textToSpeakArrayPosition + 1
         } else {
-            lastWordWasSilence = true;
+            lastWordWasSilence = true
             tts!!.playSilentUtterance(
                 silencems.toLong(),
                 TextToSpeech.QUEUE_FLUSH,
@@ -262,7 +262,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         when (call.method) {
             "speak" -> {
                 if (isPaused) {
-                    isPaused = false;
+                    isPaused = false
                     continueReading()
                     result.success(1)
                     return
@@ -293,7 +293,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
             "pause" -> {
                 isPaused = true
-                if(textToSpeakArrayPosition > 0){
+                if (textToSpeakArrayPosition > 0) {
                     //go back one sentence
                     textToSpeakArrayPosition = textToSpeakArrayPosition - 1
                 }
@@ -559,25 +559,29 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         if (ismServiceConnectionUsable(tts)) {
             val uuid: String = UUID.randomUUID().toString()
             utterances[uuid] = text
-            
 
-            var regexString: String = ""
-            val splitablePuntuations = getSplitablePunctuation()
+            //Use a unique word that will never occur in a text here,
+            //because we will split the user text with it and it will be removed
+            val splitKey: String = "__fftts_dcdea_split_here__"
+
+            var encodedText = text
+            //do not split ... as they are used in text
+            encodedText = encodedText.replace("...", "__ddd_dcdea_triple_dot__")
+
+            val splitablePunctuations = arrayOf("?", ".", "!", ":", ";")
             //iterate through map and concatenate        
-            for ((punctuation, encodedPunctuation) in splitablePuntuations) {
-                regexString = regexString + punctuation
+            for (punctuation in splitablePunctuations) {
+                encodedText = encodedText.replace(punctuation, punctuation + splitKey)
             }
-            var encodedText = encodeTextPunctuation(text);
-            
+            encodedText = encodedText.replace( "__ddd_dcdea_triple_dot__", "...")
+
             //break long text to sentence and start reading.
             textToSpeakArray = ArrayList(
-                    encodedText.split(
-                        Regex(regexString)
-                    )
-                )
+                encodedText.split(splitKey)
+            )
             textToSpeakLength = textToSpeakArray.size
 
-            val sentence: String = textToSpeakArray[textToSpeakArrayPosition]
+            val sentence: String = getCurrentSentence()
             textToSpeakArrayPosition = textToSpeakArrayPosition + 1
             return tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
         }
@@ -672,36 +676,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         return pos
     }
 
-    //convert the puntuation in a text to decodeable 
-    //text so that it can be split without changing 
-    //the text structure
-    private fun encodeTextPunctuation(text: String):String{
-        val splitablePuntuations = getSplitablePunctuation()
-        //iterate through map and replace        
-         for ((punctuation, encodedPunctuation) in splitablePuntuations) {
-            text.replace(punctuation, encodedPunctuation)
-        }
-        return text
-    }
-    //decode the encoded puntuation in a text to decodeable 
-    //text so that it can be split without changing 
-    //the text structure
-    private fun decodeTextPunctuation(text: String):String {  
-        val splitablePuntuations = getSplitablePunctuation()
-        //iterate through map and replace     
-        for ((punctuation, encodedPunctuation) in splitablePuntuations) {    
-            text.replace(encodedPunctuation, punctuation)
-        }
-        return text
-    }
-
-    private fun getSplitablePunctuation():HashMap<String, String>{
-        val punctuations = HashMap<String, Int>()
-        punctuations.put("?", "__dcdea_qm__?")
-        punctuations.put("!", "__dcdea_ex__!")
-        punctuations.put(".", "__dcdea_fs__.")
-        punctuations.put(":", "__dcdea_dp__:")
-        punctuations.put(";", "__dcdea_sc__;")
-        return punctuations
+    //returns the decoded sentence we are reading
+    private fun getCurrentSentence(): String {
+        return textToSpeakArray[textToSpeakArrayPosition]
     }
 }
