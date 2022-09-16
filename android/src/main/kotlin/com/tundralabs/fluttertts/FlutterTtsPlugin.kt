@@ -160,7 +160,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 endAt = startAt + endAtLocal
 
                 if (!utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
-                    super.onRangeStart(utteranceId, startAt, endAt, frame)
+                    super.onRangeStart(utteranceIdLocal, startAtLocal, endAtLocal, frame)
                     onProgress(utteranceId, startAt, endAt)
                 }
             }
