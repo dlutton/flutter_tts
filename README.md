@@ -22,7 +22,7 @@ A flutter text to speech plugin (Swift,Kotlin)
 - [x] Android, iOS
   - [x] speech marks (requires iOS 7+ and Android 26+)
   - [x] synthesize to file (requires iOS 13+)
-- [x] iOS, Web, Windows
+- [x] Android, iOS, Web, & Windows
   - [x] pause
 - [x] Android
   - [x] set silence
@@ -142,7 +142,7 @@ await flutterTts.setPitch(1.0);
 
 await flutterTts.isLanguageAvailable("en-US");
 
-// iOS and Web only
+// iOS, Android and Web only
 await flutterTts.pause();
 
 // iOS, macOS, and Android only
@@ -202,7 +202,7 @@ flutterTts.setCancelHandler((msg) {
   });
 });
 
-// iOS and Web
+// Android, iOS and Web
 flutterTts.setPauseHandler((msg) {
   setState(() {
     ttsState = TtsState.paused;

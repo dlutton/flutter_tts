@@ -117,7 +117,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 if (awaitSpeakCompletion) {
                     speaking = false
                 }
-                invokeMethod("speak.onCancel", true)
+                if(isPaused){                    
+                    invokeMethod("speak.onStart", true)
+                }else{
+                    invokeMethod("speak.onCancel", true)
+                }
             }
 
             private fun onProgress(utteranceIdLocal: String?, startAtLocal: Int, endAtLocal: Int) {
@@ -262,8 +266,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         when (call.method) {
             "speak" -> {
                 if (isPaused) {
-                    isPaused = false
+                    isPaused = false                    
                     continueReading()
+                    invokeMethod("speak.onContinue", true)
                     result.success(1)
                     return
                 }
