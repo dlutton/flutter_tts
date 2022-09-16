@@ -560,10 +560,19 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             val uuid: String = UUID.randomUUID().toString()
             utterances[uuid] = text
             
+
+            var regexString: String = ""
+            val splitablePuntuations = getSplitablePunctuation()
+            //iterate through map and concatenate        
+            for ((punctuation, encodedPunctuation) in splitablePuntuations) {
+                regexString = regexString + punctuation
+            }
+            var encodedText = encodeTextPunctuation(text);
+            
             //break long text to sentence and start reading.
             textToSpeakArray = ArrayList(
-                    text.split(
-                        Regex("[.?!:;]+")
+                    encodedText.split(
+                        Regex(regexString)
                     )
                 )
             textToSpeakLength = textToSpeakArray.size
@@ -661,5 +670,38 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         pos.put("startAt", startAt)
         pos.put("endAt", startAt + currentSentence.length)
         return pos
+    }
+
+    //convert the puntuation in a text to decodeable 
+    //text so that it can be split without changing 
+    //the text structure
+    private fun encodeTextPunctuation(text: String):String{
+        val splitablePuntuations = getSplitablePunctuation()
+        //iterate through map and replace        
+         for ((punctuation, encodedPunctuation) in splitablePuntuations) {
+            text.replace(punctuation, encodedPunctuation)
+        }
+        return text
+    }
+    //decode the encoded puntuation in a text to decodeable 
+    //text so that it can be split without changing 
+    //the text structure
+    private fun decodeTextPunctuation(text: String):String {  
+        val splitablePuntuations = getSplitablePunctuation()
+        //iterate through map and replace     
+        for ((punctuation, encodedPunctuation) in splitablePuntuations) {    
+            text.replace(encodedPunctuation, punctuation)
+        }
+        return text
+    }
+
+    private fun getSplitablePunctuation():HashMap<String, String>{
+        val punctuations = HashMap<String, Int>()
+        punctuations.put("?", "__dcdea_qm__?")
+        punctuations.put("!", "__dcdea_ex__!")
+        punctuations.put(".", "__dcdea_fs__.")
+        punctuations.put(":", "__dcdea_dp__:")
+        punctuations.put(";", "__dcdea_sc__;")
+        return punctuations
     }
 }
