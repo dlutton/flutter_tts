@@ -62,6 +62,17 @@ minSdkVersion 21
 
 Apps targeting Android 11 that use text-to-speech should declare TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE in the queries elements of their manifest.
 
+### Pausing on Android
+Android TTS does not support the pause function natively, so currently we use a work around. Your long text is split into sentences (Sentences are usually separated by punctuations like . : ; ? !) and when you call `pause()` the tts stops. When you call speak again, it does not continue at the exact point where it stopped but at the beginning of the exact sentence where the `pause()` function was called. For example: if the TTS was reading 
+```txt
+The dog and cat jumped over the white fence. But there are two boxes beneath them. The car was red? However we got there. 
+```
+If you call `pause()`  while the TTS was reading the sentence "The car was red?" It starts from the beginning of "The car was red? when you call `.speak()` again but NOT at the beginning of "The dog and cat jumped ...". Try it out :)
+
+```dart
+await flutterTts.pause()
+```
+
 ## iOS
 
 There's a known issue with integrating plugins that use Swift into a Flutter project created with the Objective-C template. [Flutter#16049](https://github.com/flutter/flutter/issues/16049)
@@ -143,6 +154,7 @@ await flutterTts.setPitch(1.0);
 await flutterTts.isLanguageAvailable("en-US");
 
 // iOS, Android and Web only
+//see the "Pausing on Android" section for more info
 await flutterTts.pause();
 
 // iOS, macOS, and Android only
