@@ -209,10 +209,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
         val uuid: String = UUID.randomUUID().toString()
         val sentence: String = getCurrentSentence()
+        utterances[uuid] = sentence
         //keep talking until we finish all
         if (lastWordWasSilenceBetweenSentences) {
             lastWordWasSilenceBetweenSentences = false
-            utterances[uuid] = sentence
             tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid)
             textToSpeakArrayPosition += 1
         } else {
