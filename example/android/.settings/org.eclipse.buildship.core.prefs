@@ -1,7 +1,7 @@
 arguments=--init-script /home/micheal/.config/Code/User/globalStorage/redhat.java/1.10.0/config_linux/org.eclipse.osgi/51/0/.cp/gradle/init/init.gradle --init-script /home/micheal/.config/Code/User/globalStorage/redhat.java/1.10.0/config_linux/org.eclipse.osgi/51/0/.cp/gradle/protobuf/init.gradle
 auto.sync=false
 build.scans.enabled=false
-connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)
+connection.gradle.distribution=GRADLE_DISTRIBUTION(VERSION(7.4.2))
 connection.project.dir=
 eclipse.preferences.version=1
 gradle.user.home=
