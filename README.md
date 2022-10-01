@@ -2,15 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/flutter_tts.svg?style=for-the-badge&colorB=green)](https://pub.dartlang.org/packages/flutter_tts)
 
-A flutter text to speech plugin (Swift,Java)
-
-## Compatibility Status
-
-[![Latest compatibility result for Stable channel](https://img.shields.io/endpoint?url=https://pub.green/packages/flutter_tts/badge?channel=stable)](https://pub.green/packages/flutter_tts)
-
-[![Latest compatibility result for Beta channel](https://img.shields.io/endpoint?url=https://pub.green/packages/flutter_tts/badge?channel=beta)](https://pub.green/packages/flutter_tts)
-
-[![Latest compatibility result for Dev channel](https://img.shields.io/endpoint?url=https://pub.green/packages/flutter_tts/badge?channel=dev)](https://pub.green/packages/flutter_tts)
+A flutter text to speech plugin (Swift,Kotlin)
 
 ## Features
 
@@ -24,7 +16,7 @@ A flutter text to speech plugin (Swift,Java)
   - [x] set speech pitch
 - [x] Android, iOS, Web & macOS
   - [x] is language available
-- [x] Android, iOS, Windows
+- [x] Android, iOS, Web, & Windows
   - [x] get voices
   - [x] set voice
 - [x] Android, iOS
@@ -39,6 +31,7 @@ A flutter text to speech plugin (Swift,Java)
   - [x] get engines
   - [x] set engine
   - [x] get default engine
+  - [x] get default voice
   - [x] set queue mode
   - [x] get max speech input length
 - [x] iOS
@@ -163,7 +156,9 @@ await flutterTts.setSharedInstance(true);
 // Android only
 await flutterTts.setSilence(2);
 
-await flutterTts.getEngines();
+await flutterTts.getEngines;
+
+await flutterTts.getDefaultVoice;
 
 await flutterTts.isLanguageInstalled("en-AU");
 
