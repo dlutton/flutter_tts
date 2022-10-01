@@ -1,5 +1,39 @@
 # ChangeLog
 
+## 3.5.3
+
+### Features
+
+- **Android:** Adding getDefaultVoice
+
+## 3.5.2
+
+### Updates
+
+- **Android:** Converting Java to Kotlin and package upgrades
+
+## 3.5.1
+
+### Fixes
+
+- **Web:** Fixing late variable and updating value being passed through a message channel to a primitive type
+
+## 3.5.0
+
+### Features
+
+- **Web:** - Adding setVoice support
+
+### Fixes
+
+- **Web:** Fix chrome bug
+
+## 3.4.0
+
+### Features
+
+- **Windows:** - Adding Windows Support
+
 ## 3.3.3
 
 ### Fixes
