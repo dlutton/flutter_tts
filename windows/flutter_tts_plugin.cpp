@@ -13,6 +13,8 @@
 typedef std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> FlutterResult;
 //typedef flutter::MethodResult<flutter::EncodableValue>* PFlutterResult;
 
+std::unique_ptr<flutter::MethodChannel<>> methodChannel;
+
 #if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
 #include <winrt/Windows.Media.SpeechSynthesis.h>
 #include <winrt/Windows.Media.Playback.h>
@@ -59,13 +61,13 @@ namespace {
 
 	void FlutterTtsPlugin::RegisterWithRegistrar(
 		flutter::PluginRegistrarWindows* registrar) {
-		auto channel =
+		methodChannel =
 			std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
 				registrar->messenger(), "flutter_tts",
 				&flutter::StandardMethodCodec::GetInstance());
 		auto plugin = std::make_unique<FlutterTtsPlugin>();
 
-		channel->SetMethodCallHandler(
+		methodChannel->SetMethodCallHandler(
 			[plugin_pointer = plugin.get()](const auto& call, auto result) {
 			plugin_pointer->HandleMethodCall(call, std::move(result));
 		});
@@ -78,6 +80,7 @@ namespace {
 			mPlayer.MediaEnded([=](Windows::Media::Playback::MediaPlayer const& sender,
 				Windows::Foundation::IInspectable const& args)
 				{
+				    methodChannel->InvokeMethod("speak.onComplete", NULL);
 				    if (awaitSpeakCompletion) {
                         speakResult->Success(1);
                     }
@@ -107,6 +110,7 @@ namespace {
 	void FlutterTtsPlugin::speak(const std::string text, FlutterResult result) {
 		isSpeaking = true;
 		auto my_task{ asyncSpeak(text) };
+		methodChannel->InvokeMethod("speak.onStart", NULL);
         if (awaitSpeakCompletion) speakResult = std::move(result);
         else result->Success(1);
 	};
@@ -114,14 +118,17 @@ namespace {
 	void FlutterTtsPlugin::pause() {
 		mPlayer.Pause();
 		isPaused = true;
+		methodChannel->InvokeMethod("speak.onPause", NULL);
 	}
 
 	void FlutterTtsPlugin::continuePlay() {
 		mPlayer.Play();
 		isPaused = false;
+		methodChannel->InvokeMethod("speak.onContinue", NULL);
 	}
 
 	void FlutterTtsPlugin::stop() {
+	    methodChannel->InvokeMethod("speak.onCancel", NULL);
         if (awaitSpeakCompletion) {
             speakResult->Success(1);
         }
@@ -257,12 +264,12 @@ namespace {
 
 	void FlutterTtsPlugin::RegisterWithRegistrar(
 		flutter::PluginRegistrarWindows* registrar) {
-		auto channel =
+		methodChannel =
 			std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
 				registrar->messenger(), "flutter_tts",
 				&flutter::StandardMethodCodec::GetInstance());
 		auto plugin = std::make_unique<FlutterTtsPlugin>();
-		channel->SetMethodCallHandler(
+		methodChannel->SetMethodCallHandler(
 			[plugin_pointer = plugin.get()](const auto& call, auto result) {
 			plugin_pointer->HandleMethodCall(call, std::move(result));
 		});
@@ -298,7 +305,11 @@ namespace {
     {
         flutter::MethodResult<flutter::EncodableValue>* p = (flutter::MethodResult<flutter::EncodableValue>*) lpParam;
         p->Success(1);
+    }
 
+    void CALLBACK onCompletion(PVOID lpParam, BOOLEAN TimerOrWaitFired)
+    {
+        methodChannel->InvokeMethod("speak.onComplete", NULL);
     }
 
 	bool FlutterTtsPlugin::speaking()
@@ -321,6 +332,8 @@ namespace {
 		hr = pVoice->Speak(wstr, 1, NULL);
 		delete[] wstr;
 		HANDLE speakCompletionHandle = pVoice->SpeakCompleteEvent();
+		methodChannel->InvokeMethod("speak.onStart", NULL);
+		RegisterWaitForSingleObject(&addWaitHandle, speakCompletionHandle, (WAITORTIMERCALLBACK)&onCompletion, speakResult.get(), INFINITE, WT_EXECUTEONLYONCE);
 		if (awaitSpeakCompletion){
 		    speakResult = std::move(result);
 		    RegisterWaitForSingleObject(&addWaitHandle, speakCompletionHandle, (WAITORTIMERCALLBACK)&setResult, speakResult.get(), INFINITE, WT_EXECUTEONLYONCE);
@@ -334,17 +347,20 @@ namespace {
 			pVoice->Pause();
 			isPaused = true;
 		}
+	    methodChannel->InvokeMethod("speak.onPause", NULL);
 	}
 	void FlutterTtsPlugin::continuePlay()
 	{
 		isPaused = false;
 		pVoice->Resume();
+	    methodChannel->InvokeMethod("speak.onContinue", NULL);
 	}
 	void FlutterTtsPlugin::stop()
 	{
 		pVoice->Speak(L"", 2, NULL);
 		pVoice->Resume();
 		isPaused = false;
+	    methodChannel->InvokeMethod("speak.onCancel", NULL);
 	}
 	void FlutterTtsPlugin::setVolume(const double newVolume)
 	{
