@@ -17,6 +17,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
+
 /** FlutterTtsPlugin  */
 class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var handler: Handler? = null
@@ -32,6 +33,13 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val tag = "TTS"
     private val googleTtsEngine = "com.google.android.tts"
     private var isTtsInitialized = false
+    private var isPaused = false
+    private var textToSpeakArrayPosition = 0
+    private var textToSpeak: String = ""
+    private var currentText = ""
+    private var textToSpeakArrayLength = 0
+    private var textToSpeakArray = ArrayList<String>()
+    private var lastWordWasSilenceBetweenSentences = false
     private val pendingMethodCalls = ArrayList<Runnable>()
     private val utterances = HashMap<String, String>()
     private var bundle: Bundle? = null
@@ -62,6 +70,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val utteranceProgressListener: UtteranceProgressListener =
         object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
+                //only call this at the beginning of the text
+                if (textToSpeakArrayPosition > 0) {
+                    return
+                }
+                val sentence = getCurrentSentence()
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     invokeMethod("synth.onStart", true)
                 } else {
@@ -69,11 +82,18 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     invokeMethod("speak.onStart", true)
                 }
                 if (Build.VERSION.SDK_INT < 26) {
-                    onProgress(utteranceId, 0, utterances[utteranceId]!!.length)
+                    onProgress(utteranceId, 0, sentence.length)
                 }
             }
 
             override fun onDone(utteranceId: String) {
+                //if we have not gotten to the end of the current text
+                if (textToSpeakArrayPosition < textToSpeakArrayLength) {
+                    continueReading()
+                    return
+                }
+                speaking = false
+
                 if (utteranceId.startsWith(SILENCE_PREFIX)) return
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
                     Log.d(tag, "Utterance ID has completed: $utteranceId")
@@ -92,6 +112,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             override fun onStop(utteranceId: String, interrupted: Boolean) {
+                val sentence = getCurrentSentence()
                 Log.d(
                     tag,
                     "Utterance ID has been stopped: $utteranceId. Interrupted: $interrupted"
@@ -99,17 +120,35 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 if (awaitSpeakCompletion) {
                     speaking = false
                 }
-                invokeMethod("speak.onCancel", true)
+                if (isPaused) {
+                    invokeMethod("speak.onPause", true)
+                } else {
+                    invokeMethod("speak.onCancel", true)
+                }
             }
 
-            private fun onProgress(utteranceId: String?, startAt: Int, endAt: Int) {
+            private fun onProgress(utteranceId: String?, startAtLocal: Int, endAtLocal: Int) {
+                //calculate our current position in the full text,
+                //not just in the sentence
+                val position = textToSpeakArrayPosition - 1
+                var previousSentencesLength = 0
+                if (position > 0) {
+                    for (i in 0..position) {
+                        if (i == position) break
+                        if (i < textToSpeakArrayLength) {
+                            previousSentencesLength += textToSpeakArray[i].length
+                        }
+                    }
+                }
+
+                val startAt: Int = previousSentencesLength + startAtLocal
+                val endAt: Int = startAt + startAtLocal
                 if (utteranceId != null && !utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
-                    val text = utterances[utteranceId]
                     val data = HashMap<String, String?>()
-                    data["text"] = text
+                    data["text"] = currentText
                     data["start"] = startAt.toString()
                     data["end"] = endAt.toString()
-                    data["word"] = text!!.substring(startAt, endAt)
+                    data["word"] = utterances[utteranceId]!!.substring(startAtLocal, endAtLocal)
                     invokeMethod("speak.onProgress", data)
                 }
             }
@@ -162,6 +201,30 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         handler!!.post { synthResult?.success(success) }
     }
 
+    private fun continueReading() {
+        if (textToSpeakArrayPosition >= textToSpeakArrayLength) {
+            return
+        }
+        if (isPaused) return
+
+        val uuid: String = UUID.randomUUID().toString()
+        val sentence: String = getCurrentSentence()
+        utterances[uuid] = sentence
+        //keep talking until we finish all
+        if (lastWordWasSilenceBetweenSentences) {
+            lastWordWasSilenceBetweenSentences = false
+            tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid)
+            textToSpeakArrayPosition += 1
+        } else {
+            lastWordWasSilenceBetweenSentences = true
+            tts!!.playSilentUtterance(
+                40,
+                TextToSpeech.QUEUE_FLUSH,
+                SILENCE_PREFIX + uuid
+            )
+        }
+    }
+
     private val onInitListener: TextToSpeech.OnInitListener =
         TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
@@ -197,7 +260,16 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
         when (call.method) {
             "speak" -> {
-                val text: String = call.arguments.toString()
+                if (isPaused) {
+                    isPaused = false
+                    continueReading()
+                    invokeMethod("speak.onContinue", true)
+                    result.success(1)
+                    return
+                }
+                isPaused = false
+                textToSpeakArrayPosition = 0
+                textToSpeak = call.arguments.toString()
                 if (speaking) {
                     // If TTS is set to queue mode, allow the utterance to be queued up rather than discarded
                     if (queueMode == TextToSpeech.QUEUE_FLUSH) {
@@ -205,7 +277,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                         return
                     }
                 }
-                val b = speak(text)
+                val b = speak(textToSpeak)
                 if (!b) {
                     val suspendedCall = Runnable { onMethodCall(call, result) }
                     pendingMethodCalls.add(suspendedCall)
@@ -218,6 +290,15 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 } else {
                     result.success(1)
                 }
+            }
+            "pause" -> {
+                isPaused = true
+                if (textToSpeakArrayPosition > 0) {
+                    //go back one sentence
+                    textToSpeakArrayPosition = textToSpeakArrayPosition - 1
+                }
+                tts!!.stop()
+                result.success(1)
             }
             "awaitSpeakCompletion" -> {
                 awaitSpeakCompletion = java.lang.Boolean.parseBoolean(call.arguments.toString())
@@ -247,6 +328,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 }
             }
             "stop" -> {
+                isPaused = false
+                textToSpeakArrayPosition = 0
                 stop()
                 result.success(1)
             }
@@ -474,24 +557,40 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun speak(text: String): Boolean {
-        val uuid: String = UUID.randomUUID().toString()
-        utterances[uuid] = text
-        return if (ismServiceConnectionUsable(tts)) {
-            if (silencems > 0) {
-                tts!!.playSilentUtterance(
-                    silencems.toLong(),
-                    TextToSpeech.QUEUE_FLUSH,
-                    SILENCE_PREFIX + uuid
-                )
-                tts!!.speak(text, TextToSpeech.QUEUE_ADD, bundle, uuid) == 0
-            } else {
-                tts!!.speak(text, queueMode, bundle, uuid) == 0
+        currentText = text
+        if (ismServiceConnectionUsable(tts)) {
+
+            val uuid: String = UUID.randomUUID().toString()
+            //Use a unique word that will never occur in a text here,
+            //because we will split the user text with it and it will be removed
+            val splitKey: String = "__fftts_dcdea_split_here__"
+
+            var encodedText = text
+            //do not split ... as they are used in text
+            encodedText = encodedText.replace("...", "__ddd_dcdea_triple_dot__")
+
+            val splitablePunctuations = arrayOf("?", ".", "!", ":", ";")
+            //iterate through list and replace
+            for (punctuation in splitablePunctuations) {
+                encodedText = encodedText.replace(punctuation, punctuation + splitKey)
             }
-        } else {
-            isTtsInitialized = false
-            tts = TextToSpeech(context, onInitListener, googleTtsEngine)
-            false
+
+            encodedText = encodedText.replace("__ddd_dcdea_triple_dot__", "...")
+
+            //break long text to sentences and start reading.
+            textToSpeakArray = ArrayList(
+                encodedText.split(splitKey)
+            )
+            textToSpeakArrayLength = textToSpeakArray.size
+
+            val sentence: String = getCurrentSentence()
+            textToSpeakArrayPosition += 1
+            utterances[uuid] = sentence
+            return tts!!.speak(sentence, TextToSpeech.QUEUE_FLUSH, bundle, uuid) == 0
         }
+        isTtsInitialized = false
+        tts = TextToSpeech(context, onInitListener, googleTtsEngine)
+        return false
     }
 
     private fun stop() {
@@ -508,7 +607,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
             SYNTHESIZE_TO_FILE_PREFIX + uuid
         )
-        val result: Int = tts!!.synthesizeToFile(text, bundle, file, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+        val result: Int =
+            tts!!.synthesizeToFile(text, bundle, file, SYNTHESIZE_TO_FILE_PREFIX + uuid)
         if (result == TextToSpeech.SUCCESS) {
             Log.d(tag, "Successfully created file : " + file.path)
         } else {
@@ -517,7 +617,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun invokeMethod(method: String, arguments: Any) {
-        handler!!.post { if (methodChannel != null) methodChannel!!.invokeMethod(method, arguments) }
+        handler!!.post {
+            if (methodChannel != null) methodChannel!!.invokeMethod(
+                method,
+                arguments
+            )
+        }
     }
 
     private fun ismServiceConnectionUsable(tts: TextToSpeech?): Boolean {
@@ -555,5 +660,13 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             val instance = FlutterTtsPlugin()
             instance.initInstance(registrar.messenger(), registrar.activeContext())
         }
+    }
+
+    //returns the decoded sentence we are reading
+    private fun getCurrentSentence(): String {
+        if (textToSpeakArrayPosition < textToSpeakArrayLength) {
+            return textToSpeakArray[textToSpeakArrayPosition]
+        }
+        return ""
     }
 }

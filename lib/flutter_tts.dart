@@ -146,7 +146,6 @@ class FlutterTts {
       await _channel.invokeMethod('speak', text);
 
   /// [Future] which invokes the platform specific method for pause
-  /// ***iOS supported only***
   Future<dynamic> pause() async => await _channel.invokeMethod('pause');
 
   /// [Future] which invokes the platform specific method for getMaxSpeechInputLength
