@@ -1,5 +1,16 @@
 # ChangeLog
 
+## 3.6.0
+
+### Features
+
+- **Android:** Adding pause/continue
+- **Windows:** Adding callbacks
+
+### Fixes
+
+- **All:** Adding async/await to Channel invokeMethods
+
 ## 3.5.3
 
 ### Features
