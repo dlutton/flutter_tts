@@ -7,16 +7,14 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v3
-
-      - name: Setup Flutter
-        run: |
-          git clone https://github.com/flutter/flutter.git --depth 1 -b beta _flutter
-          echo "${GITHUB_WORKSPACE}/_flutter/bin" >> ${GITHUB_PATH}
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
       - name: Install
         run: |
@@ -28,7 +26,7 @@ jobs:
       - name: Build
         run: |
           cd example
-          flutter build web --no-sound-null-safety
+          flutter build web
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
