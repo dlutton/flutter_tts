@@ -28,7 +28,7 @@ jobs:
       - name: Build
         run: |
           cd example
-          flutter build web
+          flutter build web --no-sound-null-safety
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
