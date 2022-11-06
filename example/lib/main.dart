@@ -75,7 +75,6 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
-    // if (isWeb || isIOS || isWindows) {
     flutterTts.setPauseHandler(() {
       setState(() {
         print("Paused");
@@ -89,7 +88,6 @@ class _MyAppState extends State<MyApp> {
         ttsState = TtsState.continued;
       });
     });
-    // }
 
     flutterTts.setErrorHandler((msg) {
       setState(() {
@@ -99,9 +97,9 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future<dynamic> _getLanguages() => flutterTts.getLanguages;
+  Future<dynamic> _getLanguages() async => await flutterTts.getLanguages;
 
-  Future<dynamic> _getEngines() => flutterTts.getEngines;
+  Future<dynamic> _getEngines() async => await flutterTts.getEngines;
 
   Future _getDefaultEngine() async {
     var engine = await flutterTts.getDefaultEngine;
@@ -158,8 +156,8 @@ class _MyAppState extends State<MyApp> {
     return items;
   }
 
-  void changedEnginesDropDownItem(String? selectedEngine) {
-    flutterTts.setEngine(selectedEngine!);
+  void changedEnginesDropDownItem(String? selectedEngine) async {
+    await flutterTts.setEngine(selectedEngine!);
     language = null;
     setState(() {
       engine = selectedEngine;
