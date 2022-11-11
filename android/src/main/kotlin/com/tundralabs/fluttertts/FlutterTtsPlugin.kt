@@ -245,6 +245,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 for (call in pendingMethodCalls) {
                     call.run()
                 }
+                invokeMethod("tts.init", isTtsInitialized) 
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech")
             }

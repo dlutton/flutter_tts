@@ -121,6 +121,7 @@ class FlutterTts {
   static const MethodChannel _channel = const MethodChannel('flutter_tts');
 
   VoidCallback? startHandler;
+  VoidCallback? initHandler;
   VoidCallback? completionHandler;
   VoidCallback? pauseHandler;
   VoidCallback? continueHandler;
@@ -340,6 +341,11 @@ class FlutterTts {
     startHandler = callback;
   }
 
+  /// ***Android supported only***
+  void setInitHandler(VoidCallback callback) {
+    initHandler = callback;
+  }
+
   void setCompletionHandler(VoidCallback callback) {
     completionHandler = callback;
   }
@@ -370,6 +376,13 @@ class FlutterTts {
       case "speak.onStart":
         if (startHandler != null) {
           startHandler!();
+        }
+        break;
+
+      /// ***Android supported only***
+      case "tts.init":
+        if (initHandler != null) {
+          initHandler!();
         }
         break;
       case "synth.onStart":
