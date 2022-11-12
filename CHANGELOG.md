@@ -1,5 +1,15 @@
 # ChangeLog
 
+## 3.6.1
+
+### Fixes
+
+- **Android:** setEngine initialization bug
+
+### Features
+
+- **Android:** added initHandler for android to help with engine initialization
+
 ## 3.6.0
 
 ### Features

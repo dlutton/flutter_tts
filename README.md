@@ -226,6 +226,14 @@ flutterTts.setContinueHandler((msg) {
     ttsState = TtsState.continued;
   });
 });
+
+// Android only
+flutterTts.setInitHandler((msg) {
+  setState(() {
+    ttsState = TtsState.initialized;
+  });
+});
+
 ```
 
 ## Getting Started
