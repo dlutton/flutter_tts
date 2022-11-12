@@ -4810,7 +4810,7 @@ le(a){if(!0===a)return!0
 if(!1===a)return!1
 if(a==null)return a
 throw A.d(A.eh(a,"bool?"))},
-rb(a){if(typeof a=="number")return a
+Of(a){if(typeof a=="number")return a
 throw A.d(A.eh(a,"double"))},
 avL(a){if(typeof a=="number")return a
 if(a==null)return a
@@ -4828,7 +4828,7 @@ eD(a){if(typeof a=="number"&&Math.floor(a)===a)return a
 if(a==null)return a
 throw A.d(A.eh(a,"int?"))},
 arl(a){return typeof a=="number"},
-Of(a){if(typeof a=="number")return a
+rb(a){if(typeof a=="number")return a
 throw A.d(A.eh(a,"num"))},
 avN(a){if(typeof a=="number")return a
 if(a==null)return a
@@ -19018,7 +19018,7 @@ this.e=b
 this.a=c},
 jl:function jl(){},
 CY:function CY(){var _=this
-_.r=_.e=_.d=_.c=_.b=_.a=null},
+_.w=_.f=_.e=_.d=_.c=_.b=_.a=null},
 n4:function n4(a,b){this.a=a
 this.b=b},
 CZ:function CZ(a){var _=this
@@ -29000,7 +29000,7 @@ break
 case"TextInput.setEditableSizeAndTransform":s=t.a.a(k.b)
 r=J.aH(s)
 p=A.iU(t.j.a(r.h(s,"transform")),!0,t.i)
-q=new A.a2A(new A.S5(A.rb(r.h(s,"width")),A.rb(r.h(s,"height")),new Float32Array(A.Ok(p))))
+q=new A.a2A(new A.S5(A.Of(r.h(s,"width")),A.Of(r.h(s,"height")),new Float32Array(A.Ok(p))))
 break
 case"TextInput.setStyle":s=t.a.a(k.b)
 r=J.aH(s)
@@ -40005,7 +40005,7 @@ l=A.d_(a)
 r=m.a
 return new A.EN(new A.mL(s,l),r.y,o,p,n,new A.yU(r.r,s,!0,null),null)}}
 A.a5P.prototype={
-$1(a){return new A.az(A.rb(a),null,t.m)},
+$1(a){return new A.az(A.Of(a),null,t.m)},
 $S:133}
 A.a5Q.prototype={
 $1(a){return new A.dK(t.iO.a(a),null)},
@@ -52152,8 +52152,8 @@ while(true)switch(s){case 0:b0=b1.a
 if(b0==="TextInputClient.focusElement"){o=t.j.a(b1.b)
 n=J.aH(o)
 m=p.d.h(0,n.h(o,0))
-if(m!=null){l=A.Of(n.h(o,1))
-n=A.Of(n.h(o,2))
+if(m!=null){l=A.rb(n.h(o,1))
+n=A.rb(n.h(o,2))
 m.a.d.hc()
 k=m.gAa()
 if(k!=null)k.hi(B.er,new A.k(l,n))
@@ -52209,7 +52209,7 @@ e=n.a(m.h(o,1))
 m=p.b.r
 l=J.aH(e)
 A.bs(l.h(e,"action"))
-n.a(l.h(e,"data"))
+if(l.h(e,"data")!=null)n.a(l.h(e,"data"))
 m.a.toString
 break
 case"TextInputClient.updateFloatingCursor":n=l.r
@@ -52315,7 +52315,7 @@ case"TextInputClient.showAutocorrectionPromptRect":l.r.Mm(A.db(m.h(o,1)),A.db(m.
 break
 case"TextInputClient.showToolbar":l.r.kW()
 break
-case"TextInputClient.insertTextPlaceholder":l.r.a4n(new A.V(A.Of(m.h(o,1)),A.Of(m.h(o,2))))
+case"TextInputClient.insertTextPlaceholder":l.r.a4n(new A.V(A.rb(m.h(o,1)),A.rb(m.h(o,2))))
 break
 case"TextInputClient.removeTextPlaceholder":l.r.KQ()
 break
@@ -57388,7 +57388,7 @@ A.a3v.prototype={
 $1(a){return new A.lu(t.ak.a(a),null)},
 $S:320}
 A.a3w.prototype={
-$1(a){return new A.az(A.rb(a),null,t.m)},
+$1(a){return new A.az(A.Of(a),null,t.m)},
 $S:133}
 A.a3x.prototype={
 $1(a){return new A.dK(t.iO.a(a),null)},
@@ -61409,7 +61409,7 @@ A.LB.prototype={
 nL(){return null},
 yD(a){this.am()},
 kn(a){a.toString
-return A.rb(a)},
+return A.Of(a)},
 kD(){var s=this.x
 return s==null?A.l(this).j("bT.T").a(s):s},
 glV(a){var s=this.x
@@ -63886,29 +63886,32 @@ while(true)switch(s){case 0:p=a.a
 switch(p){case"speak.onStart":p=q.a
 if(p!=null)p.$0()
 break
+case"tts.init":p=q.b
+if(p!=null)p.$0()
+break
 case"synth.onStart":p=q.a
 if(p!=null)p.$0()
 break
-case"speak.onComplete":p=q.b
+case"speak.onComplete":p=q.c
 if(p!=null)p.$0()
 break
-case"synth.onComplete":p=q.b
+case"synth.onComplete":p=q.c
 if(p!=null)p.$0()
 break
-case"speak.onPause":p=q.c
+case"speak.onPause":p=q.d
 if(p!=null)p.$0()
 break
-case"speak.onContinue":p=q.d
+case"speak.onContinue":p=q.e
 if(p!=null)p.$0()
 break
-case"speak.onCancel":p=q.e
+case"speak.onCancel":p=q.f
 if(p!=null)p.$0()
 break
-case"speak.onError":p=q.r
+case"speak.onError":p=q.w
 if(p!=null)p.$1(a.b)
 break
 case"speak.onProgress":break
-case"synth.onError":p=q.r
+case"synth.onError":p=q.w
 if(p!=null)p.$1(a.b)
 break
 default:A.f1("Unknowm method "+p)}return A.Z(null,r)}})
@@ -63980,7 +63983,7 @@ case"setVoice":i=t.N
 q=p.ZF(A.aeZ(t.j2.a(a.b),i,i))
 s=1
 break $async$outer
-case"setSpeechRate":l=A.Of(a.b)
+case"setSpeechRate":l=A.rb(a.b)
 i=p.e
 i===$&&A.b()
 i.l(0,"rate",l)
@@ -64107,11 +64110,11 @@ s.d=r
 s.qs()
 r=s.d
 r.a=new A.a6F(s)
-r.b=new A.a6G(s)
-r.e=new A.a6H(s)
-r.c=new A.a6I(s)
-r.d=new A.a6J(s)
-r.r=new A.a6K(s)},
+r.c=new A.a6G(s)
+r.f=new A.a6H(s)
+r.d=new A.a6I(s)
+r.e=new A.a6J(s)
+r.w=new A.a6K(s)},
 pU(){var s=0,r=A.a0(t.z),q,p=this,o
 var $async$pU=A.a1(function(a,b){if(a===1)return A.Y(b,r)
 while(true)switch(s){case 0:o=p.d
