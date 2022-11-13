@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart';
+
 import 'package:flutter/services.dart';
 
 typedef void ErrorHandler(dynamic message);
@@ -130,7 +130,18 @@ class FlutterTts {
   ErrorHandler? errorHandler;
 
   FlutterTts() {
+    if (kIsWeb || !Platform.isAndroid) {
+      _channel.setMethodCallHandler(platformCallHandler);
+    } else {
+      initAndroid();
+    }
+  }
+
+  Future<dynamic> initAndroid() async {
+    final initCompleter = Completer<void>();
+    _setInitHandler(() => initCompleter.complete());
     _channel.setMethodCallHandler(platformCallHandler);
+    await initCompleter.future;
   }
 
   /// [Future] which sets speak's future to return on completion of the utterance
@@ -237,8 +248,12 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for setEngine
   /// ***Android supported only***
-  Future<dynamic> setEngine(String engine) async =>
-      await _channel.invokeMethod('setEngine', engine);
+  Future<dynamic> setEngine(String engine) async {
+    final initCompleter = Completer<void>();
+    _setInitHandler(() => initCompleter.complete());
+    await _channel.invokeMethod('setEngine', engine);
+    await initCompleter.future;
+  }
 
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
@@ -342,7 +357,7 @@ class FlutterTts {
   }
 
   /// ***Android supported only***
-  void setInitHandler(VoidCallback callback) {
+  void _setInitHandler(VoidCallback callback) {
     initHandler = callback;
   }
 
