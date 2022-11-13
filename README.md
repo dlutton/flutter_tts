@@ -228,7 +228,7 @@ flutterTts.setContinueHandler((msg) {
 });
 
 // Android only
-flutterTts.setInitHandler((msg) {
+flutterTts.setInitHandler(() {
   setState(() {
     ttsState = TtsState.initialized;
   });
