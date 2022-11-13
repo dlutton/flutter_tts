@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 typedef void ErrorHandler(dynamic message);
@@ -130,18 +130,7 @@ class FlutterTts {
   ErrorHandler? errorHandler;
 
   FlutterTts() {
-    if (kIsWeb || !Platform.isAndroid) {
-      _channel.setMethodCallHandler(platformCallHandler);
-    } else {
-      initAndroid();
-    }
-  }
-
-  Future<dynamic> initAndroid() async {
-    final initCompleter = Completer<void>();
-    _setInitHandler(() => initCompleter.complete());
     _channel.setMethodCallHandler(platformCallHandler);
-    await initCompleter.future;
   }
 
   /// [Future] which sets speak's future to return on completion of the utterance
@@ -250,7 +239,7 @@ class FlutterTts {
   /// ***Android supported only***
   Future<dynamic> setEngine(String engine) async {
     final initCompleter = Completer<void>();
-    _setInitHandler(() => initCompleter.complete());
+    setInitHandler(() => initCompleter.complete());
     await _channel.invokeMethod('setEngine', engine);
     await initCompleter.future;
   }
@@ -357,7 +346,7 @@ class FlutterTts {
   }
 
   /// ***Android supported only***
-  void _setInitHandler(VoidCallback callback) {
+  void setInitHandler(VoidCallback callback) {
     initHandler = callback;
   }
 

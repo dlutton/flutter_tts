@@ -61,6 +61,14 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
+    if (isAndroid) {
+      flutterTts.setInitHandler(() {
+        setState(() {
+          print("TTS Initialized");
+        });
+      });
+    }
+
     flutterTts.setCompletionHandler(() {
       setState(() {
         print("Complete");
