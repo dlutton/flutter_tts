@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 3.6.2
+
+- **Android:** setEngine - adding initHandler within the method
+
 ## 3.6.1
 
 ### Fixes
