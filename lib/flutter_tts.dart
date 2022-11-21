@@ -237,8 +237,12 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for setEngine
   /// ***Android supported only***
-  Future<dynamic> setEngine(String engine) async =>
-      await _channel.invokeMethod('setEngine', engine);
+  Future<dynamic> setEngine(String engine) async {
+    final initCompleter = Completer<void>();
+    setInitHandler(() => initCompleter.complete());
+    await _channel.invokeMethod('setEngine', engine);
+    await initCompleter.future;
+  }
 
   /// [Future] which invokes the platform specific method for setPitch
   /// 1.0 is default and ranges from .5 to 2.0
