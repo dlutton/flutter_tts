@@ -122,6 +122,7 @@ class FlutterTts {
 
   VoidCallback? startHandler;
   VoidCallback? initHandler;
+  VoidCallback? _setEngineInitHandler;
   VoidCallback? completionHandler;
   VoidCallback? pauseHandler;
   VoidCallback? continueHandler;
@@ -239,7 +240,7 @@ class FlutterTts {
   /// ***Android supported only***
   Future<dynamic> setEngine(String engine) async {
     final initCompleter = Completer<void>();
-    setInitHandler(() => initCompleter.complete());
+    _setEngineInitHandler = () => initCompleter.complete();
     await _channel.invokeMethod('setEngine', engine);
     await initCompleter.future;
   }
@@ -387,6 +388,9 @@ class FlutterTts {
       case "tts.init":
         if (initHandler != null) {
           initHandler!();
+        }
+        if (_setEngineInitHandler != null) {
+          _setEngineInitHandler!();
         }
         break;
       case "synth.onStart":
