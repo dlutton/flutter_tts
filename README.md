@@ -63,11 +63,8 @@ minSdkVersion 21
 Apps targeting Android 11 that use text-to-speech should declare TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE in the queries elements of their manifest.
 
 ### Pausing on Android
-Android TTS does not support the pause function natively, so currently we use a work around. Your long text is split into sentences (Sentences are usually separated by punctuations like . : ; ? !) and when you call `pause()` the tts stops. When you call speak again, it does not continue at the exact point where it stopped but at the beginning of the exact sentence where the `pause()` function was called. For example: if the TTS was reading 
-```txt
-The dog and cat jumped over the white fence. But there are two boxes beneath them. The car was red? However we got there. 
-```
-If you call `pause()`  while the TTS was reading the sentence "The car was red?" It starts from the beginning of "The car was red? when you call `.speak()` again but NOT at the beginning of "The dog and cat jumped ...". Try it out :)
+
+Android TTS does not support the pause function natively, so we have implemented a work around. We utilize the native `onRangeStart()` method to determine the index of start when `pause` is invoked. We use that index to create a new text the next time `speak` is invoked.  Due to using `onRangeStart()`, pause works on SDK versions >= 26.  Also, if using `start` and `end` offsets inside of `setProgressHandler()`, you'll need to keep a track of them if using `pause` since they will update once the new text is created when `speak` is called after being paused.
 
 ```dart
 await flutterTts.pause()
