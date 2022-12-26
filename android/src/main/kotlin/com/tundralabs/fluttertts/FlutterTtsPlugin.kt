@@ -311,6 +311,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 }
                 stop()
                 result.success(1)
+                if (speakResult != null) {
+                    speakResult!!.success(0)
+                    speakResult = null
+                }
             }
             "stop" -> {
                 isPaused = false
@@ -318,6 +322,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 stop()
                 lastProgress = 0
                 result.success(1)
+                if (speakResult != null) {
+                    speakResult!!.success(0)
+                    speakResult = null
+                }
             }
             "setEngine" -> {
                 val engine: String = call.arguments.toString()
