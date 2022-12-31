@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 3.6.3
+
+- **Android:** fixed initHandler with setEngineInitHandler
+- **Android:** refactored pause work around which fixed a couple of reports bugs
+
 ## 3.6.2
 
 - **Android:** setEngine - adding initHandler within the method
