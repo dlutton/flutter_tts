@@ -48,7 +48,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         methodChannel!!.setMethodCallHandler(this)
         handler = Handler(Looper.getMainLooper())
         bundle = Bundle()
-        tts = TextToSpeech(context, onInitListener, googleTtsEngine)
+        tts = TextToSpeech(context, firstTimeOnInitListener, googleTtsEngine)
     }
 
     /** Android Plugin APIs  */
@@ -203,6 +203,31 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
                 invokeMethod("tts.init", isTtsInitialized) 
+            }
+        }
+
+    private val firstTimeOnInitListener: TextToSpeech.OnInitListener =
+        TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
+                try {
+                    val locale: Locale = tts!!.defaultVoice.locale
+                    if (isLanguageAvailable(locale)) {
+                        tts!!.language = locale
+                    }
+                } catch (e: NullPointerException) {
+                    Log.e(tag, "getDefaultLocale: " + e.message)
+                } catch (e: IllegalArgumentException) {
+                    Log.e(tag, "getDefaultLocale: " + e.message)
+                }
+
+                // Handle pending method calls (sent while TTS was initializing)
+                isTtsInitialized = true
+                for (call in pendingMethodCalls) {
+                    call.run()
+                }
+            } else {
+                Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
             }
         }
 
