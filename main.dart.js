@@ -19018,7 +19018,7 @@ this.e=b
 this.a=c},
 jl:function jl(){},
 CY:function CY(){var _=this
-_.w=_.f=_.e=_.d=_.c=_.b=_.a=null},
+_.x=_.r=_.f=_.e=_.d=_.c=_.b=_.a=null},
 n4:function n4(a,b){this.a=a
 this.b=b},
 CZ:function CZ(a){var _=this
@@ -63888,30 +63888,32 @@ if(p!=null)p.$0()
 break
 case"tts.init":p=q.b
 if(p!=null)p.$0()
+p=q.c
+if(p!=null)p.$0()
 break
 case"synth.onStart":p=q.a
 if(p!=null)p.$0()
 break
-case"speak.onComplete":p=q.c
+case"speak.onComplete":p=q.d
 if(p!=null)p.$0()
 break
-case"synth.onComplete":p=q.c
+case"synth.onComplete":p=q.d
 if(p!=null)p.$0()
 break
-case"speak.onPause":p=q.d
+case"speak.onPause":p=q.e
 if(p!=null)p.$0()
 break
-case"speak.onContinue":p=q.e
+case"speak.onContinue":p=q.f
 if(p!=null)p.$0()
 break
-case"speak.onCancel":p=q.f
+case"speak.onCancel":p=q.r
 if(p!=null)p.$0()
 break
-case"speak.onError":p=q.w
+case"speak.onError":p=q.x
 if(p!=null)p.$1(a.b)
 break
 case"speak.onProgress":break
-case"synth.onError":p=q.w
+case"synth.onError":p=q.x
 if(p!=null)p.$1(a.b)
 break
 default:A.f1("Unknowm method "+p)}return A.Z(null,r)}})
@@ -64110,11 +64112,11 @@ s.d=r
 s.qs()
 r=s.d
 r.a=new A.a6F(s)
-r.c=new A.a6G(s)
-r.f=new A.a6H(s)
-r.d=new A.a6I(s)
-r.e=new A.a6J(s)
-r.w=new A.a6K(s)},
+r.d=new A.a6G(s)
+r.r=new A.a6H(s)
+r.e=new A.a6I(s)
+r.f=new A.a6J(s)
+r.x=new A.a6K(s)},
 pU(){var s=0,r=A.a0(t.z),q,p=this,o
 var $async$pU=A.a1(function(a,b){if(a===1)return A.Y(b,r)
 while(true)switch(s){case 0:o=p.d
