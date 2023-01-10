@@ -88,6 +88,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       self.stop()
       result(1)
       break
+    case "restartSpeech":
+      let text: String = call.arguments as! String
+      self.restartSpeech(text: text)
+      break
     case "getLanguages":
       self.getLanguages(result: result)
       break
@@ -290,6 +294,12 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func stop() {
     self.synthesizer.stopSpeaking(at: AVSpeechBoundary.immediate)
+  }
+    
+    private func restartSpeech(text: String) {
+        let utterance = AVSpeechUtterance(string: text)
+        self.synthesizer.stopSpeaking(at: .immediate)
+        self.synthesizer.speak(utterance)
   }
 
   private func getLanguages(result: FlutterResult) {

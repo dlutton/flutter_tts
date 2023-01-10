@@ -147,6 +147,11 @@ class FlutterTts {
   Future<dynamic> speak(String text) async =>
       await _channel.invokeMethod('speak', text);
 
+  /// [Future] which invokes the platform specific method for stopping speech and restarting the speech
+  /// ***iOS supported only***
+  Future<dynamic> restartSpeech(String text) async =>
+      await _channel.invokeMethod('restartSpeech', text);
+
   /// [Future] which invokes the platform specific method for pause
   Future<dynamic> pause() async => await _channel.invokeMethod('pause');
 
