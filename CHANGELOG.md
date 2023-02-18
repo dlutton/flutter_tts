@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 3.7.0
+
+- **iOS:** add option to disable the auto stop for the audio session after speech completion
+
 ## 3.6.3
 
 - **Android:** fixed initHandler with setEngineInitHandler
