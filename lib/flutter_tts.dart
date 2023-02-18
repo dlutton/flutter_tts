@@ -183,6 +183,12 @@ class FlutterTts {
   Future<dynamic> setSharedInstance(bool sharedSession) async =>
       await _channel.invokeMethod('setSharedInstance', sharedSession);
 
+  /// [Future] which invokes the platform specific method for setting the autoStopSharedSession
+  /// default value is true
+  /// *** iOS, and macOS supported only***
+  Future<dynamic> autoStopSharedSession(bool autoStop) async =>
+      await _channel.invokeMethod('autoStopSharedSession', autoStop);
+
   /// [Future] which invokes the platform specific method for setting audio category
   /// ***Ios supported only***
   Future<dynamic> setIosAudioCategory(IosTextToSpeechAudioCategory category,
