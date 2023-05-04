@@ -36,14 +36,19 @@ class FlutterTtsPlugin {
   List<dynamic>? voices;
   List<String?>? languages;
   Timer? t;
+  bool supported = false;
 
   FlutterTtsPlugin() {
-    utterance = new js.JsObject(
-        js.context["SpeechSynthesisUtterance"] as js.JsFunction, [""]);
-    synth = new js.JsObject.fromBrowserObject(
-        js.context["speechSynthesis"] as js.JsObject);
-
-    _listeners();
+    try {
+      utterance = new js.JsObject(
+          js.context["SpeechSynthesisUtterance"] as js.JsFunction, [""]);
+      synth = new js.JsObject.fromBrowserObject(
+          js.context["speechSynthesis"] as js.JsObject);
+      _listeners();
+      supported = true;
+    } catch (e) {
+      print('Initialization of TTS failed. Functions are disabled. Error: $e');
+    }
   }
 
   void _listeners() {
@@ -97,6 +102,7 @@ class FlutterTtsPlugin {
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
+    if (!supported) return;
     switch (call.method) {
       case 'speak':
         final text = call.arguments as String?;
