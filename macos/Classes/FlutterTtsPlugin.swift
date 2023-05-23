@@ -105,6 +105,10 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
       }
       self.setVoice(voice: args, result: result)
       break
+    case "autoStopSharedSession":
+      // MacOS does not have a shared audio session so just accept the call
+      result(1)
+      break
     default:
       result(FlutterMethodNotImplemented)
     }
