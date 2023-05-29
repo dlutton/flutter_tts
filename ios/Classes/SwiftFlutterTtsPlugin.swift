@@ -16,6 +16,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var voice: AVSpeechSynthesisVoice?
   var awaitSpeakCompletion: Bool = false
   var awaitSynthCompletion: Bool = false
+  var autoStopSharedSession: Bool = true
   var speakResult: FlutterResult? = nil
   var synthResult: FlutterResult? = nil
     
@@ -111,6 +112,11 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     case "setSharedInstance":
       let sharedInstance = call.arguments as! Bool
       self.setSharedInstance(sharedInstance: sharedInstance, result: result)
+      break
+    case "autoStopSharedSession":
+      let autoStop = call.arguments as! Bool
+      self.autoStopSharedSession = autoStop
+      result(1)
       break
     case "setIosAudioCategory":
       guard let args = call.arguments as? [String: Any] else {
@@ -356,7 +362,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
-    if shouldDeactivateAndNotifyOthers(audioSession) {
+    if shouldDeactivateAndNotifyOthers(audioSession) && self.autoStopSharedSession {
       do {
         try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
       } catch {
