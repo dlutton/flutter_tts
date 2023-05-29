@@ -2,7 +2,15 @@
 
 ## 3.7.0
 
+### Features
+
 - **iOS:** add option to disable the auto stop for the audio session after speech completion
+- **Android:** Upgrade gradle and kotlin. Make project compatible with AGP 8
+
+### Fixes
+
+- **Web:** Add try-catch on initializing web plugin.
+- **iOS:** Support project import fallback if the generated compatibility header is not copied when this plugin is created as a library.
 
 ## 3.6.3
 
