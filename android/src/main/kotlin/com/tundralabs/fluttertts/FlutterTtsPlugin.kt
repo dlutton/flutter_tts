@@ -14,8 +14,6 @@ import io.flutter.plugin.common.MethodChannel.Result
 import java.io.File
 import java.lang.reflect.Field
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 
 /** FlutterTtsPlugin  */
@@ -42,7 +40,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var pauseText: String? = null
     private var isPaused: Boolean = false
     private var queueMode: Int = TextToSpeech.QUEUE_FLUSH
-    private fun initInstance(messenger: BinaryMessenger, context: Context) {
+    fun initInstance(messenger: BinaryMessenger, context: Context) {
         this.context = context
         methodChannel = MethodChannel(messenger, "flutter_tts")
         methodChannel!!.setMethodCallHandler(this)
@@ -133,7 +131,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             // Requires Android 26 or later
             override fun onRangeStart(utteranceId: String, startAt: Int, endAt: Int, frame: Int) {
                 if (!utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
-                    lastProgress = startAt;
+                    lastProgress = startAt
                     super.onRangeStart(utteranceId, startAt, endAt, frame)
                     onProgress(utteranceId, startAt, endAt)
                 }
@@ -199,10 +197,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 for (call in pendingMethodCalls) {
                     call.run()
                 }
-                invokeMethod("tts.init", isTtsInitialized) 
+                invokeMethod("tts.init", isTtsInitialized)
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
-                invokeMethod("tts.init", isTtsInitialized) 
+                invokeMethod("tts.init", isTtsInitialized)
             }
         }
 
@@ -277,18 +275,22 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     result.success(1)
                 }
             }
+
             "awaitSpeakCompletion" -> {
                 awaitSpeakCompletion = java.lang.Boolean.parseBoolean(call.arguments.toString())
                 result.success(1)
             }
+
             "awaitSynthCompletion" -> {
                 awaitSynthCompletion = java.lang.Boolean.parseBoolean(call.arguments.toString())
                 result.success(1)
             }
+
             "getMaxSpeechInputLength" -> {
                 val res = maxSpeechInputLength
                 result.success(res)
             }
+
             "synthesizeToFile" -> {
                 val text: String? = call.argument("text")
                 if (synth) {
@@ -304,6 +306,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     result.success(1)
                 }
             }
+
             "pause" -> {
                 isPaused = true
                 if (pauseText != null) {
@@ -316,6 +319,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     speakResult = null
                 }
             }
+
             "stop" -> {
                 isPaused = false
                 pauseText = null
@@ -327,10 +331,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     speakResult = null
                 }
             }
+
             "setEngine" -> {
                 val engine: String = call.arguments.toString()
                 setEngine(engine, result)
             }
+
             "setSpeechRate" -> {
                 val rate: String = call.arguments.toString()
                 // To make the FlutterTts API consistent across platforms,
@@ -338,18 +344,22 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 setSpeechRate(rate.toFloat() * 2.0f)
                 result.success(1)
             }
+
             "setVolume" -> {
                 val volume: String = call.arguments.toString()
                 setVolume(volume.toFloat(), result)
             }
+
             "setPitch" -> {
                 val pitch: String = call.arguments.toString()
                 setPitch(pitch.toFloat(), result)
             }
+
             "setLanguage" -> {
                 val language: String = call.arguments.toString()
                 setLanguage(language, result)
             }
+
             "getLanguages" -> getLanguages(result)
             "getVoices" -> getVoices(result)
             "getSpeechRateValidRange" -> getSpeechRateValidRange(result)
@@ -360,29 +370,35 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 val voice: HashMap<String?, String>? = call.arguments()
                 setVoice(voice!!, result)
             }
+
             "isLanguageAvailable" -> {
                 val language: String = call.arguments.toString()
                 val locale: Locale = Locale.forLanguageTag(language)
                 result.success(isLanguageAvailable(locale))
             }
+
             "setSilence" -> {
                 val silencems: String = call.arguments.toString()
                 this.silencems = silencems.toInt()
             }
+
             "setSharedInstance" -> result.success(1)
             "isLanguageInstalled" -> {
                 val language: String = call.arguments.toString()
                 result.success(isLanguageInstalled(language))
             }
+
             "areLanguagesInstalled" -> {
                 val languages: List<String?>? = call.arguments()
                 result.success(areLanguagesInstalled(languages!!))
             }
+
             "setQueueMode" -> {
                 val queueMode: String = call.arguments.toString()
                 this.queueMode = queueMode.toInt()
                 result.success(1)
             }
+
             else -> result.notImplemented()
         }
     }
@@ -580,7 +596,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         get() = TextToSpeech.getMaxSpeechInputLength()
 
     private fun synthesizeToFile(text: String, fileName: String) {
-        val file = File(context!!.getExternalFilesDir(null), fileName)
+        val file = File(fileName)
         val uuid: String = UUID.randomUUID().toString()
         bundle!!.putString(
             TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
