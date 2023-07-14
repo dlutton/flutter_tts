@@ -42,6 +42,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var pauseText: String? = null
     private var isPaused: Boolean = false
     private var queueMode: Int = TextToSpeech.QUEUE_FLUSH
+
+    companion object {
+        private const val SILENCE_PREFIX = "SIL_"
+        private const val SYNTHESIZE_TO_FILE_PREFIX = "STF_"
+    }
+
     private fun initInstance(messenger: BinaryMessenger, context: Context) {
         this.context = context
         methodChannel = MethodChannel(messenger, "flutter_tts")
@@ -628,16 +634,5 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
         }
         return isBindConnection
-    }
-
-    companion object {
-        private const val SILENCE_PREFIX = "SIL_"
-        private const val SYNTHESIZE_TO_FILE_PREFIX = "STF_"
-
-        /** Plugin registration.  */
-        fun registerWith(registrar: PluginRegistry.Registrar) {
-            val instance = FlutterTtsPlugin()
-            instance.initInstance(registrar.messenger(), registrar.activeContext())
-        }
     }
 }
