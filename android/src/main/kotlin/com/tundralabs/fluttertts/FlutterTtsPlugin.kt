@@ -133,7 +133,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             // Requires Android 26 or later
             override fun onRangeStart(utteranceId: String, startAt: Int, endAt: Int, frame: Int) {
                 if (!utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
-                    lastProgress = startAt;
+                    lastProgress = startAt
                     super.onRangeStart(utteranceId, startAt, endAt, frame)
                     onProgress(utteranceId, startAt, endAt)
                 }
