@@ -202,7 +202,10 @@ class FlutterTtsPlugin {
     if (voices?.isEmpty ?? true) _setVoices();
     if (languages?.isEmpty ?? true) _setLanguages();
     for (var lang in languages!) {
-      if (lang!.toLowerCase() == language!.toLowerCase()) return true;
+      if (!language!.contains('-')) {
+        lang = lang!.split('-').first;
+      }
+      if (lang!.toLowerCase() == language.toLowerCase()) return true;
     }
     return false;
   }
