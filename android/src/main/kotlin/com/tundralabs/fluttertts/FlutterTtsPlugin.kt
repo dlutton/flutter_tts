@@ -579,6 +579,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun stop() {
+        if (awaitSynthCompletion) synth = false
+        if (awaitSpeakCompletion) speaking = false
         tts!!.stop()
     }
 
