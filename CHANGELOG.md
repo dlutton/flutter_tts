@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 3.8.1
+
+- **iOS:** Fixing fileName type back to URL
+
 ## 3.8.0
 
 ### Features
