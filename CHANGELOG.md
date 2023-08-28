@@ -1,5 +1,19 @@
 # ChangeLog
 
+## 3.8.0
+
+### Features
+
+- *iOS/Android:** Support relative path of synthesization audio file
+- **Android:** Improved android manifest notice
+- **Android:** Removed deprecated registerWith
+- **iOS:** Improved iOS audio documentation
+
+### Fixes
+
+- **Android:** Set speaking and synth to false in the stop method
+- **Web:** Fix error in check available language without locale (country)
+
 ## 3.7.0
 
 ### Features
