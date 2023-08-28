@@ -56,11 +56,21 @@ OSX version: 10.15
 
 Change the minimum Android sdk version to 21 (or higher) in your `android/app/build.gradle` file.
 
-```java
+```groovy
 minSdkVersion 21
 ```
 
-Apps targeting Android 11 that use text-to-speech should declare TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE in the queries elements of their manifest.
+Apps targeting Android 11 that use text-to-speech should
+declare [`TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE`](https://developer.android.com/reference/android/speech/tts/TextToSpeech.Engine#INTENT_ACTION_TTS_SERVICE)
+in the `queries` elements of their manifest.
+
+```xml
+<queries>
+  <intent>
+    <action android:name="android.intent.action.TTS_SERVICE" />
+  </intent>
+</queries>
+```
 
 ### Pausing on Android
 
