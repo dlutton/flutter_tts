@@ -190,7 +190,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
             // finished
         } else {
           // append buffer to file
-          let fileURL = fileName
+          let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
           NSLog("Saving utterance to file: \(fileURL.absoluteString)")
 
           if output == nil {
