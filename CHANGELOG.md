@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 3.8.2
+
+- **Web:** Fixing onError to prevent crashing
+
 ## 3.8.1
 
 - **iOS:** Fixing fileName type back to URL
