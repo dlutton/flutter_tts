@@ -92,12 +92,13 @@ class FlutterTtsPlugin {
     };
 
     utterance["onerror"] = (e) {
+      ttsState = TtsState.stopped;
+      var event = new js.JsObject.fromBrowserObject(e);
       if (_speechCompleter != null) {
-        _speechCompleter?.completeError(e as js.JsObject);
         _speechCompleter = null;
       }
       t?.cancel();
-      channel.invokeMethod("speak.onError", e.toString());
+      channel.invokeMethod("speak.onError", event["error"]);
     };
   }
 
