@@ -2,6 +2,8 @@
 
 ## 3.8.2
 
+### Fixes
+
 - **Web:** Fixing onError to prevent crashing
 
 ## 3.8.1
