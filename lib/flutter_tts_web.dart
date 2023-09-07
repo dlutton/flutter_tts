@@ -98,6 +98,7 @@ class FlutterTtsPlugin {
         _speechCompleter = null;
       }
       t?.cancel();
+      print(event); // Log the entire event object to get more details
       channel.invokeMethod("speak.onError", event["error"]);
     };
   }
@@ -172,10 +173,7 @@ class FlutterTtsPlugin {
 
   void _stop() {
     if (ttsState != TtsState.stopped) {
-      synth.callMethod('pause');
-      Future.delayed(Duration(milliseconds: 500), () {
-        synth.callMethod('cancel');
-      });
+      synth.callMethod('cancel');
     }
   }
 
