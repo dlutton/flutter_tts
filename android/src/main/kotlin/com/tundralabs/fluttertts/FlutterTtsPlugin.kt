@@ -203,6 +203,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 for (call in pendingMethodCalls) {
                     call.run()
                 }
+                pendingMethodCalls.clear()
                 invokeMethod("tts.init", isTtsInitialized)
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
