@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.8.3
+
+### Fixes
+
+- **Android:** Clear pending method calls on initialization
+
 ## 3.8.2
 
 ### Fixes
