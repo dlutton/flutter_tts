@@ -199,11 +199,13 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 }
 
                 // Handle pending method calls (sent while TTS was initializing)
-                isTtsInitialized = true
-                for (call in pendingMethodCalls) {
-                    call.run()
+                synchronized(this@FlutterTtsPlugin) {
+                    isTtsInitialized = true
+                    for (call in pendingMethodCalls) {
+                        call.run()
+                    }
+                    pendingMethodCalls.clear()
                 }
-                pendingMethodCalls.clear()
                 invokeMethod("tts.init", isTtsInitialized)
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
@@ -227,9 +229,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 }
 
                 // Handle pending method calls (sent while TTS was initializing)
-                isTtsInitialized = true
-                for (call in pendingMethodCalls) {
-                    call.run()
+                synchronized(this@FlutterTtsPlugin) {
+                    isTtsInitialized = true
+                    for (call in pendingMethodCalls) {
+                        call.run()
+                    }
+                    pendingMethodCalls.clear()
                 }
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
@@ -238,11 +243,13 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         // If TTS is still loading
-        if (!isTtsInitialized) {
-            // Suspend method call until the TTS engine is ready
-            val suspendedCall = Runnable { onMethodCall(call, result) }
-            pendingMethodCalls.add(suspendedCall)
-            return
+        synchronized(this@FlutterTtsPlugin) {
+            if (!isTtsInitialized) {
+                // Suspend method call until the TTS engine is ready
+                val suspendedCall = Runnable { onMethodCall(call, result) }
+                pendingMethodCalls.add(suspendedCall)
+                return
+            }
         }
         when (call.method) {
             "speak" -> {
@@ -270,8 +277,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 }
                 val b = speak(text)
                 if (!b) {
-                    val suspendedCall = Runnable { onMethodCall(call, result) }
-                    pendingMethodCalls.add(suspendedCall)
+                    synchronized(this@FlutterTtsPlugin) {
+                        val suspendedCall = Runnable { onMethodCall(call, result) }
+                        pendingMethodCalls.add(suspendedCall)
+                    }
                     return
                 }
                 // Only use await speak completion if queueMode is set to QUEUE_FLUSH
