@@ -327,6 +327,9 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       for voice in AVSpeechSynthesisVoice.speechVoices() {
         voiceDict["name"] = voice.name
         voiceDict["locale"] = voice.language
+        voiceDict["quality"] = voice.quality.stringValue
+        voiceDict["gender"] = voice.gender.stringValue
+        voiceDict["identifier"] = voice.identifier
         voices.add(voiceDict)
       }
       result(voices)
@@ -407,4 +410,30 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     self.channel.invokeMethod("speak.onProgress", arguments: data)
   }
 
+}
+
+extension AVSpeechSynthesisVoiceQuality {
+    var stringValue: String {
+        switch self {
+        case .default:
+            return "default"
+        case .premium:
+            return "premium"
+        case .enhanced:
+            return "enhanced"
+        }
+    }
+}
+
+extension AVSpeechSynthesisVoiceGender {
+    var stringValue: String {
+        switch self {
+        case .male:
+            return "male"
+        case .female:
+            return "female"
+        case .unspecified:
+            return "unspecified"
+        }
+    }
 }
