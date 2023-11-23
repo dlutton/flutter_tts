@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 3.8.4
+
+- **Android:** Fix 'Reply already submitted' bug
+- **ioS:** Return additional voice information fields (quality, gender, and identifier)
+- **ioS:** Fix synthesizeToFile on iOS 17+
+
 ## 3.8.3
 
 ### Fixes
