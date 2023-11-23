@@ -175,7 +175,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     fun speakCompletion(success: Int) {
         speaking = false
-        handler!!.post { speakResult?.success(success) }
+        handler!!.post {
+            speakResult?.success(success)
+            speakResult = null
+        }
     }
 
     fun synthCompletion(success: Int) {
