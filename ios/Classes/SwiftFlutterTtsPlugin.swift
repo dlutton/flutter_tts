@@ -334,7 +334,9 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
         voiceDict["name"] = voice.name
         voiceDict["locale"] = voice.language
         voiceDict["quality"] = voice.quality.stringValue
-        voiceDict["gender"] = voice.gender.stringValue
+        if #available(iOS 13.0, *) {
+          voiceDict["gender"] = voice.gender.stringValue
+        }
         voiceDict["identifier"] = voice.identifier
         voices.add(voiceDict)
       }
@@ -431,6 +433,7 @@ extension AVSpeechSynthesisVoiceQuality {
     }
 }
 
+@available(iOS 13.0, *)
 extension AVSpeechSynthesisVoiceGender {
     var stringValue: String {
         switch self {
