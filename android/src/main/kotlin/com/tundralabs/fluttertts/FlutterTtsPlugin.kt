@@ -458,9 +458,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun setEngine(engine: String?, result: Result) {
-        tts = TextToSpeech(context, onInitListener, engine)
         ttsStatus = null
         engineResult = result
+        tts = TextToSpeech(context, onInitListener, engine)
     }
 
     private fun setLanguage(language: String?, result: Result) {
