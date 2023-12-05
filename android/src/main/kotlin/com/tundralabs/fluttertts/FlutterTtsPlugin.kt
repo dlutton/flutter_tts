@@ -391,6 +391,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 setVoice(voice!!, result)
             }
 
+            "clearVoice" -> clearVoice(result)
+
             "isLanguageAvailable" -> {
                 val language: String = call.arguments.toString()
                 val locale: Locale = Locale.forLanguageTag(language)
@@ -485,6 +487,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
         Log.d(tag, "Voice name not found: $voice")
         result.success(0)
+    }
+
+    private fun clearVoice(result: Result) {
+        tts!!.voice = tts!!.defaultVoice
+        result.success(1)
     }
 
     private fun setVolume(volume: Float, result: Result) {
