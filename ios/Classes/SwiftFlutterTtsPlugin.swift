@@ -109,6 +109,10 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       }
       self.setVoice(voice: args, result: result)
       break
+    case "clearVoice":
+      self.clearVoice()
+      result(1)
+      break
     case "setSharedInstance":
       let sharedInstance = call.arguments as! Bool
       self.setSharedInstance(sharedInstance: sharedInstance, result: result)
@@ -360,6 +364,11 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     } else {
       setLanguage(language: voice["name"]!, result: result)
     }
+  }
+
+  private func clearVoice() {
+    self.voice = nil
+    result(1)
   }
 
   private func shouldDeactivateAndNotifyOthers(_ session: AVAudioSession) -> Bool {
