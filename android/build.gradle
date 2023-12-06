@@ -4,14 +4,14 @@ group 'com.tundralabs.fluttertts'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.8.20'
+    ext.kotlin_version = '1.9.10'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.2'
+        classpath 'com.android.tools.build:gradle:8.2.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -23,7 +23,7 @@ rootProject.allprojects {
     }
 }
 
-project.getTasks().withType(JavaCompile){
+project.getTasks().withType(JavaCompile).configureEach {
     options.compilerArgs.addAll(args)
 }
 
@@ -31,7 +31,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 31
+    compileSdk 34
     if (project.android.hasProperty("namespace")) {
         namespace 'com.tundralabs.fluttertts'
     }
