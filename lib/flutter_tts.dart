@@ -536,8 +536,6 @@ class FlutterTts {
     final normal = double.parse(validRange['normal'].toString());
     final max = double.parse(validRange['max'].toString());
     final platformStr = validRange['platform'].toString();
-    //final platform = TextToSpeechPlatform.values
-    //    .firstWhere((e) => describeEnum(e) == platformStr);
     final platform =
         TextToSpeechPlatform.values.firstWhere((e) => e.name == platformStr);
 
