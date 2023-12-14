@@ -368,7 +368,6 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
   private func clearVoice() {
     self.voice = nil
-    result(1)
   }
 
   private func shouldDeactivateAndNotifyOthers(_ session: AVAudioSession) -> Bool {
