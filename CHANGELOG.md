@@ -1,5 +1,23 @@
 # ChangeLog
 
+## 3.8.5
+
+### Fixes
+
+- **iOS:** Fix AVSpeechSynthesisVoiceGender with available on iOS 13 or greater
+
+## 3.8.4
+
+- **Android:** Fix 'Reply already submitted' bug
+- **iOS:** Return additional voice information fields (quality, gender, and identifier)
+- **iOS:** Fix synthesizeToFile on iOS 17+
+
+## 3.8.3
+
+### Fixes
+
+- **Android:** Clear pending method calls on initialization
+
 ## 3.8.2
 
 ### Fixes

@@ -193,19 +193,25 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
           let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
           NSLog("Saving utterance to file: \(fileURL.absoluteString)")
 
-          if output == nil {
-            do {
-              output = try AVAudioFile(
-              forWriting: fileURL,
-              settings: pcmBuffer.format.settings,
-              commonFormat: .pcmFormatInt16,
-              interleaved: false)
-            } catch {
-                NSLog(error.localizedDescription)
+        if output == nil {
+          do {
+            if #available(iOS 17.0, *) {
+              guard let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: Double(22050), channels: 1, interleaved: false) else {
+                NSLog("Error creating audio format for iOS 17+")
                 failed = true
                 return
+              }
+              output = try AVAudioFile(forWriting: fileURL, settings: audioFormat.settings)
+            } else {
+              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatInt16, interleaved: false)
             }
+          } catch {
+              NSLog("Error creating AVAudioFile: \(error.localizedDescription)")
+              failed = true
+              return
           }
+        }
+
 
           try! output!.write(from: pcmBuffer)
         }
@@ -327,6 +333,11 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       for voice in AVSpeechSynthesisVoice.speechVoices() {
         voiceDict["name"] = voice.name
         voiceDict["locale"] = voice.language
+        voiceDict["quality"] = voice.quality.stringValue
+        if #available(iOS 13.0, *) {
+          voiceDict["gender"] = voice.gender.stringValue
+        }
+        voiceDict["identifier"] = voice.identifier
         voices.add(voiceDict)
       }
       result(voices)
@@ -407,4 +418,31 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     self.channel.invokeMethod("speak.onProgress", arguments: data)
   }
 
+}
+
+extension AVSpeechSynthesisVoiceQuality {
+    var stringValue: String {
+        switch self {
+        case .default:
+            return "default"
+        case .premium:
+            return "premium"
+        case .enhanced:
+            return "enhanced"
+        }
+    }
+}
+
+@available(iOS 13.0, *)
+extension AVSpeechSynthesisVoiceGender {
+    var stringValue: String {
+        switch self {
+        case .male:
+            return "male"
+        case .female:
+            return "female"
+        case .unspecified:
+            return "unspecified"
+        }
+    }
 }
