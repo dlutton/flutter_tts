@@ -470,6 +470,10 @@ class FlutterTts {
   Future<dynamic> setVoice(Map<String, String> voice) async =>
       await _channel.invokeMethod('setVoice', voice);
 
+  /// [Future] which resets the platform voice to the default
+  Future<dynamic> clearVoice() async =>
+      await _channel.invokeMethod('clearVoice');
+
   /// [Future] which invokes the platform specific method for stop
   Future<dynamic> stop() async => await _channel.invokeMethod('stop');
 
