@@ -1,19 +1,31 @@
 package com.tundralabs.fluttertts
 
+import android.content.ContentValues
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.speech.tts.*
+import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
+import android.provider.OpenableColumns
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import io.flutter.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.*
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import java.io.File
 import java.lang.reflect.Field
-import java.util.*
+import java.util.Locale
+import java.util.MissingResourceException
+import java.util.UUID
 
 
 /** FlutterTtsPlugin  */
@@ -40,6 +52,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var queueMode: Int = TextToSpeech.QUEUE_FLUSH
     private var ttsStatus: Int? = null
     private var engineResult: Result? = null
+    private var parcelFileDescriptor: ParcelFileDescriptor? = null
 
     companion object {
         private const val SILENCE_PREFIX = "SIL_"
@@ -90,6 +103,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             override fun onDone(utteranceId: String) {
                 if (utteranceId.startsWith(SILENCE_PREFIX)) return
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+                    closeParcelFileDescriptor(false)
                     Log.d(tag, "Utterance ID has completed: $utteranceId")
                     if (awaitSynthCompletion) {
                         synthCompletion(1)
@@ -146,6 +160,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             @Deprecated("")
             override fun onError(utteranceId: String) {
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+                    closeParcelFileDescriptor(true)
                     if (awaitSynthCompletion) {
                         synth = false
                     }
@@ -160,6 +175,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             override fun onError(utteranceId: String, errorCode: Int) {
                 if (utteranceId.startsWith(SYNTHESIZE_TO_FILE_PREFIX)) {
+                    closeParcelFileDescriptor(true)
                     if (awaitSynthCompletion) {
                         synth = false
                     }
@@ -624,19 +640,49 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val maxSpeechInputLength: Int
         get() = TextToSpeech.getMaxSpeechInputLength()
 
+    private fun closeParcelFileDescriptor(isError: Boolean)  {
+        if (this.parcelFileDescriptor != null)  {
+            if (isError) {
+                this.parcelFileDescriptor!!.closeWithError("Error synthesizing TTS to file")
+            } else {
+                this.parcelFileDescriptor!!.close()
+            }
+        }
+    }
+
     private fun synthesizeToFile(text: String, fileName: String) {
-        val file = File(fileName)
+        val fullPath: String
         val uuid: String = UUID.randomUUID().toString()
         bundle!!.putString(
             TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
             SYNTHESIZE_TO_FILE_PREFIX + uuid
         )
+
         val result: Int =
-            tts!!.synthesizeToFile(text, bundle, file, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val resolver = this.context?.contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MUSIC)
+                }
+                val uri = resolver?.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
+                this.parcelFileDescriptor = resolver?.openFileDescriptor(uri!!, "rw")
+                fullPath = uri?.path + File.separatorChar + fileName
+
+                tts!!.synthesizeToFile(text, bundle!!, parcelFileDescriptor!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+            } else {
+                val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+                val file = File(musicDir, fileName)
+                fullPath = file.path
+
+                tts!!.synthesizeToFile(text, bundle!!, file!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+            }
+
         if (result == TextToSpeech.SUCCESS) {
-            Log.d(tag, "Successfully created file : " + file.path)
+            Log.d(tag, "Successfully created file : $fullPath")
         } else {
-            Log.d(tag, "Failed creating file : " + file.path)
+            Log.d(tag, "Failed creating file : $fullPath")
         }
     }
 

@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 4.0.1
+
+### Fixes
+
+- **Android:** Fixing synthesizeToFile
+
 ## 4.0.0
 
 ### Features
