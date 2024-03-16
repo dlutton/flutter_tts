@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 typedef void ErrorHandler(dynamic message);
@@ -542,8 +541,8 @@ class FlutterTts {
     final normal = double.parse(validRange['normal'].toString());
     final max = double.parse(validRange['max'].toString());
     final platformStr = validRange['platform'].toString();
-    final platform = TextToSpeechPlatform.values
-        .firstWhere((e) => describeEnum(e) == platformStr);
+    final platform =
+        TextToSpeechPlatform.values.firstWhere((e) => e.name == platformStr);
 
     return SpeechRateValidRange(min, normal, max, platform);
   }
