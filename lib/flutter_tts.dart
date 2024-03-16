@@ -329,8 +329,6 @@ class FlutterTts {
   static const MethodChannel _channel = const MethodChannel('flutter_tts');
 
   VoidCallback? startHandler;
-  VoidCallback? initHandler;
-  VoidCallback? _setEngineInitHandler;
   VoidCallback? completionHandler;
   VoidCallback? pauseHandler;
   VoidCallback? continueHandler;
@@ -453,10 +451,7 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for setEngine
   /// ***Android supported only***
   Future<dynamic> setEngine(String engine) async {
-    final initCompleter = Completer<void>();
-    _setEngineInitHandler = () => initCompleter.complete();
     await _channel.invokeMethod('setEngine', engine);
-    await initCompleter.future;
   }
 
   /// [Future] which invokes the platform specific method for setPitch
@@ -565,11 +560,6 @@ class FlutterTts {
     startHandler = callback;
   }
 
-  /// ***Android supported only***
-  void setInitHandler(VoidCallback callback) {
-    initHandler = callback;
-  }
-
   void setCompletionHandler(VoidCallback callback) {
     completionHandler = callback;
   }
@@ -603,15 +593,6 @@ class FlutterTts {
         }
         break;
 
-      /// ***Android supported only***
-      case "tts.init":
-        if (initHandler != null) {
-          initHandler!();
-        }
-        if (_setEngineInitHandler != null) {
-          _setEngineInitHandler!();
-        }
-        break;
       case "synth.onStart":
         if (startHandler != null) {
           startHandler!();
