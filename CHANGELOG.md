@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 4.0.2
+
+### Fixes
+
+- **Package:** using recommended static analysis and fixing issues from analyze
+- **Package:** Upating android example to use declarative plugins block
+
 ## 4.0.1
 
 ### Fixes
