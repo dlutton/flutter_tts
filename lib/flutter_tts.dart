@@ -3,7 +3,7 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart';
 
-typedef void ErrorHandler(dynamic message);
+typedef ErrorHandler = void Function(dynamic message);
 typedef ProgressHandler = void Function(
     String text, int start, int end, String word);
 
@@ -326,7 +326,7 @@ class SpeechRateValidRange {
 
 // Provides Platform specific TTS services (Android: TextToSpeech, IOS: AVSpeechSynthesizer)
 class FlutterTts {
-  static const MethodChannel _channel = const MethodChannel('flutter_tts');
+  static const MethodChannel _channel = MethodChannel('flutter_tts');
 
   VoidCallback? startHandler;
   VoidCallback? completionHandler;
@@ -585,7 +585,7 @@ class FlutterTts {
   }
 
   /// Platform listeners
-  Future platformCallHandler(MethodCall call) async {
+  Future<dynamic> platformCallHandler(MethodCall call) async {
     switch (call.method) {
       case "speak.onStart":
         if (startHandler != null) {
