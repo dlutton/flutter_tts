@@ -95,9 +95,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                         invokeMethod("speak.onStart", true)
                     }
                 }
-                if (Build.VERSION.SDK_INT < 26) {
-                    onProgress(utteranceId, 0, utterances[utteranceId]!!.length)
-                }
+                onProgress(utteranceId, 0, utterances[utteranceId]!!.length)
             }
 
             override fun onDone(utteranceId: String) {
