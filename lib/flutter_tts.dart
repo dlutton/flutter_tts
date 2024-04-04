@@ -645,7 +645,7 @@ class FlutterTts {
         }
         break;
       default:
-        print('Unknowm method ${call.method}');
+        print('Unknown method ${call.method}');
     }
   }
 }
