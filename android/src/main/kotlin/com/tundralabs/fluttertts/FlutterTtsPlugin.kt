@@ -343,7 +343,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     return
                 }
                 val fileName: String? = call.argument("fileName")
-                synthesizeToFile(text!!, fileName!!)
+                val isFullPath: Boolean? = call.argument("isFullPath")
+                synthesizeToFile(text!!, fileName!!, isFullPath!!)
                 if (awaitSynthCompletion) {
                     synth = true
                     synthResult = result
@@ -668,7 +669,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
     }
 
-    private fun synthesizeToFile(text: String, fileName: String) {
+    private fun synthesizeToFile(text: String, fileName: String, isFullPath: Boolean) {
         val fullPath: String
         val uuid: String = UUID.randomUUID().toString()
         bundle!!.putString(
@@ -677,7 +678,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         )
 
         val result: Int =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if(isFullPath){
+                val file = File(fileName)
+                fullPath = file.path
+
+                tts!!.synthesizeToFile(text, bundle!!, file!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val resolver = this.context?.contentResolver
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
