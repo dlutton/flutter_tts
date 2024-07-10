@@ -60,6 +60,20 @@ Change the minimum Android sdk version to 21 (or higher) in your `android/app/bu
 minSdkVersion 21
 ```
 
+**Update the Kotlin Gradle Plugin Version**
+
+Change the verision of the Kotlin Gradle plugin to `1.9.10`. <br>
+If your project was created with a version of Flutter before 3.19, go to the `android/build.gradle` file and update the `ext.kotlin_version`:
+```groovy
+ext.kotlin_version = '1.9.10'
+```
+
+Otherwise go to `android/settings.gradle` and update the verion of the plugin `org.jetbrains.kotlin.android`:
+```groovy
+id "org.jetbrains.kotlin.android" version "1.9.10" apply false
+```
+
+
 Apps targeting Android 11 that use text-to-speech should
 declare [`TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE`](https://developer.android.com/reference/android/speech/tts/TextToSpeech.Engine#INTENT_ACTION_TTS_SERVICE)
 in the `queries` elements of their manifest.
