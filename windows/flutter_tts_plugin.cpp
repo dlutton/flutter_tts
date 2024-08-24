@@ -15,7 +15,7 @@ typedef std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> FlutterR
 
 std::unique_ptr<flutter::MethodChannel<>> methodChannel;
 
-#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
 #include <winrt/Windows.Media.SpeechSynthesis.h>
 #include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.Media.Core.h>
