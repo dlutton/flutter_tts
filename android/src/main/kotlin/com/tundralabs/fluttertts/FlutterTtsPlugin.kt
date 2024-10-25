@@ -553,8 +553,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         try {
             for (voice in tts!!.voices) {
                 val voiceMap = HashMap<String, String>()
-                voiceMap["name"] = voice.name
-                voiceMap["locale"] = voice.locale.toLanguageTag()
+                readVoiceProperties(voiceMap, voice)
                 voices.add(voiceMap)
             }
             result.success(voices)
@@ -609,10 +608,42 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         val defaultVoice: Voice? = tts!!.defaultVoice
         val voice = HashMap<String, String>()
         if (defaultVoice != null) {
-            voice["name"] = defaultVoice.name
-            voice["locale"] = defaultVoice.locale.toLanguageTag()
+            readVoiceProperties(voice, defaultVoice)
         }
         result.success(voice)
+    }
+    // Add voice properties into the voice map
+    fun readVoiceProperties(map: MutableMap<String, String>, voice: Voice) {
+        map["name"] = voice.name
+        map["locale"] = voice.locale.toLanguageTag()
+        map["quality"] = qualityToString(voice.quality)
+        map["latency"] = latencyToString(voice.latency)
+        map["network_required"] = if (voice.isNetworkConnectionRequired) "1" else "0"
+        map["features"] = voice.features.joinToString(separator = "\t")
+        
+    }
+
+    // Function to map quality integer to the constant name
+    fun qualityToString(quality: Int): String {
+        return when (quality) {
+            Voice.QUALITY_VERY_HIGH -> "very high"
+            Voice.QUALITY_HIGH -> "high"
+            Voice.QUALITY_NORMAL -> "normal"
+            Voice.QUALITY_LOW -> "low"
+            Voice.QUALITY_VERY_LOW -> "very low"
+            else -> "unknown"
+        }
+    }
+    // Function to map latency integer to the constant name
+    fun latencyToString(quality: Int): String {
+        return when (quality) {
+            Voice.LATENCY_VERY_HIGH -> "very high"
+            Voice.LATENCY_HIGH -> "high"
+            Voice.LATENCY_NORMAL -> "normal"
+            Voice.LATENCY_LOW -> "low"
+            Voice.LATENCY_VERY_LOW -> "very low"
+            else -> "unknown"
+        }
     }
 
     private fun getSpeechRateValidRange(result: Result) {
