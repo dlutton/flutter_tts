@@ -2,6 +2,7 @@ package com.tundralabs.fluttertts
 
 import android.content.ContentValues
 import android.content.Context
+import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -437,6 +438,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 result.success(1)
             }
 
+            "setAudioAttributesForNavigation" -> {
+                setAudioAttributesForNavigation()
+                result.success(1)
+            }
+
             else -> result.notImplemented()
         }
     }
@@ -720,4 +726,16 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
         return isBindConnection
     }
+
+    // Method to set AudioAttributes for navigation usage
+    private fun setAudioAttributesForNavigation() {
+        if (tts != null) {
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            tts!!.setAudioAttributes(audioAttributes)
+        }
+    }
+
 }
