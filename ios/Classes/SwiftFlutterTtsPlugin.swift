@@ -207,7 +207,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
               }
               output = try AVAudioFile(forWriting: fileURL, settings: audioFormat.settings)
             } else {
-              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatInt16, interleaved: false)
+              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatFloat32, interleaved: false)
             }
           } catch {
               NSLog("Error creating AVAudioFile: \(error.localizedDescription)")
