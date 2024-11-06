@@ -261,12 +261,17 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
   }
 
   private func getVoices(result: FlutterResult) {
-    if #available(iOS 9.0, *) {
+    if #available(macOS 10.15, *) {
       let voices = NSMutableArray()
       var voiceDict: [String: String] = [:]
       for voice in AVSpeechSynthesisVoice.speechVoices() {
         voiceDict["name"] = voice.name
         voiceDict["locale"] = voice.language
+        voiceDict["quality"] = voice.quality.stringValue
+        if #available(macOS 10.15, *) {
+          voiceDict["gender"] = voice.gender.stringValue
+        }
+        voiceDict["identifier"] = voice.identifier
         voices.add(voiceDict)
       }
       result(voices)
@@ -277,18 +282,66 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
     }
   }
 
-  private func setVoice(voice: [String:String], result: FlutterResult) {
-    if #available(iOS 9.0, *) {
-      if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.name == voice["name"]! && $0.language == voice["locale"]! }) {
-        self.voice = voice
-        self.language = voice.language
-        result(1)
-        return
+
+
+  private func setVoice(voice: [String: String], result: FlutterResult) {
+      if #available(iOS 9.0, *) {
+          // Check if identifier exists and is not empty
+          if let identifier = voice["identifier"], !identifier.isEmpty {
+              // Find the voice by identifier
+              if let selectedVoice = AVSpeechSynthesisVoice(identifier: identifier) {
+                  self.voice = selectedVoice
+                  self.language = selectedVoice.language
+                  result(1)
+                  return
+              }
+          }
+          
+          // If no valid identifier, search by name and locale, then prioritize by quality
+          if let name = voice["name"], let locale = voice["locale"] {
+              let matchingVoices = AVSpeechSynthesisVoice.speechVoices().filter { $0.name == name && $0.language == locale }
+              
+              if !matchingVoices.isEmpty {
+                  // Sort voices by quality: premium (if available) > enhanced > others
+                  let sortedVoices = matchingVoices.sorted { (voice1, voice2) -> Bool in
+                      let quality1 = voice1.quality
+                      let quality2 = voice2.quality
+                      
+                      // macOS 13.0+ supports premium quality
+                      if #available(macOS 13.0, *) {
+                          if quality1 == .premium {
+                              return true
+                          } else if quality1 == .enhanced && quality2 != .premium {
+                              return true
+                          } else {
+                              return false
+                          }
+                      } else {
+                          // Fallback for macOS versions before 13.0 (no premium)
+                          if quality1 == .enhanced {
+                              return true
+                          } else {
+                              return false
+                          }
+                      }
+                  }
+                  
+                  // Select the highest quality voice
+                  if let selectedVoice = sortedVoices.first {
+                      self.voice = selectedVoice
+                      self.language = selectedVoice.language
+                      result(1)
+                      return
+                  }
+              }
+          }
+          
+          // No matching voice found
+          result(0)
+      } else {
+          // Handle older iOS versions if needed
+          setLanguage(language: voice["name"]!, result: result)
       }
-      result(0)
-    } else {
-      setLanguage(language: voice["name"]!, result: result)
-    }
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
@@ -328,4 +381,31 @@ public class FlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDeleg
     self.channel.invokeMethod("speak.onProgress", arguments: data)
   }
 
+}
+
+extension AVSpeechSynthesisVoiceQuality {
+    var stringValue: String {
+        switch self {
+        case .default:
+            return "default"
+        case .premium:
+            return "premium"
+        case .enhanced:
+            return "enhanced"
+        }
+    }
+}
+
+@available(macOS 10.15, *)
+extension AVSpeechSynthesisVoiceGender {
+    var stringValue: String {
+        switch self {
+        case .male:
+            return "male"
+        case .female:
+            return "female"
+        case .unspecified:
+            return "unspecified"
+        }
+    }
 }
