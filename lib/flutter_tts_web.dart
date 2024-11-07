@@ -101,6 +101,27 @@ class FlutterTtsPlugin {
       print(event); // Log the entire event object to get more details
       channel.invokeMethod("speak.onError", event["error"]);
     };
+
+    utterance["onboundary"] = (Object e) {
+      var event = js.JsObject.fromBrowserObject(e);
+      int charIndex = event['charIndex'] as int;
+      String name = event['name'] as String;
+      if (name == 'sentence') return;
+      String text = utterance['text'] as String;
+      int endIndex = charIndex;
+      while (endIndex < text.length &&
+          !RegExp(r'[\s,.!?]').hasMatch(text[endIndex])) {
+        endIndex++;
+      }
+      String word = text.substring(charIndex, endIndex);
+      Map<String, dynamic> sampleArgs = {
+        'text': text,
+        'start': charIndex,
+        'end': endIndex,
+        'word': word
+      };
+      channel.invokeMethod("speak.onProgress", sampleArgs);
+    };
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {
