@@ -95,9 +95,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                         invokeMethod("speak.onStart", true)
                     }
                 }
-                if (Build.VERSION.SDK_INT < 26) {
-                    onProgress(utteranceId, 0, utterances[utteranceId]!!.length)
-                }
+                onProgress(utteranceId, 0, utterances[utteranceId]!!.length)
             }
 
             override fun onDone(utteranceId: String) {
@@ -328,18 +326,29 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
 
             "synthesizeToFile" -> {
+                Log.d(tag, "synthesizeToFile 1")
                 val text: String? = call.argument("text")
+                Log.d(tag, "synthesizeToFile 2")
                 if (synth) {
+                    Log.d(tag, "synthesizeToFile 3")
                     result.success(0)
                     return
                 }
+                Log.d(tag, "synthesizeToFile 4")
                 val fileName: String? = call.argument("fileName")
+                Log.d(tag, "synthesizeToFile 5")
                 synthesizeToFile(text!!, fileName!!)
+                Log.d(tag, "synthesizeToFile 5")
                 if (awaitSynthCompletion) {
+                    Log.d(tag, "synthesizeToFile 6")
                     synth = true
+                    Log.d(tag, "synthesizeToFile 7")
                     synthResult = result
+                    Log.d(tag, "synthesizeToFile 8")
                 } else {
+                    Log.d(tag, "synthesizeToFile 9")
                     result.success(1)
+                    Log.d(tag, "synthesizeToFile 10")
                 }
             }
 
@@ -651,37 +660,46 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun synthesizeToFile(text: String, fileName: String) {
+        Log.d(tag, "synthesizeToFile 5a")
         val fullPath: String
         val uuid: String = UUID.randomUUID().toString()
+        Log.d(tag, "synthesizeToFile 5b")
         bundle!!.putString(
             TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
             SYNTHESIZE_TO_FILE_PREFIX + uuid
         )
+        Log.d(tag, "synthesizeToFile 5c")
 
         val result: Int =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Log.d(tag, "synthesizeToFile 5d")
                 val resolver = this.context?.contentResolver
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
                     put(MediaStore.MediaColumns.MIME_TYPE, "audio/wav")
                     put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MUSIC)
                 }
+                Log.d(tag, "synthesizeToFile 5e")
                 val uri = resolver?.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, contentValues)
                 this.parcelFileDescriptor = resolver?.openFileDescriptor(uri!!, "rw")
                 fullPath = uri?.path + File.separatorChar + fileName
-
+                Log.d(tag, "synthesizeToFile 5f")
                 tts!!.synthesizeToFile(text, bundle!!, parcelFileDescriptor!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
             } else {
+                Log.d(tag, "synthesizeToFile 5g")
                 val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
                 val file = File(musicDir, fileName)
                 fullPath = file.path
-
+                Log.d(tag, "synthesizeToFile 5h")
                 tts!!.synthesizeToFile(text, bundle!!, file!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
             }
+        Log.d(tag, "synthesizeToFile 5i")
 
         if (result == TextToSpeech.SUCCESS) {
+            Log.d(tag, "synthesizeToFile 5j")
             Log.d(tag, "Successfully created file : $fullPath")
         } else {
+            Log.d(tag, "synthesizeToFile 5k")
             Log.d(tag, "Failed creating file : $fullPath")
         }
     }

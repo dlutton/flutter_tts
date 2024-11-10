@@ -337,6 +337,10 @@ class FlutterTts {
   ErrorHandler? errorHandler;
 
   FlutterTts() {
+    setChannelMethodCallHandler();
+  }
+
+  void setChannelMethodCallHandler() {
     _channel.setMethodCallHandler(platformCallHandler);
   }
 
