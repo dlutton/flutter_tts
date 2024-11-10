@@ -63,7 +63,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       }
       let text = args["text"] as! String
       let fileName = args["fileName"] as! String
-      self.synthesizeToFile(text: text, fileName: fileName, result: result)
+      let isFullPath = args["isFullPath"] as! Bool
+      self.synthesizeToFile(text: text, fileName: fileName, isFullPath: isFullPath, result: result)
       break
     case "pause":
       self.pause(result: result)
@@ -168,7 +169,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     }
   }
 
-  private func synthesizeToFile(text: String, fileName: String, result: @escaping FlutterResult) {
+  private func synthesizeToFile(text: String, fileName: String, isFullPath: Bool, result: @escaping FlutterResult) {
     var output: AVAudioFile?
     var failed = false
     let utterance = AVSpeechUtterance(string: text)
@@ -194,7 +195,12 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
             // finished
         } else {
           // append buffer to file
-          let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
+          let fileURL: URL
+          if isFullPath {
+              fileURL = URL(fileURLWithPath: fileName)
+          } else {
+              fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
+          }
           NSLog("Saving utterance to file: \(fileURL.absoluteString)")
 
         if output == nil {
