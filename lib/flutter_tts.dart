@@ -350,8 +350,12 @@ class FlutterTts {
       await _channel.invokeMethod('awaitSynthCompletion', awaitCompletion);
 
   /// [Future] which invokes the platform specific method for speaking
-  Future<dynamic> speak(String text) async =>
-      await _channel.invokeMethod('speak', text);
+  Future<dynamic> speak(String text, {bool focus = false}) async {
+    return await _channel.invokeMethod('speak', <String, dynamic>{
+      "text": text,
+      "focus": focus,
+    });
+  }
 
   /// [Future] which invokes the platform specific method for pause
   Future<dynamic> pause() async => await _channel.invokeMethod('pause');
@@ -649,5 +653,9 @@ class FlutterTts {
       default:
         print('Unknown method ${call.method}');
     }
+  }
+
+  Future<void> setAudioAttributesForNavigation() async {
+    await _channel.invokeMethod('setAudioAttributesForNavigation');
   }
 }
