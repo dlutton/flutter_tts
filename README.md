@@ -179,7 +179,8 @@ await flutterTts.isLanguageAvailable("en-US");
 await flutterTts.pause();
 
 // iOS, macOS, and Android only
-await flutterTts.synthesizeToFile("Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf");
+// The last parameter is an optional boolean value for isFullPath (defaults to false)
+await flutterTts.synthesizeToFile("Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf", false);
 
 // Each voice is a Map containing at least these keys: name, locale
 // - iOS, macOS only: quality, gender, identifier
