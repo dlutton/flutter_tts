@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 typedef ErrorHandler = void Function(dynamic message);
 typedef ProgressHandler = void Function(
@@ -351,10 +352,14 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for speaking
   Future<dynamic> speak(String text, {bool focus = false}) async {
-    return await _channel.invokeMethod('speak', <String, dynamic>{
-      "text": text,
-      "focus": focus,
-    });
+    if (!kIsWeb && Platform.isAndroid) {
+      return await _channel.invokeMethod('speak', <String, dynamic>{
+        "text": text,
+        "focus": focus,
+      });
+    } else {
+      return await _channel.invokeMethod('speak', text);
+    }
   }
 
   /// [Future] which invokes the platform specific method for pause

@@ -195,6 +195,8 @@ await flutterTts.setVoice({"identifier": "com.apple.voice.compact.en-AU.Karen"})
 await flutterTts.setSharedInstance(true);
 
 // Android only
+await flutterTts.speak("Hello World", focus: true);
+
 await flutterTts.setSilence(2);
 
 await flutterTts.getEngines;
@@ -208,6 +210,8 @@ await flutterTts.areLanguagesInstalled(["en-AU", "en-US"]);
 await flutterTts.setQueueMode(1);
 
 await flutterTts.getMaxSpeechInputLength;
+
+await flutterTts.setAudioAttributesForNavigation();
 ```
 
 ### Listening for platform calls
