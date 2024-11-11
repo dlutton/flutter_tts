@@ -63,7 +63,8 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       }
       let text = args["text"] as! String
       let fileName = args["fileName"] as! String
-      self.synthesizeToFile(text: text, fileName: fileName, result: result)
+      let isFullPath = args["isFullPath"] as! Bool
+      self.synthesizeToFile(text: text, fileName: fileName, isFullPath: isFullPath, result: result)
       break
     case "pause":
       self.pause(result: result)
@@ -168,7 +169,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     }
   }
 
-  private func synthesizeToFile(text: String, fileName: String, result: @escaping FlutterResult) {
+  private func synthesizeToFile(text: String, fileName: String, isFullPath: Bool, result: @escaping FlutterResult) {
     var output: AVAudioFile?
     var failed = false
     let utterance = AVSpeechUtterance(string: text)
@@ -194,20 +195,25 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
             // finished
         } else {
           // append buffer to file
-          let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
+          let fileURL: URL
+          if isFullPath {
+              fileURL = URL(fileURLWithPath: fileName)
+          } else {
+              fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(fileName)
+          }
           NSLog("Saving utterance to file: \(fileURL.absoluteString)")
 
         if output == nil {
           do {
             if #available(iOS 17.0, *) {
-              guard let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: Double(22050), channels: 1, interleaved: false) else {
+                guard let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: pcmBuffer.format.sampleRate, channels: 1, interleaved: false) else {
                 NSLog("Error creating audio format for iOS 17+")
                 failed = true
                 return
               }
               output = try AVAudioFile(forWriting: fileURL, settings: audioFormat.settings)
             } else {
-              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatInt16, interleaved: false)
+              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatFloat32, interleaved: false)
             }
           } catch {
               NSLog("Error creating AVAudioFile: \(error.localizedDescription)")
@@ -352,18 +358,64 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     }
   }
 
-  private func setVoice(voice: [String:String], result: FlutterResult) {
-    if #available(iOS 9.0, *) {
-      if let voice = AVSpeechSynthesisVoice.speechVoices().first(where: { $0.name == voice["name"]! && $0.language == voice["locale"]! }) {
-        self.voice = voice
-        self.language = voice.language
-        result(1)
-        return
+  private func setVoice(voice: [String: String], result: FlutterResult) {
+      if #available(iOS 9.0, *) {
+          // Check if identifier exists and is not empty
+          if let identifier = voice["identifier"], !identifier.isEmpty {
+              // Find the voice by identifier
+              if let selectedVoice = AVSpeechSynthesisVoice(identifier: identifier) {
+                  self.voice = selectedVoice
+                  self.language = selectedVoice.language
+                  result(1)
+                  return
+              }
+          }
+          
+          // If no valid identifier, search by name and locale, then prioritize by quality
+          if let name = voice["name"], let locale = voice["locale"] {
+              let matchingVoices = AVSpeechSynthesisVoice.speechVoices().filter { $0.name == name && $0.language == locale }
+              
+              if !matchingVoices.isEmpty {
+                  // Sort voices by quality: premium (if available) > enhanced > others
+                  let sortedVoices = matchingVoices.sorted { (voice1, voice2) -> Bool in
+                      let quality1 = voice1.quality
+                      let quality2 = voice2.quality
+                      
+                      // macOS 13.0+ supports premium quality
+                      if #available(iOS 16.0, *) {
+                          if quality1 == .premium {
+                              return true
+                          } else if quality1 == .enhanced && quality2 != .premium {
+                              return true
+                          } else {
+                              return false
+                          }
+                      } else {
+                          // Fallback for macOS versions before 13.0 (no premium)
+                          if quality1 == .enhanced {
+                              return true
+                          } else {
+                              return false
+                          }
+                      }
+                  }
+                  
+                  // Select the highest quality voice
+                  if let selectedVoice = sortedVoices.first {
+                      self.voice = selectedVoice
+                      self.language = selectedVoice.language
+                      result(1)
+                      return
+                  }
+              }
+          }
+          
+          // No matching voice found
+          result(0)
+      } else {
+          // Handle older iOS versions if needed
+          setLanguage(language: voice["name"]!, result: result)
       }
-      result(0)
-    } else {
-      setLanguage(language: voice["name"]!, result: result)
-    }
   }
 
   private func clearVoice() {

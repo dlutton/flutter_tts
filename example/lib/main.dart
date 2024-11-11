@@ -347,7 +347,7 @@ class _MyAppState extends State<MyApp> {
         min: 0.0,
         max: 1.0,
         divisions: 10,
-        label: "Volume: $volume");
+        label: "Volume: ${volume.toStringAsFixed(1)}");
   }
 
   Widget _pitch() {
@@ -359,7 +359,7 @@ class _MyAppState extends State<MyApp> {
       min: 0.5,
       max: 2.0,
       divisions: 15,
-      label: "Pitch: $pitch",
+      label: "Pitch: ${pitch.toStringAsFixed(1)}",
       activeColor: Colors.red,
     );
   }
@@ -373,7 +373,7 @@ class _MyAppState extends State<MyApp> {
       min: 0.0,
       max: 1.0,
       divisions: 10,
-      label: "Rate: $rate",
+      label: "Rate: ${rate.toStringAsFixed(1)}",
       activeColor: Colors.green,
     );
   }

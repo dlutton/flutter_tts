@@ -1,5 +1,20 @@
 # ChangeLog
 
+## 4.1.0
+
+### Fixes
+
+- **Windows:** Fixes setvoices
+- **iOS:** Fixes exported audio having the wrong sampleRate on ios 18
+- **Android:** Fixes 'Reply already submitted' bug during synthesizeToFile
+
+### Features
+
+- **Android:** Added AudioFocus and Audio Attributes For Navigation
+- **Android/iOS/macOS:** Added extra metadata for voices
+- **Web:** Migrated js_interop to support WASM
+- **Android/iOS:** Improving synthesizeToFile
+
 ## 4.0.2
 
 ### Fixes

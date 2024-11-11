@@ -16,7 +16,7 @@ A flutter text to speech plugin (Swift,Kotlin)
   - [x] set speech pitch
 - [x] Android, iOS, Web & macOS
   - [x] is language available
-- [x] Android, iOS, Web, & Windows
+- [x] Android, iOS, macOS, Web, & Windows
   - [x] get voices
   - [x] set voice
 - [x] Android, iOS
@@ -149,7 +149,7 @@ To await synthesize to file completion.
 await flutterTts.awaitSynthCompletion(true);
 ```
 
-### speak, stop, getLanguages, setLanguage, setSpeechRate, setVoice, setVolume, setPitch, isLanguageAvailable, setSharedInstance
+### speak, stop, getLanguages, setLanguage, setSpeechRate, getVoices, setVoice, setVolume, setPitch, isLanguageAvailable, setSharedInstance
 
 ```dart
 Future _speak() async{
@@ -179,14 +179,24 @@ await flutterTts.isLanguageAvailable("en-US");
 await flutterTts.pause();
 
 // iOS, macOS, and Android only
-await flutterTts.synthesizeToFile("Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf");
+// The last parameter is an optional boolean value for isFullPath (defaults to false)
+await flutterTts.synthesizeToFile("Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf", false);
+
+// Each voice is a Map containing at least these keys: name, locale
+// - iOS, macOS only: quality, gender, identifier
+// - Android only: quality, latency, network_required, features 
+List<Map> voices = await flutterTts.getVoices;
 
 await flutterTts.setVoice({"name": "Karen", "locale": "en-AU"});
+// iOS, macOS only
+await flutterTts.setVoice({"identifier": "com.apple.voice.compact.en-AU.Karen"});
 
 // iOS only
 await flutterTts.setSharedInstance(true);
 
 // Android only
+await flutterTts.speak("Hello World", focus: true);
+
 await flutterTts.setSilence(2);
 
 await flutterTts.getEngines;
@@ -200,6 +210,8 @@ await flutterTts.areLanguagesInstalled(["en-AU", "en-US"]);
 await flutterTts.setQueueMode(1);
 
 await flutterTts.getMaxSpeechInputLength;
+
+await flutterTts.setAudioAttributesForNavigation();
 ```
 
 ### Listening for platform calls

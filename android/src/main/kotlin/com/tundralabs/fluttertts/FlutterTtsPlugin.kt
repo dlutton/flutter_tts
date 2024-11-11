@@ -2,6 +2,9 @@ package com.tundralabs.fluttertts
 
 import android.content.ContentValues
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -53,6 +56,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var ttsStatus: Int? = null
     private var engineResult: Result? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
+    private var audioManager: AudioManager? = null
+    private var audioFocusRequest: AudioFocusRequest? = null
 
     companion object {
         private const val SILENCE_PREFIX = "SIL_"
@@ -119,6 +124,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 lastProgress = 0
                 pauseText = null
                 utterances.remove(utteranceId)
+                releaseAudioFocus()
             }
 
             override fun onStop(utteranceId: String, interrupted: Boolean) {
@@ -134,6 +140,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 } else {
                     invokeMethod("speak.onCancel", true)
                 }
+                releaseAudioFocus()
             }
 
             private fun onProgress(utteranceId: String?, startAt: Int, endAt: Int) {
@@ -171,6 +178,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     }
                     invokeMethod("speak.onError", "Error from TextToSpeech (speak)")
                 }
+                releaseAudioFocus()
             }
 
             override fun onError(utteranceId: String, errorCode: Int) {
@@ -199,7 +207,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     fun synthCompletion(success: Int) {
         synth = false
-        handler!!.post { synthResult?.success(success) }
+        handler!!.post {
+            synthResult?.success(success)
+            synthResult = null
+        }
     }
 
     private val onInitListener: TextToSpeech.OnInitListener =
@@ -273,7 +284,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
         when (call.method) {
             "speak" -> {
-                var text: String = call.arguments.toString()
+                var text: String = call.argument("text")!!
+                val focus: Boolean = call.argument("focus")!!
                 if (pauseText == null) {
                     pauseText = text
                     currentText = pauseText!!
@@ -295,7 +307,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                         return
                     }
                 }
-                val b = speak(text)
+                val b = speak(text, focus)
                 if (!b) {
                     synchronized(this@FlutterTtsPlugin) {
                         val suspendedCall = Runnable { onMethodCall(call, result) }
@@ -334,7 +346,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     return
                 }
                 val fileName: String? = call.argument("fileName")
-                synthesizeToFile(text!!, fileName!!)
+                val isFullPath: Boolean? = call.argument("isFullPath")
+                synthesizeToFile(text!!, fileName!!, isFullPath!!)
                 if (awaitSynthCompletion) {
                     synth = true
                     synthResult = result
@@ -437,6 +450,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 result.success(1)
             }
 
+            "setAudioAttributesForNavigation" -> {
+                setAudioAttributesForNavigation()
+                result.success(1)
+            }
+
             else -> result.notImplemented()
         }
     }
@@ -535,8 +553,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         try {
             for (voice in tts!!.voices) {
                 val voiceMap = HashMap<String, String>()
-                voiceMap["name"] = voice.name
-                voiceMap["locale"] = voice.locale.toLanguageTag()
+                readVoiceProperties(voiceMap, voice)
                 voices.add(voiceMap)
             }
             result.success(voices)
@@ -591,10 +608,42 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         val defaultVoice: Voice? = tts!!.defaultVoice
         val voice = HashMap<String, String>()
         if (defaultVoice != null) {
-            voice["name"] = defaultVoice.name
-            voice["locale"] = defaultVoice.locale.toLanguageTag()
+            readVoiceProperties(voice, defaultVoice)
         }
         result.success(voice)
+    }
+    // Add voice properties into the voice map
+    fun readVoiceProperties(map: MutableMap<String, String>, voice: Voice) {
+        map["name"] = voice.name
+        map["locale"] = voice.locale.toLanguageTag()
+        map["quality"] = qualityToString(voice.quality)
+        map["latency"] = latencyToString(voice.latency)
+        map["network_required"] = if (voice.isNetworkConnectionRequired) "1" else "0"
+        map["features"] = voice.features.joinToString(separator = "\t")
+        
+    }
+
+    // Function to map quality integer to the constant name
+    fun qualityToString(quality: Int): String {
+        return when (quality) {
+            Voice.QUALITY_VERY_HIGH -> "very high"
+            Voice.QUALITY_HIGH -> "high"
+            Voice.QUALITY_NORMAL -> "normal"
+            Voice.QUALITY_LOW -> "low"
+            Voice.QUALITY_VERY_LOW -> "very low"
+            else -> "unknown"
+        }
+    }
+    // Function to map latency integer to the constant name
+    fun latencyToString(quality: Int): String {
+        return when (quality) {
+            Voice.LATENCY_VERY_HIGH -> "very high"
+            Voice.LATENCY_HIGH -> "high"
+            Voice.LATENCY_NORMAL -> "normal"
+            Voice.LATENCY_LOW -> "low"
+            Voice.LATENCY_VERY_LOW -> "very low"
+            else -> "unknown"
+        }
     }
 
     private fun getSpeechRateValidRange(result: Result) {
@@ -610,10 +659,14 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         result.success(data)
     }
 
-    private fun speak(text: String): Boolean {
+    private fun speak(text: String, focus: Boolean): Boolean {
         val uuid: String = UUID.randomUUID().toString()
         utterances[uuid] = text
         return if (ismServiceConnectionUsable(tts)) {
+            if(focus){
+                requestAudioFocus()
+            }
+
             if (silencems > 0) {
                 tts!!.playSilentUtterance(
                     silencems.toLong(),
@@ -650,7 +703,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
     }
 
-    private fun synthesizeToFile(text: String, fileName: String) {
+    private fun synthesizeToFile(text: String, fileName: String, isFullPath: Boolean) {
         val fullPath: String
         val uuid: String = UUID.randomUUID().toString()
         bundle!!.putString(
@@ -659,7 +712,12 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         )
 
         val result: Int =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if(isFullPath){
+                val file = File(fileName)
+                fullPath = file.path
+
+                tts!!.synthesizeToFile(text, bundle!!, file!!, SYNTHESIZE_TO_FILE_PREFIX + uuid)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 val resolver = this.context?.contentResolver
                 val contentValues = ContentValues().apply {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
@@ -719,5 +777,37 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
         }
         return isBindConnection
+    }
+
+    // Method to set AudioAttributes for navigation usage
+    private fun setAudioAttributesForNavigation() {
+        if (tts != null) {
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            tts!!.setAudioAttributes(audioAttributes)
+        }
+    }
+
+    private fun requestAudioFocus() {
+        audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                .setOnAudioFocusChangeListener { /* opcional para monitorar mudanças de foco */ }
+                .build()
+            audioManager?.requestAudioFocus(audioFocusRequest!!)
+        } else {
+            audioManager?.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+        }
+    }
+
+    private fun releaseAudioFocus() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            audioFocusRequest?.let { audioManager?.abandonAudioFocusRequest(it) }
+        } else {
+            audioManager?.abandonAudioFocus(null)
+        }
     }
 }
