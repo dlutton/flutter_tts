@@ -206,14 +206,14 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
         if output == nil {
           do {
             if #available(iOS 17.0, *) {
-              guard let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: Double(22050), channels: 1, interleaved: false) else {
+                guard let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: pcmBuffer.format.sampleRate, channels: 1, interleaved: false) else {
                 NSLog("Error creating audio format for iOS 17+")
                 failed = true
                 return
               }
               output = try AVAudioFile(forWriting: fileURL, settings: audioFormat.settings)
             } else {
-              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatInt16, interleaved: false)
+              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatFloat32, interleaved: false)
             }
           } catch {
               NSLog("Error creating AVAudioFile: \(error.localizedDescription)")
