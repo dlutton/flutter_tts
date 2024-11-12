@@ -100,7 +100,7 @@ class FlutterTtsPlugin {
       channel.invokeMethod("speak.onError", event["error"]);
     }.toJS;
 
-    utterance["onboundary"] = (JSObject event) {
+    utterance.onBoundary = (JSObject event) {
       int charIndex = event['charIndex'] as int;
       String name = event['name'] as String;
       if (name == 'sentence') return;
@@ -111,13 +111,13 @@ class FlutterTtsPlugin {
         endIndex++;
       }
       String word = text.substring(charIndex, endIndex);
-      Map<String, dynamic> sampleArgs = {
+      Map<String, dynamic> progressArgs = {
         'text': text,
         'start': charIndex,
         'end': endIndex,
         'word': word
       };
-      channel.invokeMethod("speak.onProgress", sampleArgs);
+      channel.invokeMethod("speak.onProgress", progressArgs);
     }.toJS;
   }
 
