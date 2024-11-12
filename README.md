@@ -14,11 +14,10 @@ A flutter text to speech plugin (Swift,Kotlin)
   - [x] set speech rate
   - [x] set speech volume
   - [x] set speech pitch
-- [x] Android, iOS, Web & macOS
-  - [x] is language available
-- [x] Android, iOS, macOS, Web, & Windows
   - [x] get voices
   - [x] set voice
+- [x] Android, iOS, Web & macOS
+  - [x] is language available
 - [x] Android, iOS, Web
   - [x] speech marks (requires iOS 7+, Android 26+, and default voice engine for web)
 - [x] Android, iOS
