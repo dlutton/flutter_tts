@@ -183,6 +183,7 @@ await flutterTts.pause();
 await flutterTts.synthesizeToFile("Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf", false);
 
 // Each voice is a Map containing at least these keys: name, locale
+// - Windows (UWP voices) only: gender, identifier
 // - iOS, macOS only: quality, gender, identifier
 // - Android only: quality, latency, network_required, features 
 List<Map> voices = await flutterTts.getVoices;
