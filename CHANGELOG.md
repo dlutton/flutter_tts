@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 4.2.0
+
+### Features
+
+- **Windows:** Added extra metadata for voices
+- **Web:** Added progress events using onboundary
+
 ## 4.1.0
 
 ### Fixes
