@@ -151,6 +151,22 @@ namespace {
 				flutter::EncodableMap voiceInfo;
 				voiceInfo[flutter::EncodableValue("locale")] = to_string(voice.Language());
 				voiceInfo[flutter::EncodableValue("name")] = to_string(voice.DisplayName());
+				//  Convert VoiceGender to string
+				std::string gender;
+				switch (voice.Gender()) {
+					case VoiceGender::Male:
+						gender = "male";
+						break;
+					case VoiceGender::Female:
+						gender = "female";
+						break;
+					default:
+						gender = "unknown";
+						break;
+				}
+				voiceInfo[flutter::EncodableValue("gender")] = gender; 
+				// Identifier example "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech_OneCore\Voices\Tokens\MSTTS_V110_enUS_MarkM"
+				voiceInfo[flutter::EncodableValue("identifier")] = to_string(voice.Id());
 				voices.push_back(flutter::EncodableMap(voiceInfo));
 			});
 	}
