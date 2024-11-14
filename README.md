@@ -14,13 +14,13 @@ A flutter text to speech plugin (Swift,Kotlin)
   - [x] set speech rate
   - [x] set speech volume
   - [x] set speech pitch
-- [x] Android, iOS, Web & macOS
-  - [x] is language available
-- [x] Android, iOS, macOS, Web, & Windows
   - [x] get voices
   - [x] set voice
+- [x] Android, iOS, Web & macOS
+  - [x] is language available
+- [x] Android, iOS, Web
+  - [x] speech marks (requires iOS 7+, Android 26+, and default voice engine for web)
 - [x] Android, iOS
-  - [x] speech marks (requires iOS 7+ and Android 26+)
   - [x] synthesize to file (requires iOS 13+)
 - [x] Android, iOS, Web, & Windows
   - [x] pause
@@ -51,6 +51,10 @@ OSX version: 10.15
 ## Web
 
 [Website](https://dlutton.github.io/flutter_tts) from the example directory.
+
+**Progress updates on Web**
+
+Progress updates are only supported for native speech synsthesis. Use the default engine to ensure support for progress updates. [Chromium#41195426](https://issues.chromium.org/issues/41195426#comment8)
 
 ## Android
 

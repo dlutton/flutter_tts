@@ -48,6 +48,9 @@ extension type SpeechSynthesisUtterance._(JSObject _) implements JSObject {
 
   @JS('onerror')
   external set onError(JSFunction listener);
+
+  @JS('onboundary')
+  external set onBoundary(JSFunction listener);
 }
 
 @JS()
