@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
+import 'package:logging/logging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 
@@ -11,6 +12,7 @@ import 'interop_types.dart';
 enum TtsState { playing, stopped, paused, continued }
 
 class FlutterTtsPlugin {
+  static final _log = Logger('AppRouteInformationParser');
   static const String platformChannel = "flutter_tts";
   static late MethodChannel channel;
   bool awaitSpeakCompletion = false;
@@ -205,7 +207,17 @@ class FlutterTtsPlugin {
   void _setRate(double rate) => utterance.rate = rate;
   void _setVolume(double volume) => utterance.volume = volume;
   void _setPitch(double pitch) => utterance.pitch = pitch;
-  void _setLanguage(String language) => utterance.lang = language;
+  void _setLanguage(String language) {
+    utterance.lang = language;
+    var tmpVoices = synth.getVoices().toDart;
+    var targetList = tmpVoices.where((voice) {
+      _log.fine('SpeechSynthesisVoice { lang: ${voice.lang}, name: ${voice.name}, isDefault: ${voice.isDefault}');
+      return voice.lang.startsWith(language) && voice.isDefault;
+    });
+    if (targetList.isNotEmpty) {
+      utterance.voice = targetList.first;
+    }
+  }
   void _setVoice(Map<String?, String?> voice) {
     var tmpVoices = synth.getVoices().toDart;
     var targetList = tmpVoices.where((e) {
