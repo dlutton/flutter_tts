@@ -596,6 +596,10 @@ class FlutterTts {
     errorHandler = handler;
   }
 
+  void setVoicesChangedHandler(VoidCallback handler) {
+    voicesChangedHandler = handler;
+  }
+
   /// Platform listeners
   Future<dynamic> platformCallHandler(MethodCall call) async {
     switch (call.method) {
