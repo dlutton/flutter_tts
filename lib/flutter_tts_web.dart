@@ -119,6 +119,10 @@ class FlutterTtsPlugin {
       };
       channel.invokeMethod("speak.onProgress", progressArgs);
     }.toJS;
+
+    synth.onVoicesChanged = (JSAny e) {
+      channel.invokeMethod("synth.onVoicesChanged", null);
+    }.toJS;
   }
 
   Future<dynamic> handleMethodCall(MethodCall call) async {

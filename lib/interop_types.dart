@@ -14,6 +14,9 @@ extension type SpeechSynthesis._(JSObject _) implements JSObject {
   external void resume();
 
   external void speak(SpeechSynthesisUtterance utterance);
+
+  @JS('onvoiceschanged')
+  external set onVoicesChanged(JSFunction listener);
 }
 
 @JS()

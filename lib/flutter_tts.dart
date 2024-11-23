@@ -336,6 +336,7 @@ class FlutterTts {
   VoidCallback? cancelHandler;
   ProgressHandler? progressHandler;
   ErrorHandler? errorHandler;
+  VoidCallback? voicesChangedHandler;
 
   FlutterTts() {
     _channel.setMethodCallHandler(platformCallHandler);
@@ -653,6 +654,11 @@ class FlutterTts {
       case "synth.onError":
         if (errorHandler != null) {
           errorHandler!(call.arguments);
+        }
+        break;
+      case "synth.onVoicesChanged":
+        if (voicesChangedHandler != null) {
+          voicesChangedHandler!();
         }
         break;
       default:
