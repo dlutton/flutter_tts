@@ -3,14 +3,12 @@ import UIKit
 import AVFoundation
 
 public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizerDelegate {
-  final var iosAudioCategoryKey = "iosAudioCategoryKey"
-  final var iosAudioCategoryOptionsKey = "iosAudioCategoryOptionsKey"
-  final var iosAudioModeKey = "iosAudioModeKey"
+  let iosAudioCategoryKey = "iosAudioCategoryKey"
+  let iosAudioCategoryOptionsKey = "iosAudioCategoryOptionsKey"
+  let iosAudioModeKey = "iosAudioModeKey"
 
   let synthesizer = AVSpeechSynthesizer()
-  var language: String = AVSpeechSynthesisVoice.currentLanguageCode()
   var rate: Float = AVSpeechUtteranceDefaultSpeechRate
-  var languages = Set<String>()
   var volume: Float = 1.0
   var pitch: Float = 1.0
   var voice: AVSpeechSynthesisVoice?
@@ -19,21 +17,21 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   var autoStopSharedSession: Bool = true
   var speakResult: FlutterResult? = nil
   var synthResult: FlutterResult? = nil
+  
+  lazy var audioSession = AVAudioSession.sharedInstance()
+  lazy var language: String = {
+    AVSpeechSynthesisVoice.currentLanguageCode()
+  }()
+  lazy var languages: Set<String> = {
+    Set(AVSpeechSynthesisVoice.speechVoices().map(\.language))
+  }()
     
 
   var channel = FlutterMethodChannel()
-  lazy var audioSession = AVAudioSession.sharedInstance()
   init(channel: FlutterMethodChannel) {
     super.init()
     self.channel = channel
     synthesizer.delegate = self
-    setLanguages()
-  }
-
-  private func setLanguages() {
-    for voice in AVSpeechSynthesisVoice.speechVoices(){
-      self.languages.insert(voice.language)
-    }
   }
 
   public static func register(with registrar: FlutterPluginRegistrar) {
