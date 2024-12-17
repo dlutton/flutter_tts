@@ -241,7 +241,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             } else {
                 engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
             }
-            engineResult = null
+            //engineResult = null
         }
 
     private val firstTimeOnInitListener: TextToSpeech.OnInitListener =
