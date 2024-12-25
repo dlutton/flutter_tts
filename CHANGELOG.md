@@ -1,5 +1,12 @@
 # ChangeLog
 
+## 4.2.1
+
+### Fixes
+
+- **iOS:** speeding up iOS plugin initialization
+- **Android:** Fixes npe on plugin initialization
+
 ## 4.2.0
 
 ### Features
