@@ -208,7 +208,7 @@ class FlutterTtsPlugin {
   void _setLanguage(String language) {
     utterance.lang = language;
     var targetList = synth.getVoices().toDart.where((e) {
-      return e.lang == language;
+      return e.lang.startsWith(language);
     });
     utterance.voice = targetList.first;
   }
