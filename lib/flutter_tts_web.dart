@@ -205,7 +205,14 @@ class FlutterTtsPlugin {
   void _setRate(double rate) => utterance.rate = rate;
   void _setVolume(double volume) => utterance.volume = volume;
   void _setPitch(double pitch) => utterance.pitch = pitch;
-  void _setLanguage(String language) => utterance.lang = language;
+  void _setLanguage(String language) {
+    utterance.lang = language;
+    var targetList = synth.getVoices().toDart.where((e) {
+      return e.lang == language;
+    });
+    utterance.voice = targetList.first;
+  }
+
   void _setVoice(Map<String?, String?> voice) {
     var tmpVoices = synth.getVoices().toDart;
     var targetList = tmpVoices.where((e) {
