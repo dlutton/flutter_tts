@@ -226,11 +226,13 @@ class _MyAppState extends State<MyApp> {
               return _enginesDropDownSection(snapshot.data as List<dynamic>);
             } else if (snapshot.hasError) {
               return Text('Error loading engines...');
-            } else
+            } else {
               return Text('Loading engines...');
+            }
           });
-    } else
+    } else {
       return Container(width: 0, height: 0);
+    }
   }
 
   Widget _futureBuilder() => FutureBuilder<dynamic>(
