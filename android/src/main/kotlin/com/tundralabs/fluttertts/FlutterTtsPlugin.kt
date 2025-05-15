@@ -588,10 +588,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun getEngines(result: Result) {
-        val engines = ArrayList<String>()
+        val engines = ArrayList<HashMap<String, String>>()
         try {
             for (engineInfo in tts!!.engines) {
-                engines.add(engineInfo.name)
+                engines.add(hashMapOf("name" to engineInfo.name, "label" to engineInfo.label))
             }
         } catch (e: Exception) {
             Log.d(tag, "getEngines: " + e.message)
