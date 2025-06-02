@@ -34,6 +34,10 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
 
+if(MSVC)
+    target_compile_options(${PLUGIN_NAME} PRIVATE "/await")
+endif()
+
 # List of absolute paths to libraries that should be bundled with the plugin
 set(flutter_tts_bundled_libraries
   ""
