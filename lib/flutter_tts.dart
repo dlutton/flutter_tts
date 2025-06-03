@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 typedef ErrorHandler = void Function(dynamic message);
-typedef ProgressHandler = void Function(
-    String text, int start, int end, String word);
+typedef ProgressHandler =
+    void Function(String text, int start, int end, String word);
 
 const String iosAudioCategoryOptionsKey = 'iosAudioCategoryOptionsKey';
 const String iosAudioCategoryKey = 'iosAudioCategoryKey';
@@ -373,13 +373,15 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for synthesizeToFile
   /// ***Android and iOS supported only***
-  Future<dynamic> synthesizeToFile(String text, String fileName,
-          [bool isFullPath = false]) async =>
-      _channel.invokeMethod('synthesizeToFile', <String, dynamic>{
-        "text": text,
-        "fileName": fileName,
-        "isFullPath": isFullPath,
-      });
+  Future<dynamic> synthesizeToFile(
+    String text,
+    String fileName, [
+    bool isFullPath = false,
+  ]) async => _channel.invokeMethod('synthesizeToFile', <String, dynamic>{
+    "text": text,
+    "fileName": fileName,
+    "isFullPath": isFullPath,
+  });
 
   /// [Future] which invokes the platform specific method for setLanguage
   Future<dynamic> setLanguage(String language) async =>
@@ -408,14 +410,15 @@ class FlutterTts {
 
   /// [Future] which invokes the platform specific method for setting audio category
   /// ***Ios supported only***
-  Future<dynamic> setIosAudioCategory(IosTextToSpeechAudioCategory category,
-      List<IosTextToSpeechAudioCategoryOptions> options,
-      [IosTextToSpeechAudioMode mode =
-          IosTextToSpeechAudioMode.defaultMode]) async {
+  Future<dynamic> setIosAudioCategory(
+    IosTextToSpeechAudioCategory category,
+    List<IosTextToSpeechAudioCategoryOptions> options, [
+    IosTextToSpeechAudioMode mode = IosTextToSpeechAudioMode.defaultMode,
+  ]) async {
     const categoryToString = <IosTextToSpeechAudioCategory, String>{
       IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
       IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
-      IosTextToSpeechAudioCategory.playback: iosAudioCategoryPlayback
+      IosTextToSpeechAudioCategory.playback: iosAudioCategoryPlayback,
     };
     const optionsToString = {
       IosTextToSpeechAudioCategoryOptions.mixWithOthers:
@@ -448,14 +451,15 @@ class FlutterTts {
     try {
       return await _channel
           .invokeMethod<dynamic>('setIosAudioCategory', <String, dynamic>{
-        iosAudioCategoryKey: categoryToString[category],
-        iosAudioCategoryOptionsKey:
-            options.map((o) => optionsToString[o]).toList(),
-        iosAudioModeKey: modeToString[mode],
-      });
+            iosAudioCategoryKey: categoryToString[category],
+            iosAudioCategoryOptionsKey:
+                options.map((o) => optionsToString[o]).toList(),
+            iosAudioModeKey: modeToString[mode],
+          });
     } on PlatformException catch (e) {
       print(
-          'setIosAudioCategory error, category: $category, mode: $mode, error: ${e.message}');
+        'setIosAudioCategory error, category: $category, mode: $mode, error: ${e.message}',
+      );
     }
   }
 
@@ -493,8 +497,10 @@ class FlutterTts {
   /// [Future] which invokes the platform specific method for getEngines
   /// Returns a list of installed TTS engines
   /// ***Android supported only***
-  Future<dynamic> get getEngines async {
-    final engines = await _channel.invokeMethod('getEngines');
+  Future<List<Map<String, String>>> get getEngines async {
+    final List<dynamic> enginesRaw = await _channel.invokeMethod('getEngines');
+    final List<Map<String, String>> engines =
+        enginesRaw.map((e) => Map<String, String>.from(e as Map)).toList();
     return engines;
   }
 
@@ -541,14 +547,16 @@ class FlutterTts {
       await _channel.invokeMethod('areLanguagesInstalled', languages);
 
   Future<SpeechRateValidRange> get getSpeechRateValidRange async {
-    final validRange = await _channel.invokeMethod('getSpeechRateValidRange')
-        as Map<dynamic, dynamic>;
+    final validRange =
+        await _channel.invokeMethod('getSpeechRateValidRange')
+            as Map<dynamic, dynamic>;
     final min = double.parse(validRange['min'].toString());
     final normal = double.parse(validRange['normal'].toString());
     final max = double.parse(validRange['max'].toString());
     final platformStr = validRange['platform'].toString();
-    final platform =
-        TextToSpeechPlatform.values.firstWhere((e) => e.name == platformStr);
+    final platform = TextToSpeechPlatform.values.firstWhere(
+      (e) => e.name == platformStr,
+    );
 
     return SpeechRateValidRange(min, normal, max, platform);
   }
