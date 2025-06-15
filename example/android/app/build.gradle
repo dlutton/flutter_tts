@@ -1,3 +1,5 @@
+package example.android.app
+
 plugins {
     id "com.android.application"
     id "kotlin-android"
@@ -13,14 +15,13 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    compileSdk 34
     namespace 'com.tundralabs.example'
-
+    compileSdk = 35 // flutter.compileSdkVersion
 
     defaultConfig {
         applicationId "com.tundralabs.flutterttsexample"
-        minSdkVersion 21
-        targetSdkVersion 34
+        minSdk = 23 // flutter.minSdkVersion
+        targetSdk = 35 // flutter.targetSdkVersion
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -30,7 +31,7 @@ android {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
         }
     }
     lint {
