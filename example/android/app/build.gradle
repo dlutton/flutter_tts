@@ -1,5 +1,3 @@
-package example.android.app
-
 plugins {
     id "com.android.application"
     id "kotlin-android"

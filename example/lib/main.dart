@@ -136,7 +136,7 @@ class MyAppState extends State<MyApp> {
   Future<void> _getDefaultVoice() async {
     if (kDebugMode) debugPrint('_getDefaultVoice..');
     try {
-      await _voiceDataReadyCompleter.future.timeout(const Duration(seconds: 1));
+      await _voiceDataReadyCompleter.future.timeout(const Duration(seconds: 2));
     } on TimeoutException {
       if (kDebugMode) debugPrint("Timeout waiting for voice data");
       if (!getDefaultVoiceRetried) {
