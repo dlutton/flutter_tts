@@ -1,5 +1,3 @@
-package example.android
-
 pluginManagement {
     def flutterSdkPath = {
         def properties = new Properties()
