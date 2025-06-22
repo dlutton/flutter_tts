@@ -19,6 +19,9 @@ import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import io.flutter.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import android.app.Activity
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -32,7 +35,7 @@ import java.util.UUID
 
 
 /** FlutterTtsPlugin  */
-class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
+class FlutterTtsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     private var handler: Handler? = null
     private var methodChannel: MethodChannel? = null
     private var speakResult: Result? = null
@@ -42,6 +45,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var awaitSynthCompletion = false
     private var synth = false
     private var context: Context? = null
+    private var activity: Activity? = null
+    private var activityBinding: ActivityPluginBinding? = null
     private var tts: TextToSpeech? = null
     private val tag = "TTS"
     private val pendingMethodCalls = ArrayList<Runnable>()
@@ -71,7 +76,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         methodChannel!!.setMethodCallHandler(this)
         handler = Handler(Looper.getMainLooper())
         bundle = Bundle()
-        tts = TextToSpeech(context, onInitListenerWithoutCallback)
+        // استخدام سياق النشاط إذا كان متاحًا، وإلا استخدام سياق التطبيق
+        val contextToUse = activity ?: context
+        tts = TextToSpeech(contextToUse, onInitListenerWithoutCallback)
     }
 
     /** Android Plugin APIs  */
@@ -85,6 +92,25 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         context = null
         methodChannel!!.setMethodCallHandler(null)
         methodChannel = null
+    }
+
+    /** ActivityAware Implementation */
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activityBinding = binding
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        activityBinding = null
+        activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        onAttachedToActivity(binding)
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity()
     }
 
     private val utteranceProgressListener: UtteranceProgressListener =
@@ -498,7 +524,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         ttsStatus = null
         selectedEngine = engine
         engineResult = result
-        tts = TextToSpeech(context, onInitListenerWithCallback, engine)
+        // استخدام سياق النشاط إذا كان متاحًا، وإلا استخدام سياق التطبيق
+        val contextToUse = activity ?: context
+        tts = TextToSpeech(contextToUse, onInitListenerWithCallback, engine)
     }
 
     private fun setLanguage(language: String?, result: Result) {
@@ -681,7 +709,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             }
         } else {
             ttsStatus = null
-            tts = TextToSpeech(context, onInitListenerWithoutCallback, selectedEngine)
+            // استخدام سياق النشاط إذا كان متاحًا، وإلا استخدام سياق التطبيق
+            val contextToUse = activity ?: context
+            tts = TextToSpeech(contextToUse, onInitListenerWithoutCallback, selectedEngine)
             false
         }
     }
@@ -793,11 +823,13 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun requestAudioFocus() {
-        audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        // استخدام سياق النشاط إذا كان متاحًا، وإلا استخدام سياق التطبيق
+        val contextToUse = activity ?: context
+        audioManager = contextToUse?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
-                .setOnAudioFocusChangeListener { /* opcional para monitorar mudanças de foco */ }
+                .setOnAudioFocusChangeListener { /* اختياري لمراقبة تغييرات التركيز */ }
                 .build()
             audioManager?.requestAudioFocus(audioFocusRequest!!)
         } else {
