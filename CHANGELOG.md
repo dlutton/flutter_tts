@@ -1,5 +1,13 @@
 # ChangeLog
 
+## 4.2.3
+
+### Fixes
+
+- **Android:** Fix TTS reconnection behaviors
+- **Windows:** Replace deprecated exec_program with execute_process
+- **Windows:** Fix error on MSVC compilers
+
 ## 4.2.2
 
 ### Fixes
