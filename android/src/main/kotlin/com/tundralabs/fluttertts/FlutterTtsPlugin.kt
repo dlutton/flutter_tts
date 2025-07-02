@@ -217,28 +217,25 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val onInitListenerWithCallback: TextToSpeech.OnInitListener =
         TextToSpeech.OnInitListener { status ->
             // Handle pending method calls (sent while TTS was initializing)
-            synchronized(this@FlutterTtsPlugin) {
+            val toRun = synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
-                    call.run()
-                }
-                pendingMethodCalls.clear()
+                ArrayList(pendingMethodCalls).also { pendingMethodCalls.clear() }
             }
+            toRun.forEach { it.run() }
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
-                    }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
-
                 engineResult!!.success(1)
+                Thread {
+                    try {
+                        val locale = tts!!.defaultVoice.locale
+                        if (isLanguageAvailable(locale)) {
+                            tts!!.setLanguage(locale)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(tag, "getDefaultLocale: " + e.message)
+                    }
+                }.start()
             } else {
                 engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
             }
@@ -248,26 +245,24 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private val onInitListenerWithoutCallback: TextToSpeech.OnInitListener =
         TextToSpeech.OnInitListener { status ->
             // Handle pending method calls (sent while TTS was initializing)
-            synchronized(this@FlutterTtsPlugin) {
+            val toRun = synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
-                    call.run()
-                }
-                pendingMethodCalls.clear()
+                ArrayList(pendingMethodCalls).also { pendingMethodCalls.clear() }
             }
+            toRun.forEach { it.run() }
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
+                Thread {
+                    try {
+                        val locale = tts!!.defaultVoice.locale
+                        if (isLanguageAvailable(locale)) {
+                            tts!!.setLanguage(locale)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(tag, "getDefaultLocale: " + e.message)
                     }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
+                }.start()
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
             }
