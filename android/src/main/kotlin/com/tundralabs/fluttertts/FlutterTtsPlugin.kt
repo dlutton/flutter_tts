@@ -216,10 +216,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     private val onInitListenerWithCallback: TextToSpeech.OnInitListener =
         TextToSpeech.OnInitListener { status ->
-            // Handle pending method calls (sent while TTS was initializing)
+            // Safely handle any pending method calls sent while TTS was initializing.
             synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
+                // FIX 1: Iterate over a copy of the list to avoid ConcurrentModificationException.
+                for (call in pendingMethodCalls.toList()) {
                     call.run()
                 }
                 pendingMethodCalls.clear()
@@ -238,11 +239,19 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                     Log.e(tag, "getDefaultLocale: " + e.message)
                 }
 
-                engineResult!!.success(1)
+                // FIX 2: Only reply once per request to avoid "Reply already submitted" crash.
+                if (engineResult != null) {
+                    engineResult!!.success(1)
+                    engineResult = null // Mark as handled to prevent double-reply.
+                }
             } else {
-                engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
+                // FIX 2: Only reply once per request to avoid "Reply already submitted" crash.
+                if (engineResult != null) {
+                    engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
+                    engineResult = null // Mark as handled to prevent double-reply.
+                }
             }
-            //engineResult = null
+            // No need to set engineResult = null here; already handled above.
         }
 
     private val onInitListenerWithoutCallback: TextToSpeech.OnInitListener =
