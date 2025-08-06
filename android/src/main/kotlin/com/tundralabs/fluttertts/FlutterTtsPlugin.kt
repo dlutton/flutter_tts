@@ -256,10 +256,11 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     private val onInitListenerWithoutCallback: TextToSpeech.OnInitListener =
         TextToSpeech.OnInitListener { status ->
-            // Handle pending method calls (sent while TTS was initializing)
+            // Safely handle any pending method calls sent while TTS was initializing.
             synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
+                // FIX 1: Iterate over a copy of the list to avoid ConcurrentModificationException.
+                for (call in pendingMethodCalls.toList()) {
                     call.run()
                 }
                 pendingMethodCalls.clear()
