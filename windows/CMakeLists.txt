@@ -12,10 +12,8 @@ if(NOT NUGET_EXE)
 	message(FATAL_ERROR "Please install this executable, and run CMake again.")
 endif()
 
-execute_process(
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/nuget.exe install -OutputDirectory ${CMAKE_CURRENT_SOURCE_DIR}/packages Microsoft.Windows.CppWinRT -Version 2.0.210312.4
-)
-    ARGS install "Microsoft.Windows.CppWinRT" -Version 	2.0.210503.1 -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages)
+execute_process(COMMAND ${NUGET_EXE} install "Microsoft.Windows.CppWinRT" -Version 	2.0.210503.1 -ExcludeVersion -OutputDirectory ${CMAKE_BINARY_DIR}/packages)
+
 ################ NuGet install end ################
 
 # This value is used when generating builds using this plugin, so it must
@@ -41,7 +39,7 @@ endif()
 # List of absolute paths to libraries that should be bundled with the plugin
 set(flutter_tts_bundled_libraries
   ""
-  PARENT_SCOPE
+  PARENT_SCOPE)
 ################ NuGet import begin ################
 set_target_properties(${PLUGIN_NAME} PROPERTIES VS_PROJECT_IMPORT
   ${CMAKE_BINARY_DIR}/packages/Microsoft.Windows.CppWinRT/build/native/Microsoft.Windows.CppWinRT.props
@@ -52,4 +50,4 @@ target_link_libraries(${PLUGIN_NAME} PRIVATE
 )
 ################ NuGet import end ################
 
-)
+
