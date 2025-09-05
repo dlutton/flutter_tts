@@ -227,17 +227,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
-                    }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
-
+                // Removed defaultVoice access to prevent ANR - TTS engine has its own default
+                // Flutter app will set language/voice explicitly when needed
                 engineResult!!.success(1)
             } else {
                 engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
@@ -258,16 +249,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
-                    }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
+                // Removed defaultVoice access to prevent ANR - TTS engine has its own default
+                // Flutter app will set language/voice explicitly when needed
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
             }
@@ -526,7 +509,9 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     }
 
     private fun clearVoice(result: Result) {
-        tts!!.voice = tts!!.defaultVoice
+        // Set to null instead of defaultVoice to avoid ANR from IPC/deserialization
+        // This resets to the TTS engine's default voice
+        tts!!.voice = null
         result.success(1)
     }
 
