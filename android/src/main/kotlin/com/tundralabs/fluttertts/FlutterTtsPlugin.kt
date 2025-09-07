@@ -29,6 +29,10 @@ import java.lang.reflect.Field
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.ExecutionException
 
 
 /** FlutterTtsPlugin  */
@@ -227,8 +231,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                // Removed defaultVoice access to prevent ANR - TTS engine has its own default
-                // Flutter app will set language/voice explicitly when needed
+                // Initialize default language with timeout-based approach to prevent ANR
+                initializeDefaultLanguage()
                 engineResult!!.success(1)
             } else {
                 engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
@@ -249,8 +253,8 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                // Removed defaultVoice access to prevent ANR - TTS engine has its own default
-                // Flutter app will set language/voice explicitly when needed
+                // Initialize default language with timeout-based approach to prevent ANR
+                initializeDefaultLanguage()
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
             }
@@ -449,6 +453,50 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     private fun isLanguageAvailable(locale: Locale?): Boolean {
         return tts!!.isLanguageAvailable(locale) >= TextToSpeech.LANG_AVAILABLE
+    }
+
+    private fun initializeDefaultLanguage() {
+        try {
+            // Strategy 1: Try defaultVoice with timeout
+            try {
+                val future = CompletableFuture.supplyAsync { 
+                    tts!!.defaultVoice?.locale 
+                }
+                val locale = future.get(300, TimeUnit.MILLISECONDS)  // Short timeout
+                if (locale != null && trySetLanguage(locale)) return
+            } catch (e: TimeoutException) {
+                Log.d(tag, "defaultVoice approach timed out, trying fallbacks")
+            } catch (e: ExecutionException) {
+                Log.d(tag, "defaultVoice approach failed: ${e.message}, trying fallbacks")
+            }
+            
+            // Strategy 2: System locale fallback  
+            if (trySetLanguage(Locale.getDefault())) return
+            
+            // Strategy 3: Common fallbacks
+            val fallbackLocales = listOf(Locale.ENGLISH, Locale.US)
+            for (locale in fallbackLocales) {
+                if (trySetLanguage(locale)) return
+            }
+            
+            // If we reach here, no language could be set
+            Log.w(tag, "No default language could be set - all attempts failed")
+            
+        } catch (e: Exception) {
+            Log.w(tag, "Failed to initialize default language: $e")
+        }
+    }
+
+    private fun trySetLanguage(locale: Locale): Boolean {
+        return try {
+            if (isLanguageAvailable(locale)) {
+                tts!!.language = locale
+                Log.d(tag, "Successfully set language to: $locale")
+                true
+            } else false
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun areLanguagesInstalled(languages: List<String?>): Map<String?, Boolean> {
