@@ -29,10 +29,6 @@ import java.lang.reflect.Field
 import java.util.Locale
 import java.util.MissingResourceException
 import java.util.UUID
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.ExecutionException
 
 
 /** FlutterTtsPlugin  */
@@ -457,23 +453,10 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
     private fun initializeDefaultLanguage() {
         try {
-            // Strategy 1: Try defaultVoice with timeout
-            try {
-                val future = CompletableFuture.supplyAsync { 
-                    tts!!.defaultVoice?.locale 
-                }
-                val locale = future.get(300, TimeUnit.MILLISECONDS)  // Short timeout
-                if (locale != null && trySetLanguage(locale)) return
-            } catch (e: TimeoutException) {
-                Log.d(tag, "defaultVoice approach timed out, trying fallbacks")
-            } catch (e: ExecutionException) {
-                Log.d(tag, "defaultVoice approach failed: ${e.message}, trying fallbacks")
-            }
-            
-            // Strategy 2: System locale fallback  
+            // Strategy 1: System locale fallback (device language)
             if (trySetLanguage(Locale.getDefault())) return
             
-            // Strategy 3: Common fallbacks
+            // Strategy 2: Common fallbacks
             val fallbackLocales = listOf(Locale.ENGLISH, Locale.US)
             for (locale in fallbackLocales) {
                 if (trySetLanguage(locale)) return
