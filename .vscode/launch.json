@@ -5,7 +5,7 @@
             "type": "dart",
             "request": "launch",
             "cwd": "example",
-            "program": "lib\\main.dart",
+            "program": "lib/main.dart",
             "flutterMode": "debug"
         },
         {
@@ -13,7 +13,7 @@
             "type": "dart",
             "request": "launch",
             "cwd": "example",
-            "program": "lib\\main.dart",
+            "program": "lib/main.dart",
             "flutterMode": "release"
         },
         {
@@ -21,7 +21,7 @@
             "type": "dart",
             "request": "launch",
             "cwd": "example",
-            "program": "lib\\main.dart",
+            "program": "lib/main.dart",
             "flutterMode": "profile"
         }
     ]
