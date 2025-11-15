@@ -2,16 +2,16 @@ import 'package:pigeon/pigeon.dart';
 
 @ConfigurePigeon(
   PigeonOptions(
-    dartOut: 'lib/src/messages.g.dart',
+    dartOut: 'packages/flutter_tts_platform_interface/lib/src/messages.g.dart',
     dartOptions: DartOptions(),
-    cppHeaderOut: 'windows/messages.g.h',
-    cppSourceOut: 'windows/messages.g.cpp',
+    cppHeaderOut: 'packages/flutter_tts_windows/windows/messages.g.h',
+    cppSourceOut: 'packages/flutter_tts_windows/windows/messages.g.cpp',
     cppOptions: CppOptions(namespace: 'flutter_tts'),
     dartPackageName: 'flutter_tts',
     kotlinOut:
-        'android/src/main/kotlin/com/tundralabs/fluttertts/messages.g.kt',
+        'packages/flutter_tts_android/android/src/main/kotlin/com/tundralabs/fluttertts/messages.g.kt',
     kotlinOptions: KotlinOptions(package: "com.tundralabs.fluttertts"),
-    swiftOut: "macos/Classes/message.g.swift",
+    swiftOut: "packages/flutter_tts_macos/macos/Classes/message.g.swift",
   ),
 )
 enum FlutterTtsErrorCode {

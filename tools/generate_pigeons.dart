@@ -27,27 +27,27 @@ void main() async {
     }
 
     // 确保iOS目录存在
-    final iosDir = Directory(p.join(rootDir, 'ios', 'Classes'));
+    final iosDir = Directory(
+      p.join(rootDir, 'packages', 'flutter_tts_ios', 'ios', 'Classes'),
+    );
     if (!iosDir.existsSync()) {
       print('iOS dir not exists: ${iosDir.path}');
-      return;
-    }
-
-    // 确保macOS目录存在
-    final macosDir = Directory(p.join(rootDir, 'macos', 'Classes'));
-    if (!macosDir.existsSync()) {
-      print('macOS dir not exists: ${macosDir.path}');
       return;
     }
 
     // 为iOS单独生成Swift代码（由于pigeon可能不直接支持同时为多个平台生成Swift）
     // 这里通过手动复制生成的Swift文件到iOS目录
     final macosSwiftFile = File(
-      p.join(rootDir, 'macos', 'Classes', 'message.g.swift'),
+      p.join(
+        rootDir,
+        'packages',
+        'flutter_tts_macos',
+        'macos',
+        'Classes',
+        'message.g.swift',
+      ),
     );
-    await macosSwiftFile.copy(
-      p.join(rootDir, 'ios', 'Classes', 'message.g.swift'),
-    );
+    await macosSwiftFile.copy(p.join(iosDir.path, 'message.g.swift'));
 
     print('\n✅ done generating pigeon code!');
   } catch (e) {

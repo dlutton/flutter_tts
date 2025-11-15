@@ -1,46 +1,20 @@
-name: flutter_tts
-description: A flutter plugin for Text to Speech.  This plugin is supported on iOS, macOS, Android, Web, & Windows.
-version: 5.0.0
-homepage: https://github.com/dlutton/flutter_tts
-
+name: flutter_tts_workspace
 environment:
   sdk: ">=3.9.0 <4.0.0"
-  flutter: ">=3.35.0"
-
-dependencies:
-  flutter:
-    sdk: flutter
-  flutter_web_plugins:
-    sdk: flutter
-  multiple_result: ^5.2.0
-  plugin_platform_interface: ^2.1.8
-
 dev_dependencies:
-  lints: ^6.0.0
+  melos: ^7.3.0
   path: ^1.9.1
-  pigeon: ^26.0.5
-
-flutter:
-  plugin:
-    platforms:
-      android:
-        package: com.tundralabs.fluttertts
-        pluginClass: FlutterTtsPlugin
-        dartPluginClass: FlutterTtsAndroid
-        fileName: src/flutter_tts_android.dart
-      ios:
-        pluginClass: FlutterTtsPlugin
-        dartPluginClass: FlutterTtsIos
-        fileName: src/flutter_tts_ios.dart
-      macos:
-        pluginClass: FlutterTtsPlugin
-        dartPluginClass: FlutterTtsMacos
-        fileName: src/flutter_tts_macos.dart
-      windows:
-        pluginClass: FlutterTtsPlugin
-        supportedVariants:
-          - uwp
-          - win32
-      web:
-        pluginClass: FlutterTtsWeb
-        fileName: src/flutter_tts_web.dart
+  pigeon: ^26.1.0
+workspace:
+  - apps/example
+  - packages/flutter_tts
+  - packages/flutter_tts_android
+  - packages/flutter_tts_macos
+  - packages/flutter_tts_ios
+  - packages/flutter_tts_platform_interface
+  - packages/flutter_tts_web
+  - packages/flutter_tts_windows
+melos:
+  scripts:
+    gen_pigeon:
+      run: dart run tools/generate_pigeons.dart
