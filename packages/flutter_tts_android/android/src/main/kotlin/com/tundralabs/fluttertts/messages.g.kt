@@ -1489,6 +1489,42 @@ interface MacosTtsHostApi {
     }
   }
 }
+/** Generated interface from Pigeon that represents a handler of messages from Flutter. */
+interface WinTtsHostApi {
+  fun setBoundaryType(isWordBoundary: Boolean, callback: (Result<TtsResult>) -> Unit)
+
+  companion object {
+    /** The codec used by WinTtsHostApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      messagesPigeonCodec()
+    }
+    /** Sets up an instance of `WinTtsHostApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: WinTtsHostApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.flutter_tts.WinTtsHostApi.setBoundaryType$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val isWordBoundaryArg = args[0] as Boolean
+            api.setBoundaryType(isWordBoundaryArg) { result: Result<TtsResult> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
 /** Generated class from Pigeon that represents Flutter messages that can be called from Kotlin. */
 class TtsFlutterApi(private val binaryMessenger: BinaryMessenger, private val messageChannelSuffix: String = "") {
   companion object {

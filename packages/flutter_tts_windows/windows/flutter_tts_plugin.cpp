@@ -1,6 +1,6 @@
-﻿#include "include/flutter_tts_windows/flutter_tts_windows.h"
+﻿#include <Windows.h>
 
-#include <Windows.h>
+#include "include/flutter_tts_windows/flutter_tts_windows.h"
 // This must be included before many other Windows headers.
 
 #include <VersionHelpers.h>
@@ -21,8 +21,14 @@ using namespace flutter_tts;
 
 typedef std::function<void(ErrorOr<TtsResult> reply)> FlutterResult;
 
-#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP) && \
+#if defined(WINAPI_FAMILY) &&                       \
+    (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP ||       \
+     WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP) && \
     !defined(FORCE_NON_DESKTOP)
+#define USE_WINRT 1
+#endif
+
+#if defined(USE_WINRT)
 #include <winrt/Windows.Media.Core.h>
 #include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.Media.SpeechSynthesis.h>
@@ -46,8 +52,12 @@ using namespace std::chrono_literals;
 
 #endif
 
+const winrt::hstring kSpeakTextForSourceKey = L"SpeakingTextKey";
+const winrt::hstring kTrackIdWordBoundary = L"SpeechWord";
+const winrt::hstring kTrackIdSentenceBoundary = L"SpeechSentence";
+
 namespace {
-class FlutterTtsPlugin : public flutter::Plugin, TtsHostApi {
+class FlutterTtsPlugin : public flutter::Plugin, TtsHostApi, WinTtsHostApi {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
   FlutterTtsPlugin(flutter::BinaryMessenger* binary_messenger);
@@ -84,9 +94,11 @@ class FlutterTtsPlugin : public flutter::Plugin, TtsHostApi {
   virtual void GetVoices(
       std::function<void(ErrorOr<flutter::EncodableList> reply)> result)
       override;
+  virtual void SetBoundaryType(
+      bool is_word_boundary,
+      std::function<void(ErrorOr<TtsResult> reply)> result) override;
 
-#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP) && \
-    !defined(FORCE_NON_DESKTOP)
+#if defined(USE_WINRT)
  private:
   void speak(const std::string, FlutterResult);
   void pause();
@@ -100,6 +112,18 @@ class FlutterTtsPlugin : public flutter::Plugin, TtsHostApi {
   void getLanguages(flutter::EncodableList&);
   void addMplayer();
   winrt::Windows::Foundation::IAsyncAction asyncSpeak(const std::string);
+  void registerForBoundaryEvents(
+      Windows::Media::Playback::MediaPlaybackItem& mediaPlaybackItem);
+  void timedMetadataTrackChangedHandler(
+      Windows::Media::Playback::MediaPlaybackItem mediaPlaybackItem,
+      Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
+  void registerMetadataHandlerFor(
+      Windows::Media::Playback::MediaPlaybackItem& mediaPlaybackItem,
+      int index);
+  void metadataSpeechCueEntered(
+      const Windows::Media::Core::TimedMetadataTrack& timedMetadataTrack,
+      const Windows::Media::Core::MediaCueEventArgs& args);
+
   bool speaking();
   bool paused();
 
@@ -108,6 +132,7 @@ class FlutterTtsPlugin : public flutter::Plugin, TtsHostApi {
   bool isPaused;
   bool isSpeaking;
   bool awaitSpeakCompletion;
+  bool isWordBoundray = true;
   FlutterResult speakResult;
   TtsFlutterApi flutterApi;
 
@@ -141,6 +166,7 @@ void FlutterTtsPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows* registrar) {
   auto plugin = std::make_unique<FlutterTtsPlugin>(registrar->messenger());
   TtsHostApi::SetUp(registrar->messenger(), plugin.get());
+  WinTtsHostApi::SetUp(registrar->messenger(), plugin.get());
   registrar->AddPlugin(std::move(plugin));
 }
 
@@ -221,8 +247,17 @@ void FlutterTtsPlugin::GetVoices(
   result(l);
 }
 
-#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP) && \
-    !defined(FORCE_NON_DESKTOP)
+void FlutterTtsPlugin::SetBoundaryType(
+    bool is_word_boundary,
+    std::function<void(ErrorOr<TtsResult> reply)> result) {
+#if defined(USE_WINRT)
+  isWordBoundray = is_word_boundary;
+#else
+#endif
+  result(std::move(TtsResult(true)));
+}
+
+#if defined(USE_WINRT)
 
 void FlutterTtsPlugin::addMplayer() {
   mPlayer = winrt::Windows::Media::Playback::MediaPlayer::MediaPlayer();
@@ -249,12 +284,133 @@ winrt::Windows::Foundation::IAsyncAction FlutterTtsPlugin::asyncSpeak(
   winrt::Windows::Media::Core::MediaSource source =
       winrt::Windows::Media::Core::MediaSource::CreateFromStream(speechStream,
                                                                  cType);
-  mPlayer.Source(source);
+  // Add the custom ID to the MediaSource's properties
+  // You must wrap the string in an IPropertyValue for WinRT interop
+  source.CustomProperties().Insert(
+      kSpeakTextForSourceKey, Windows::Foundation::PropertyValue::CreateString(
+                                  winrt::to_hstring(text)));
+
+  auto item = winrt::Windows::Media::Playback::MediaPlaybackItem(source);
+  registerForBoundaryEvents(item);
+
+  mPlayer.Source(item);
   mPlayer.Play();
+}
+
+/// <summary>
+/// Register for all boundary events and register a function to add any new
+/// events if they arise.
+/// </summary>
+/// <param name="mediaPlaybackItem">The Media Playback Item to register events
+/// for.</param>
+void FlutterTtsPlugin::registerForBoundaryEvents(
+    Windows::Media::Playback::MediaPlaybackItem& mediaPlaybackItem) {
+  // If tracks were available at source resolution time, itterate through and
+  // register:
+  auto timedMetadataTracks = mediaPlaybackItem.TimedMetadataTracks();
+  auto trackSize = timedMetadataTracks.Size();
+  for (unsigned int index = 0; index < trackSize; index++) {
+    registerMetadataHandlerFor(mediaPlaybackItem, index);
+  }
+
+  // Since the tracks are added later we will 
+  // monitor the tracks being added and subscribe to the ones of interest
+  auto newHandler = winrt::Windows::Foundation::TypedEventHandler<
+      winrt::Windows::Media::Playback::MediaPlaybackItem,
+      winrt::Windows::Foundation::Collections::IVectorChangedEventArgs>(
+      this, &FlutterTtsPlugin::timedMetadataTrackChangedHandler);
+
+  mediaPlaybackItem.TimedMetadataTracksChanged(newHandler);
+}
+
+/// <summary>
+/// Register for boundary events when they arise.
+/// </summary>
+/// <param name="mediaPlaybackItem">The Media PLayback Item add handlers
+/// to.</param> <param name="args">Arguments for the event.</param>
+void FlutterTtsPlugin::timedMetadataTrackChangedHandler(
+    Windows::Media::Playback::MediaPlaybackItem mediaPlaybackItem,
+    Windows::Foundation::Collections::IVectorChangedEventArgs const& args) {
+  if (args.CollectionChange() ==
+      winrt::Windows::Foundation::Collections::CollectionChange::ItemInserted) {
+    registerMetadataHandlerFor(mediaPlaybackItem, args.Index());
+  } else if (args.CollectionChange() ==
+             winrt::Windows::Foundation::Collections::CollectionChange::Reset) {
+    auto trackSize = mediaPlaybackItem.TimedMetadataTracks().Size();
+    for (unsigned int index = 0; index < trackSize; index++) {
+      registerMetadataHandlerFor(mediaPlaybackItem, index);
+    }
+  }
+}
+
+/// <summary>
+/// Register for just word boundary events.
+/// </summary>
+/// <param name="mediaPlaybackItem">The Media PLayback Item add handlers
+/// to.</param> <param name="index">Index of the timedMetadataTrack within the
+/// mediaPlaybackItem.</param>
+void FlutterTtsPlugin::registerMetadataHandlerFor(
+    Windows::Media::Playback::MediaPlaybackItem& mediaPlaybackItem, int index) {
+  auto timedTrack = mediaPlaybackItem.TimedMetadataTracks().GetAt(index);
+  // register for only word cues
+  const auto& trackIdToCheck =
+      isWordBoundray ? kTrackIdWordBoundary : kTrackIdSentenceBoundary;
+  if (timedTrack.Id() == trackIdToCheck) {
+    auto handler = winrt::Windows::Foundation::TypedEventHandler<
+        winrt::Windows::Media::Core::TimedMetadataTrack,
+        winrt::Windows::Media::Core::MediaCueEventArgs>(
+        this, &FlutterTtsPlugin::metadataSpeechCueEntered);
+    timedTrack.CueEntered(handler);
+
+    mediaPlaybackItem.TimedMetadataTracks().SetPresentationMode(
+        index, winrt::Windows::Media::Playback::
+                   TimedMetadataTrackPresentationMode::ApplicationPresented);
+  }
+}
+
+/// <summary>
+/// This function executes when a SpeechCue is hit and calls the functions to
+/// update the UI
+/// </summary>
+/// <param name="timedMetadataTrack">The timedMetadataTrack associated with the
+/// event.</param> <param name="args">the arguments associated with the
+/// event.</param>
+void FlutterTtsPlugin::metadataSpeechCueEntered(
+    const Windows::Media::Core::TimedMetadataTrack& timedMetadataTrack,
+    const Windows::Media::Core::MediaCueEventArgs& args) {
+  // Check in case there are different tracks and the handler was used for more
+  // tracks
+  auto mediaSource = timedMetadataTrack.PlaybackItem().Source();
+  if (timedMetadataTrack.TimedMetadataKind() ==
+          winrt::Windows::Media::Core::TimedMetadataKind::Speech &&
+      mediaSource.CustomProperties().HasKey(kSpeakTextForSourceKey)) {
+    // Retrieve the cached text
+    winrt::Windows::Foundation::IInspectable speakingTextValue =
+        mediaSource.CustomProperties().Lookup(kSpeakTextForSourceKey);
+
+    // Cast the IInspectable back to the original string type
+    auto speakingText = winrt::unbox_value<winrt::hstring>(speakingTextValue);
+
+    auto speachCue =
+        args.Cue().try_as<winrt::Windows::Media::Core::ISpeechCue>();
+
+    auto startIndex =
+        static_cast<int64_t>(speachCue.StartPositionInInput().Value());
+    auto endIndex =
+        static_cast<int64_t>(speachCue.EndPositionInInput().Value());
+    endIndex = min(endIndex + 1, static_cast<int64_t>(speakingText.size()));
+
+    auto progress =
+        flutter_tts::TtsProgress(winrt::to_string(speakingText), startIndex,
+                                 endIndex, winrt::to_string(speachCue.Text()));
+    flutterApi.OnSpeakProgressCb(progress, []() {}, [](const FlutterError&) {});
+  }
 }
 
 void FlutterTtsPlugin::speak(const std::string text, FlutterResult result) {
   isSpeaking = true;
+  synth.Options().IncludeSentenceBoundaryMetadata(!isWordBoundray);
+  synth.Options().IncludeWordBoundaryMetadata(isWordBoundray);
   auto my_task{asyncSpeak(text)};
   flutterApi.OnSpeakStartCb([]() {}, [](const FlutterError&) {});
   if (awaitSpeakCompletion)
@@ -303,7 +459,8 @@ void FlutterTtsPlugin::setRate(const double newRate) {
 void FlutterTtsPlugin::getVoices(flutter::EncodableList& voices) {
   auto synthVoices = synth.AllVoices();
   for (auto voice : synthVoices) {
-    auto voiceInfo = Voice(to_string(voice.DisplayName()), to_string(voice.Language()));
+    auto voiceInfo =
+        Voice(to_string(voice.DisplayName()), to_string(voice.Language()));
     //  Convert VoiceGender to string
     std::string gender;
     switch (voice.Gender()) {
@@ -497,7 +654,7 @@ void FlutterTtsPlugin::getVoices(flutter::EncodableList& voices) {
     cpAttribKey->GetStringValue(L"Name", &psz);
     std::string name = CW2A(psz);
     ::CoTaskMemFree(psz);
-    auto voiceInfo = Voice (name, language);
+    auto voiceInfo = Voice(name, language);
     voices.push_back(flutter::CustomEncodableValue(voiceInfo));
     cpVoiceToken->Release();
   }

@@ -1342,6 +1342,36 @@ class MacosTtsHostApiSetup {
     }
   }
 }
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol WinTtsHostApi {
+  func setBoundaryType(isWordBoundary: Bool, completion: @escaping (Result<TtsResult, Error>) -> Void)
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class WinTtsHostApiSetup {
+  static var codec: FlutterStandardMessageCodec { MessagePigeonCodec.shared }
+  /// Sets up an instance of `WinTtsHostApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: WinTtsHostApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let setBoundaryTypeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.flutter_tts.WinTtsHostApi.setBoundaryType\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      setBoundaryTypeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let isWordBoundaryArg = args[0] as! Bool
+        api.setBoundaryType(isWordBoundary: isWordBoundaryArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      setBoundaryTypeChannel.setMessageHandler(nil)
+    }
+  }
+}
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol TtsFlutterApiProtocol {
   func onSpeakStartCb(completion: @escaping (Result<Void, PigeonError>) -> Void)

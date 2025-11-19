@@ -16,6 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.1+1
   flutter_tts: ^5.0.0
   flutter_tts_android: ^5.0.0
+  flutter_tts_windows: ^5.0.0
 
 dev_dependencies:
   flutter_test:

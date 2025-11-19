@@ -390,7 +390,7 @@ abstract class TtsHostApi {
 }
 
 @HostApi()
-abstract class IosTtsHostApi extends TtsHostApi {
+abstract class IosTtsHostApi {
   @async
   TtsResult awaitSynthCompletion(bool awaitCompletion);
 
@@ -425,7 +425,7 @@ abstract class IosTtsHostApi extends TtsHostApi {
 }
 
 @HostApi()
-abstract class AndroidTtsHostApi extends TtsHostApi {
+abstract class AndroidTtsHostApi {
   @async
   TtsResult awaitSynthCompletion(bool awaitCompletion);
 
@@ -475,7 +475,7 @@ abstract class AndroidTtsHostApi extends TtsHostApi {
 }
 
 @HostApi()
-abstract class MacosTtsHostApi extends TtsHostApi {
+abstract class MacosTtsHostApi {
   @async
   TtsResult awaitSynthCompletion(bool awaitCompletion);
 
@@ -487,6 +487,12 @@ abstract class MacosTtsHostApi extends TtsHostApi {
 
   @async
   bool isLanguageAvailable(String language);
+}
+
+@HostApi()
+abstract class WinTtsHostApi {
+  @async
+  TtsResult setBoundaryType(bool isWordBoundary);
 }
 
 @FlutterApi()

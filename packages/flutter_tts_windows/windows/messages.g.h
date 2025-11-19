@@ -52,6 +52,7 @@ template<class T> class ErrorOr {
   friend class IosTtsHostApi;
   friend class AndroidTtsHostApi;
   friend class MacosTtsHostApi;
+  friend class WinTtsHostApi;
   friend class TtsFlutterApi;
   ErrorOr() = default;
   T TakeValue() && { return std::get<T>(std::move(v_)); }
@@ -374,6 +375,7 @@ class Voice {
   friend class IosTtsHostApi;
   friend class AndroidTtsHostApi;
   friend class MacosTtsHostApi;
+  friend class WinTtsHostApi;
   friend class TtsFlutterApi;
   friend class PigeonInternalCodecSerializer;
   std::string name_;
@@ -409,6 +411,7 @@ class TtsResult {
   friend class IosTtsHostApi;
   friend class AndroidTtsHostApi;
   friend class MacosTtsHostApi;
+  friend class WinTtsHostApi;
   friend class TtsFlutterApi;
   friend class PigeonInternalCodecSerializer;
   bool success_;
@@ -445,6 +448,7 @@ class TtsProgress {
   friend class IosTtsHostApi;
   friend class AndroidTtsHostApi;
   friend class MacosTtsHostApi;
+  friend class WinTtsHostApi;
   friend class TtsFlutterApi;
   friend class PigeonInternalCodecSerializer;
   std::string text_;
@@ -483,6 +487,7 @@ class TtsRateValidRange {
   friend class IosTtsHostApi;
   friend class AndroidTtsHostApi;
   friend class MacosTtsHostApi;
+  friend class WinTtsHostApi;
   friend class TtsFlutterApi;
   friend class PigeonInternalCodecSerializer;
   double minimum_;
@@ -689,6 +694,31 @@ class MacosTtsHostApi {
   static flutter::EncodableValue WrapError(const FlutterError& error);
  protected:
   MacosTtsHostApi() = default;
+};
+// Generated interface from Pigeon that represents a handler of messages from Flutter.
+class WinTtsHostApi {
+ public:
+  WinTtsHostApi(const WinTtsHostApi&) = delete;
+  WinTtsHostApi& operator=(const WinTtsHostApi&) = delete;
+  virtual ~WinTtsHostApi() {}
+  virtual void SetBoundaryType(
+    bool is_word_boundary,
+    std::function<void(ErrorOr<TtsResult> reply)> result) = 0;
+
+  // The codec used by WinTtsHostApi.
+  static const flutter::StandardMessageCodec& GetCodec();
+  // Sets up an instance of `WinTtsHostApi` to handle messages through the `binary_messenger`.
+  static void SetUp(
+    flutter::BinaryMessenger* binary_messenger,
+    WinTtsHostApi* api);
+  static void SetUp(
+    flutter::BinaryMessenger* binary_messenger,
+    WinTtsHostApi* api,
+    const std::string& message_channel_suffix);
+  static flutter::EncodableValue WrapError(std::string_view error_message);
+  static flutter::EncodableValue WrapError(const FlutterError& error);
+ protected:
+  WinTtsHostApi() = default;
 };
 // Generated class from Pigeon that represents Flutter messages that can be called from C++.
 class TtsFlutterApi {

@@ -1601,6 +1601,70 @@ EncodableValue MacosTtsHostApi::WrapError(const FlutterError& error) {
   });
 }
 
+/// The codec used by WinTtsHostApi.
+const flutter::StandardMessageCodec& WinTtsHostApi::GetCodec() {
+  return flutter::StandardMessageCodec::GetInstance(&PigeonInternalCodecSerializer::GetInstance());
+}
+
+// Sets up an instance of `WinTtsHostApi` to handle messages through the `binary_messenger`.
+void WinTtsHostApi::SetUp(
+  flutter::BinaryMessenger* binary_messenger,
+  WinTtsHostApi* api) {
+  WinTtsHostApi::SetUp(binary_messenger, api, "");
+}
+
+void WinTtsHostApi::SetUp(
+  flutter::BinaryMessenger* binary_messenger,
+  WinTtsHostApi* api,
+  const std::string& message_channel_suffix) {
+  const std::string prepended_suffix = message_channel_suffix.length() > 0 ? std::string(".") + message_channel_suffix : "";
+  {
+    BasicMessageChannel<> channel(binary_messenger, "dev.flutter.pigeon.flutter_tts.WinTtsHostApi.setBoundaryType" + prepended_suffix, &GetCodec());
+    if (api != nullptr) {
+      channel.SetMessageHandler([api](const EncodableValue& message, const flutter::MessageReply<EncodableValue>& reply) {
+        try {
+          const auto& args = std::get<EncodableList>(message);
+          const auto& encodable_is_word_boundary_arg = args.at(0);
+          if (encodable_is_word_boundary_arg.IsNull()) {
+            reply(WrapError("is_word_boundary_arg unexpectedly null."));
+            return;
+          }
+          const auto& is_word_boundary_arg = std::get<bool>(encodable_is_word_boundary_arg);
+          api->SetBoundaryType(is_word_boundary_arg, [reply](ErrorOr<TtsResult>&& output) {
+            if (output.has_error()) {
+              reply(WrapError(output.error()));
+              return;
+            }
+            EncodableList wrapped;
+            wrapped.push_back(CustomEncodableValue(std::move(output).TakeValue()));
+            reply(EncodableValue(std::move(wrapped)));
+          });
+        } catch (const std::exception& exception) {
+          reply(WrapError(exception.what()));
+        }
+      });
+    } else {
+      channel.SetMessageHandler(nullptr);
+    }
+  }
+}
+
+EncodableValue WinTtsHostApi::WrapError(std::string_view error_message) {
+  return EncodableValue(EncodableList{
+    EncodableValue(std::string(error_message)),
+    EncodableValue("Error"),
+    EncodableValue()
+  });
+}
+
+EncodableValue WinTtsHostApi::WrapError(const FlutterError& error) {
+  return EncodableValue(EncodableList{
+    EncodableValue(error.code()),
+    EncodableValue(error.message()),
+    error.details()
+  });
+}
+
 // Generated class from Pigeon that represents Flutter messages that can be called from C++.
 TtsFlutterApi::TtsFlutterApi(flutter::BinaryMessenger* binary_messenger)
  : binary_messenger_(binary_messenger),

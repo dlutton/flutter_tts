@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:flutter_tts_android/flutter_tts_android.dart';
+import 'package:flutter_tts_windows/flutter_tts_windows.dart';
 
 extension on Voice {
   String get displayName {
@@ -54,6 +55,8 @@ class _MyAppState extends State<MyApp> {
   final _editingController = TextEditingController();
 
   TtsProgress? _speakingProgess;
+
+  bool _isWordBoundary = true;
 
   TtsState ttsState = TtsState.stopped;
 
@@ -316,26 +319,37 @@ class _MyAppState extends State<MyApp> {
           scrollDirection: Axis.vertical,
           child: Column(
             children: [
-              if (_speakingProgess case final progess?)
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      if (progess.start > 0)
-                        TextSpan(
-                          text: progess.text.substring(0, progess.start),
-                        ),
-                      TextSpan(
-                        text: progess.text.substring(
-                          math.max(0, progess.start),
-                          math.min(progess.text.length, progess.end),
-                        ),
-                        style: TextStyle(color: Colors.red),
-                      ),
-                      if (progess.end < progess.text.length - 1)
-                        TextSpan(text: progess.text.substring(progess.end)),
-                    ],
+              if (_speakingProgess case final progess?) ...[
+                Padding(
+                  padding: EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
+                  child: Text(
+                    progess.word,
+                    style: TextStyle(color: Colors.red),
                   ),
                 ),
+                Padding(
+                  padding: EdgeInsets.only(top: 25.0, left: 25.0, right: 25.0),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        if (progess.start > 0)
+                          TextSpan(
+                            text: progess.text.substring(0, progess.start),
+                          ),
+                        TextSpan(
+                          text: progess.text.substring(
+                            math.max(0, progess.start),
+                            math.min(progess.text.length, progess.end),
+                          ),
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        if (progess.end < progess.text.length - 1)
+                          TextSpan(text: progess.text.substring(progess.end)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               _inputSection(),
               _btnSection(),
               _engineSection(),
@@ -440,6 +454,21 @@ Cinq chiens chassent six chats.
             return Text('Loading engines...');
           }
         },
+      );
+    } else if (flutterTts case final FlutterTtsWindows winTts) {
+      return Row(
+        spacing: 8,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(_isWordBoundary ? "Word Boundary" : "Sentence Boundary"),
+          Switch(
+            value: _isWordBoundary,
+            onChanged: (value) async {
+              await winTts.setBoundaryType(isWordBoundary: value);
+              setState(() => _isWordBoundary = value);
+            },
+          ),
+        ],
       );
     } else {
       return SizedBox(width: 0, height: 0);
