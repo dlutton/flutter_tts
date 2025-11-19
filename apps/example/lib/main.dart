@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -52,6 +53,8 @@ class _MyAppState extends State<MyApp> {
   int? _inputLength;
   final _editingController = TextEditingController();
 
+  TtsProgress? _speakingProgess;
+
   TtsState ttsState = TtsState.stopped;
 
   bool get isPlaying => ttsState == TtsState.playing;
@@ -91,6 +94,7 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         print("Complete");
         ttsState = TtsState.stopped;
+        _speakingProgess = null;
       });
     };
 
@@ -98,6 +102,7 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         print("Cancel");
         ttsState = TtsState.stopped;
+        _speakingProgess = null;
       });
     };
 
@@ -119,6 +124,13 @@ class _MyAppState extends State<MyApp> {
       print("error: $msg");
       setState(() {
         ttsState = TtsState.stopped;
+        _speakingProgess = null;
+      });
+    };
+
+    flutterTts.onSpeakProgress = (progress) {
+      setState(() {
+        _speakingProgess = progress;
       });
     };
 
@@ -304,6 +316,26 @@ class _MyAppState extends State<MyApp> {
           scrollDirection: Axis.vertical,
           child: Column(
             children: [
+              if (_speakingProgess case final progess?)
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      if (progess.start > 0)
+                        TextSpan(
+                          text: progess.text.substring(0, progess.start),
+                        ),
+                      TextSpan(
+                        text: progess.text.substring(
+                          math.max(0, progess.start),
+                          math.min(progess.text.length, progess.end),
+                        ),
+                        style: TextStyle(color: Colors.red),
+                      ),
+                      if (progess.end < progess.text.length - 1)
+                        TextSpan(text: progess.text.substring(progess.end)),
+                    ],
+                  ),
+                ),
               _inputSection(),
               _btnSection(),
               _engineSection(),
