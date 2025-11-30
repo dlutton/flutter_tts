@@ -226,6 +226,7 @@ class FlutterTtsPlugin {
     });
     if (targetList.isNotEmpty) {
       utterance.voice = targetList.first;
+      utterance.lang = targetList.first.lang;
     }
   }
 
