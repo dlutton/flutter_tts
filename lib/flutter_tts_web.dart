@@ -44,6 +44,7 @@ class FlutterTtsPlugin {
     try {
       utterance = SpeechSynthesisUtterance();
       _listeners();
+      synth.getVoices(); // Trigger browser to start loading voices early
       supported = true;
     } catch (e) {
       print('Initialization of TTS failed. Functions are disabled. Error: $e');
