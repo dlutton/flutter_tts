@@ -216,6 +216,10 @@ class FlutterTtsPlugin {
     if (targetList.isNotEmpty) {
       utterance.voice = targetList.first;
       utterance.lang = targetList.first.lang;
+    } else {
+      // Fallback: set lang directly, let browser pick appropriate voice
+      // This handles mobile web where voices load asynchronously
+      utterance.lang = language;
     }
   }
 
