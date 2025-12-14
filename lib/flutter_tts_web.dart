@@ -122,6 +122,8 @@ class FlutterTtsPlugin {
     }.toJS;
 
     synth.onVoicesChanged = (JSAny e) {
+      if (voices.isEmpty) _setVoices();
+      if (languages.isEmpty) _setLanguages();
       channel.invokeMethod("synth.onVoicesChanged", null);
     }.toJS;
   }
