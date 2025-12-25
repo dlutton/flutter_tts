@@ -53,6 +53,7 @@ class FlutterTtsPlugin {
 
   void _listeners() {
     utterance.onStart = (JSAny e) {
+      print('[TTS_WEB] EVENT: onStart fired');
       ttsState = TtsState.playing;
       channel.invokeMethod("speak.onStart", null);
       var bLocal = (utterance.voice?.isLocalService ?? false);
@@ -72,6 +73,7 @@ class FlutterTtsPlugin {
     //   channel.invokeMethod("speak.onStart", null);
     // });
     utterance.onEnd = (JSAny e) {
+      print('[TTS_WEB] EVENT: onEnd fired, completing _speechCompleter');
       ttsState = TtsState.stopped;
       if (_speechCompleter != null) {
         _speechCompleter?.complete();
@@ -82,16 +84,19 @@ class FlutterTtsPlugin {
     }.toJS;
 
     utterance.onPause = (JSAny e) {
+      print('[TTS_WEB] EVENT: onPause fired');
       ttsState = TtsState.paused;
       channel.invokeMethod("speak.onPause", null);
     }.toJS;
 
     utterance.onResume = (JSAny e) {
+      print('[TTS_WEB] EVENT: onResume fired');
       ttsState = TtsState.continued;
       channel.invokeMethod("speak.onContinue", null);
     }.toJS;
 
     utterance.onError = (JSObject event) {
+      print('[TTS_WEB] EVENT: onError fired, error: ${event["error"]}');
       ttsState = TtsState.stopped;
       if (_speechCompleter != null) {
         _speechCompleter = null;
@@ -131,13 +136,17 @@ class FlutterTtsPlugin {
     switch (call.method) {
       case 'speak':
         final text = call.arguments as String?;
+        print('[TTS_WEB] speak called, awaitSpeakCompletion: $awaitSpeakCompletion, text length: ${text?.length}');
         if (awaitSpeakCompletion) {
           _speechCompleter = Completer();
+          print('[TTS_WEB] Created _speechCompleter');
         }
         _speak(text);
         if (awaitSpeakCompletion) {
+          print('[TTS_WEB] Returning _speechCompleter.future (will await)');
           return _speechCompleter?.future;
         }
+        print('[TTS_WEB] speak returning without await');
         break;
       case 'awaitSpeakCompletion':
         awaitSpeakCompletion = (call.arguments as bool?) ?? false;
@@ -184,25 +193,38 @@ class FlutterTtsPlugin {
   }
 
   void _speak(String? text) {
-    if (text == null || text.isEmpty) return;
+    print('[TTS_WEB] _speak called, text: ${text?.substring(0, text.length > 20 ? 20 : text.length)}..., ttsState: $ttsState, _primed: $_primed');
+    if (text == null || text.isEmpty) {
+      print('[TTS_WEB] _speak: text null/empty, returning');
+      return;
+    }
     if (ttsState == TtsState.stopped || ttsState == TtsState.paused) {
       // Prime Safari's Web Speech API on first use
-      // Safari requires SPEAKING (not just cancel) to authorize audio
-      // Speak empty utterance with volume 0 to prime silently
+      // Safari needs: speak → cancel → speak (mimics stop+play behavior)
       // See: https://qiita.com/kazuki_kuriyama/items/42e496ad3d25dd6b9436
       if (!_primed) {
+        print('[TTS_WEB] Priming: creating empty utterance');
         final primeUtterance = SpeechSynthesisUtterance();
         primeUtterance.text = '';
         primeUtterance.volume = 0;
+        print('[TTS_WEB] Priming: calling synth.speak(empty)');
         synth.speak(primeUtterance);
+        print('[TTS_WEB] Priming: calling synth.cancel()');
+        synth.cancel();  // Cancel immediately - this primes Safari
+        print('[TTS_WEB] Priming: done, _primed = true');
         _primed = true;
       }
       utterance.text = text;
       if (ttsState == TtsState.paused) {
+        print('[TTS_WEB] Calling synth.resume()');
         synth.resume();
       } else {
+        print('[TTS_WEB] Calling synth.speak(utterance)');
         synth.speak(utterance);
+        print('[TTS_WEB] synth.speak(utterance) returned');
       }
+    } else {
+      print('[TTS_WEB] _speak: ttsState is $ttsState, not stopped/paused, skipping');
     }
   }
 
