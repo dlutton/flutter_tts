@@ -187,11 +187,14 @@ class FlutterTtsPlugin {
     if (text == null || text.isEmpty) return;
     if (ttsState == TtsState.stopped || ttsState == TtsState.paused) {
       // Prime Safari's Web Speech API on first use
-      // Safari silently fails on first speak without firing events
-      // Calling cancel() first satisfies Safari's autoplay policy
-      // See: https://github.com/Microsoft/BotFramework-WebChat/issues/995
+      // Safari requires SPEAKING (not just cancel) to authorize audio
+      // Speak empty utterance with volume 0 to prime silently
+      // See: https://qiita.com/kazuki_kuriyama/items/42e496ad3d25dd6b9436
       if (!_primed) {
-        synth.cancel();
+        final primeUtterance = SpeechSynthesisUtterance();
+        primeUtterance.text = '';
+        primeUtterance.volume = 0;
+        synth.speak(primeUtterance);
         _primed = true;
       }
       utterance.text = text;
