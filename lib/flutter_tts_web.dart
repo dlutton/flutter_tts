@@ -39,6 +39,7 @@ class FlutterTtsPlugin {
   List<String> languages = [];
   Timer? t;
   bool supported = false;
+  bool _primed = false;
 
   FlutterTtsPlugin() {
     try {
@@ -185,6 +186,14 @@ class FlutterTtsPlugin {
   void _speak(String? text) {
     if (text == null || text.isEmpty) return;
     if (ttsState == TtsState.stopped || ttsState == TtsState.paused) {
+      // Prime Safari's Web Speech API on first use
+      // Safari silently fails on first speak without firing events
+      // Calling cancel() first satisfies Safari's autoplay policy
+      // See: https://github.com/Microsoft/BotFramework-WebChat/issues/995
+      if (!_primed) {
+        synth.cancel();
+        _primed = true;
+      }
       utterance.text = text;
       if (ttsState == TtsState.paused) {
         synth.resume();
