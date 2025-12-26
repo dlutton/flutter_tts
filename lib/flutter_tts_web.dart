@@ -45,37 +45,10 @@ class FlutterTtsPlugin {
     try {
       utterance = SpeechSynthesisUtterance();
       _listeners();
-      _setupPriming();
       supported = true;
     } catch (e) {
       print('Initialization of TTS failed. Functions are disabled. Error: $e');
     }
-  }
-
-  /// Prime Safari's Web Speech API on first user gesture.
-  /// Safari requires speechSynthesis.speak() to be called DIRECTLY in a user
-  /// gesture handler (touchend/click). The gesture does NOT propagate through
-  /// async/await or promises, so priming in _speak() is too late.
-  /// See: https://github.com/Microsoft/BotFramework-WebChat/issues/995
-  void _setupPriming() {
-    void prime(JSAny event) {
-      if (!_primed) {
-        print('[TTS_WEB] Priming on user gesture (touchend/click)');
-        final primeUtterance = SpeechSynthesisUtterance();
-        primeUtterance.text = 'test';  // Non-empty - Safari ignores empty utterances
-        primeUtterance.volume = 0;  // Volume 0 = silent, regardless of text
-        synth.speak(primeUtterance);
-        synth.cancel();
-        _primed = true;
-        print('[TTS_WEB] Priming complete');
-      }
-    }
-
-    // Add listeners for touch and click on document
-    // Using { once: true } so listeners auto-remove after first trigger
-    final doc = globalContext['document'];
-    doc.callMethod('addEventListener'.toJS, 'touchend'.toJS, prime.toJS);
-    doc.callMethod('addEventListener'.toJS, 'click'.toJS, prime.toJS);
   }
 
   void _listeners() {
@@ -226,6 +199,21 @@ class FlutterTtsPlugin {
       return;
     }
     if (ttsState == TtsState.stopped || ttsState == TtsState.paused) {
+      // Prime Safari's Web Speech API on first use
+      // Safari needs: speak → cancel → speak (mimics stop+play behavior)
+      // See: https://qiita.com/kazuki_kuriyama/items/42e496ad3d25dd6b9436
+      if (!_primed) {
+        print('[TTS_WEB] Priming: creating empty utterance');
+        final primeUtterance = SpeechSynthesisUtterance();
+        primeUtterance.text = '';
+        primeUtterance.volume = 0;
+        print('[TTS_WEB] Priming: calling synth.speak(empty)');
+        synth.speak(primeUtterance);
+        print('[TTS_WEB] Priming: calling synth.cancel()');
+        synth.cancel();  // Cancel immediately - this primes Safari
+        print('[TTS_WEB] Priming: done, _primed = true');
+        _primed = true;
+      }
       utterance.text = text;
       if (ttsState == TtsState.paused) {
         print('[TTS_WEB] Calling synth.resume()');
