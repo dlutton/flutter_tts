@@ -3,6 +3,15 @@ import 'dart:js_interop';
 @JS('speechSynthesis')
 external SpeechSynthesis get synth;
 
+@JS('document')
+external Document get document;
+
+@JS()
+extension type Document._(JSObject _) implements JSObject {
+  external void addEventListener(String type, JSFunction listener);
+  external void removeEventListener(String type, JSFunction listener);
+}
+
 @JS()
 extension type SpeechSynthesis._(JSObject _) implements JSObject {
   external void cancel();
