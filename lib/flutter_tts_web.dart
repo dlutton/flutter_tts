@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -39,7 +40,6 @@ class FlutterTtsPlugin {
   Timer? t;
   bool supported = false;
   bool _primed = false;
-  late JSFunction _primeCallback;
 
   FlutterTtsPlugin() {
     try {
@@ -58,29 +58,24 @@ class FlutterTtsPlugin {
   /// async/await or promises, so priming in _speak() is too late.
   /// See: https://github.com/Microsoft/BotFramework-WebChat/issues/995
   void _setupPriming() {
-    print('[TTS_WEB] Setting up priming listeners');
-
-    _primeCallback = ((JSAny event) {
-      print('[TTS_WEB] Priming callback triggered, _primed: $_primed');
+    void prime(JSAny event) {
       if (!_primed) {
-        print('[TTS_WEB] Priming: creating utterance');
+        print('[TTS_WEB] Priming on user gesture (touchend/click)');
         final primeUtterance = SpeechSynthesisUtterance();
-        primeUtterance.text = 'test';
-        primeUtterance.volume = 0;
-        print('[TTS_WEB] Priming: calling synth.speak()');
+        primeUtterance.text = 'test';  // Non-empty - Safari ignores empty utterances
+        primeUtterance.volume = 0;  // Volume 0 = silent, regardless of text
         synth.speak(primeUtterance);
-        print('[TTS_WEB] Priming: calling synth.cancel()');
         synth.cancel();
         _primed = true;
-        print('[TTS_WEB] Priming complete, removing listeners');
-        document.removeEventListener('touchend', _primeCallback);
-        document.removeEventListener('click', _primeCallback);
+        print('[TTS_WEB] Priming complete');
       }
-    }).toJS;
+    }
 
-    document.addEventListener('touchend', _primeCallback);
-    document.addEventListener('click', _primeCallback);
-    print('[TTS_WEB] Priming listeners added for touchend and click');
+    // Add listeners for touch and click on document
+    // Using { once: true } so listeners auto-remove after first trigger
+    final doc = globalContext['document'];
+    doc.callMethod('addEventListener'.toJS, 'touchend'.toJS, prime.toJS);
+    doc.callMethod('addEventListener'.toJS, 'click'.toJS, prime.toJS);
   }
 
   void _listeners() {
