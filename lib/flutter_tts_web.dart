@@ -52,13 +52,10 @@ class FlutterTtsPlugin {
 
   void _listeners() {
     utterance.onStart = (JSAny e) {
-      print('[TTS_WEB] onStart: speech started');
-      print('[TTS_WEB] onStart: utterance.voice=${utterance.voice?.name} / ${utterance.voice?.lang}');
-      print('[TTS_WEB] onStart: utterance.lang=${utterance.lang}');
+      print('[TTS_WEB] onStart: voice=${utterance.voice?.name} / ${utterance.voice?.lang}');
       ttsState = TtsState.playing;
       channel.invokeMethod("speak.onStart", null);
       var bLocal = (utterance.voice?.isLocalService ?? false);
-      print('[TTS_WEB] onStart: isLocalService=$bLocal');
       if (!bLocal) {
         t = Timer.periodic(Duration(seconds: 14), (t) {
           if (ttsState == TtsState.playing) {
@@ -187,25 +184,14 @@ class FlutterTtsPlugin {
   }
 
   void _speak(String? text) {
-    print('[TTS_WEB] _speak called with text: ${text?.substring(0, text.length > 50 ? 50 : text.length)}...');
-    print('[TTS_WEB] _speak: current ttsState=$ttsState');
-    print('[TTS_WEB] _speak: utterance.voice=${utterance.voice?.name} / ${utterance.voice?.lang}');
-    print('[TTS_WEB] _speak: utterance.lang=${utterance.lang}');
-    if (text == null || text.isEmpty) {
-      print('[TTS_WEB] _speak: text is null or empty, returning');
-      return;
-    }
+    if (text == null || text.isEmpty) return;
     if (ttsState == TtsState.stopped || ttsState == TtsState.paused) {
       utterance.text = text;
       if (ttsState == TtsState.paused) {
-        print('[TTS_WEB] _speak: resuming paused speech');
         synth.resume();
       } else {
-        print('[TTS_WEB] _speak: calling synth.speak() with voice=${utterance.voice?.name}');
         synth.speak(utterance);
       }
-    } else {
-      print('[TTS_WEB] _speak: skipped - ttsState is $ttsState (not stopped or paused)');
     }
   }
 
@@ -225,41 +211,30 @@ class FlutterTtsPlugin {
   void _setVolume(double volume) => utterance.volume = volume;
   void _setPitch(double pitch) => utterance.pitch = pitch;
   void _setLanguage(String language) {
-    print('[TTS_WEB] _setLanguage called with: $language');
     var allVoices = synth.getVoices().toDart;
-    print('[TTS_WEB] _setLanguage: ${allVoices.length} voices available');
     var targetList = allVoices.where((e) {
       return e.lang.toLowerCase().startsWith(language.toLowerCase());
     });
-    print('[TTS_WEB] _setLanguage: ${targetList.length} voices match language $language');
     if (targetList.isNotEmpty) {
-      print('[TTS_WEB] _setLanguage: setting voice to ${targetList.first.name} / ${targetList.first.lang}');
       utterance.voice = targetList.first;
       utterance.lang = targetList.first.lang;
+      print('[TTS_WEB] setLanguage: ${targetList.first.name} / ${targetList.first.lang}');
     } else {
-      print('[TTS_WEB] _setLanguage: NO matching voice found for $language');
+      print('[TTS_WEB] setLanguage: no voice found for $language');
     }
   }
 
   void _setVoice(Map<String?, String?> voice) {
-    print('[TTS_WEB] _setVoice called with: name=${voice["name"]}, locale=${voice["locale"]}');
     var tmpVoices = synth.getVoices().toDart;
-    print('[TTS_WEB] _setVoice: ${tmpVoices.length} voices available from synth.getVoices()');
     var targetList = tmpVoices.where((e) {
       return voice["name"] == e.name && voice["locale"] == e.lang;
     });
-    print('[TTS_WEB] _setVoice: ${targetList.length} voices match name=${voice["name"]} AND locale=${voice["locale"]}');
     if (targetList.isNotEmpty) {
-      print('[TTS_WEB] _setVoice: SUCCESS - setting utterance.voice to ${targetList.first.name} / ${targetList.first.lang}');
       utterance.voice = targetList.first;
       utterance.lang = targetList.first.lang;
-      print('[TTS_WEB] _setVoice: utterance.voice is now ${utterance.voice?.name} / ${utterance.voice?.lang}');
+      print('[TTS_WEB] setVoice: ${targetList.first.name} / ${targetList.first.lang}');
     } else {
-      print('[TTS_WEB] _setVoice: FAILED - no matching voice found!');
-      // Log first few available voices for debugging
-      for (var i = 0; i < tmpVoices.length && i < 5; i++) {
-        print('[TTS_WEB] _setVoice: available[$i]: ${tmpVoices[i].name} / ${tmpVoices[i].lang}');
-      }
+      print('[TTS_WEB] setVoice: voice not found - ${voice["name"]} / ${voice["locale"]}');
     }
   }
 
@@ -287,7 +262,6 @@ class FlutterTtsPlugin {
 
   Future<List<Map<String, String>>> getVoices() async {
     var tmpVoices = synth.getVoices().toDart;
-    print('[TTS_WEB] getVoices: returning ${tmpVoices.length} voices');
     return tmpVoices
         .map((voice) => {"name": voice.name, "locale": voice.lang})
         .toList();
