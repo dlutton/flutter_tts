@@ -13,7 +13,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.tundralabs.fluttertts
+        package: com.eyedeadevelopment.fluttertts
         pluginClass: FlutterTtsPlugin
       ios:
         pluginClass: FlutterTtsPlugin

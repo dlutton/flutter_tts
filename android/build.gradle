@@ -1,6 +1,6 @@
 def args = ["-Xlint:deprecation"]
 
-group 'com.tundralabs.fluttertts'
+group 'com.eyedeadevelopment.fluttertts'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -33,7 +33,7 @@ apply plugin: 'kotlin-android'
 android {
     compileSdk 36
     if (project.android.hasProperty("namespace")) {
-        namespace 'com.tundralabs.fluttertts'
+        namespace 'com.eyedeadevelopment.fluttertts'
     }
 
     defaultConfig {
