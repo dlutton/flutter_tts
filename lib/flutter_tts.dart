@@ -416,7 +416,8 @@ class FlutterTts {
       IosTextToSpeechAudioCategory.ambientSolo: iosAudioCategoryAmbientSolo,
       IosTextToSpeechAudioCategory.ambient: iosAudioCategoryAmbient,
       IosTextToSpeechAudioCategory.playback: iosAudioCategoryPlayback,
-      IosTextToSpeechAudioCategory.playAndRecord: iosAudioCategoryPlaybackAndRecord,
+      IosTextToSpeechAudioCategory.playAndRecord:
+          iosAudioCategoryPlaybackAndRecord,
     };
     const optionsToString = {
       IosTextToSpeechAudioCategoryOptions.mixWithOthers:
