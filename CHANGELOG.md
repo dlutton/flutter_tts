@@ -1,5 +1,16 @@
 # ChangeLog
 
+## 4.2.4
+
+### Fixes
+
+- **Windows:** CMake fix
+
+### Features
+
+- **iOS:** Add playbackAndRecord category to iOS audio category mapping
+- **Android:** Bump to AGP 8.13
+
 ## 4.2.3
 
 ### Fixes
