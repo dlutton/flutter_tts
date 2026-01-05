@@ -13,13 +13,14 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    namespace 'com.tundralabs.example'
-    compileSdk = 35 // flutter.compileSdkVersion
+    compileSdk 35
+    namespace 'com.eyedeadevelopment.example'
+
 
     defaultConfig {
-        applicationId "com.tundralabs.flutterttsexample"
-        minSdk = 23 // flutter.minSdkVersion
-        targetSdk = 35 // flutter.targetSdkVersion
+        applicationId "com.eyedeadevelopment.flutterttsexample"
+        minSdkVersion 23
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
