@@ -1,4 +1,4 @@
-package com.tundralabs.fluttertts
+package com.eyedeadevelopment.fluttertts
 
 import android.content.ContentValues
 import android.content.Context
