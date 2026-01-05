@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 4.2.5
+
+### Fixes
+
+- **Android:** Fixing namespace path
+
 ## 4.2.4
 
 ### Fixes
