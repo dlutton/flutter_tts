@@ -28,6 +28,21 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     
 
   var channel = FlutterMethodChannel()
+  private var isEngineAttached = true
+
+  private func safeInvokeMethod(_ method: String, arguments: Any?) {
+    guard isEngineAttached else { return }
+    self.channel.invokeMethod(method, arguments: arguments)
+  }
+
+  deinit {
+    synthesizer.stopSpeaking(at: .immediate)
+    synthesizer.delegate = nil
+    speakResult = nil
+    synthResult = nil
+    isEngineAttached = false
+  }
+
   init(channel: FlutterMethodChannel) {
     super.init()
     self.channel = channel
@@ -431,6 +446,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+    guard isEngineAttached else { return }
     if shouldDeactivateAndNotifyOthers(audioSession) && self.autoStopSharedSession {
       do {
         try audioSession.setActive(false, options: .notifyOthersOnDeactivation)
@@ -446,23 +462,23 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       self.synthResult!(1)
       self.synthResult = nil
     }
-    self.channel.invokeMethod("speak.onComplete", arguments: nil)
+    self.safeInvokeMethod("speak.onComplete", arguments: nil)
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-    self.channel.invokeMethod("speak.onStart", arguments: nil)
+    self.safeInvokeMethod("speak.onStart", arguments: nil)
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
-    self.channel.invokeMethod("speak.onPause", arguments: nil)
+    self.safeInvokeMethod("speak.onPause", arguments: nil)
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
-    self.channel.invokeMethod("speak.onContinue", arguments: nil)
+    self.safeInvokeMethod("speak.onContinue", arguments: nil)
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
-    self.channel.invokeMethod("speak.onCancel", arguments: nil)
+    self.safeInvokeMethod("speak.onCancel", arguments: nil)
   }
 
   public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {
@@ -473,7 +489,7 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
       "end": String(characterRange.location + characterRange.length),
       "word": nsWord.substring(with: characterRange)
     ]
-    self.channel.invokeMethod("speak.onProgress", arguments: data)
+    self.safeInvokeMethod("speak.onProgress", arguments: data)
   }
 
 }
