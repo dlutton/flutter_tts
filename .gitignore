@@ -56,6 +56,12 @@ unlinked_spec.ds
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
 
+# Swift Package Manager
+.build/
+.swiftpm/
+**/ios/Flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+
 # iOS/XCode related
 **/ios/**/*.mode1v3
 **/ios/**/*.mode2v3
