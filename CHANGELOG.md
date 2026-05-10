@@ -1,5 +1,16 @@
 # ChangeLog
 
+## Unreleased
+
+### Fixes
+
+- **iOS:** Fix fatal `EXC_BREAKPOINT` in `synthesizeToFile` when the system
+  voice emits `Int16` PCM buffers (notably Apple's Maui/Vocalizer compact
+  voices on iOS 16/17). The audio file is now opened using the buffer's
+  actual format instead of hardcoding `Float32`, the `try!` on the per-buffer
+  write call is replaced with proper error handling, and buffers with a
+  format that doesn't match the file are skipped instead of crashing.
+
 ## 4.2.5
 
 ### Fixes

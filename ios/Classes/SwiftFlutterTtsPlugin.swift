@@ -182,13 +182,16 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
     utterance.pitchMultiplier = self.pitch
 
     if #available(iOS 13.0, *) {
+      // Captured so we can detect (and skip) any later PCM buffer that
+      // doesn't match the format the file was opened with — writing one
+      // through the CoreAudio CBR converter would trap.
+      var fileFormat: AVAudioFormat?
       self.synthesizer.write(utterance) { (buffer: AVAudioBuffer) in
         guard let pcmBuffer = buffer as? AVAudioPCMBuffer else {
-            NSLog("unknow buffer type: \(buffer)")
+            NSLog("unknown buffer type: \(buffer)")
             failed = true
             return
         }
-        print(pcmBuffer.format)
         if pcmBuffer.frameLength == 0 {
             // finished
         } else {
@@ -203,16 +206,17 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
 
         if output == nil {
           do {
+            // Use the buffer's actual format. AVSpeechSynthesizer can emit
+            // Int16 buffers (notably Apple's Maui/Vocalizer compact voices
+            // on iOS 16/17), and hardcoding Float32 here caused a fatal
+            // EXC_BREAKPOINT inside CoreAudio's CBR converter when the
+            // first Int16 buffer was later written.
             if #available(iOS 17.0, *) {
-                guard let audioFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: pcmBuffer.format.sampleRate, channels: 1, interleaved: false) else {
-                NSLog("Error creating audio format for iOS 17+")
-                failed = true
-                return
-              }
-              output = try AVAudioFile(forWriting: fileURL, settings: audioFormat.settings)
+              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings)
             } else {
-              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: .pcmFormatFloat32, interleaved: false)
+              output = try AVAudioFile(forWriting: fileURL, settings: pcmBuffer.format.settings, commonFormat: pcmBuffer.format.commonFormat, interleaved: false)
             }
+            fileFormat = pcmBuffer.format
           } catch {
               NSLog("Error creating AVAudioFile: \(error.localizedDescription)")
               failed = true
@@ -220,8 +224,24 @@ public class SwiftFlutterTtsPlugin: NSObject, FlutterPlugin, AVSpeechSynthesizer
           }
         }
 
+          // Skip buffers whose format diverges from the one the file was
+          // opened with. Rare in practice but defensive: writing them would
+          // trap inside the converter.
+          if let expected = fileFormat,
+             pcmBuffer.format.commonFormat != expected.commonFormat ||
+             pcmBuffer.format.sampleRate != expected.sampleRate ||
+             pcmBuffer.format.channelCount != expected.channelCount {
+              NSLog("Skipping PCM buffer with mismatched format: \(pcmBuffer.format) vs \(expected)")
+              return
+          }
 
-          try! output!.write(from: pcmBuffer)
+          do {
+              try output!.write(from: pcmBuffer)
+          } catch {
+              NSLog("Error writing PCM buffer to file: \(error.localizedDescription)")
+              failed = true
+              return
+          }
         }
       }
     } else {
