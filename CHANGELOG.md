@@ -1,5 +1,11 @@
 # ChangeLog
 
+## Unreleased
+
+### Features
+
+- **iOS/macOS:** Add Swift Package Manager package manifests to support Flutter's SPM integration.
+
 ## 4.2.5
 
 ### Fixes
