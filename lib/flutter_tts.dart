@@ -524,6 +524,14 @@ class FlutterTts {
     final voices = await _channel.invokeMethod('getVoices');
     return voices;
   }
+  
+  /// [Future] which invokes the platform specific method for getCurrentVoice
+  /// Returns a `Hashmap<String, String>` containing a full voice info
+  /// ***Android supported only***
+  Future<dynamic> get getCurrentVoice async {
+    final currentVoice = await _channel.invokeMethod('getCurrentVoice');
+    return currentVoice;
+  }
 
   /// [Future] which invokes the platform specific method for isLanguageAvailable
   /// Returns `true` or `false`
