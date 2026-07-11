@@ -360,7 +360,20 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             "pause" -> {
                 isPaused = true
                 if (pauseText != null) {
-                    pauseText = pauseText!!.substring(lastProgress)
+                    // lastProgress comes from onRangeStart() and is relative to the
+                    // current utterance. It can be stale (e.g. rapid repeated pauses
+                    // before onRangeStart fires again) and exceed the remaining text,
+                    // which crashed with StringIndexOutOfBoundsException (#638).
+                    val progress = lastProgress.coerceIn(0, pauseText!!.length)
+                    if (progress >= pauseText!!.length) {
+                        // Everything has been spoken; nothing is left to resume.
+                        pauseText = null
+                    } else {
+                        pauseText = pauseText!!.substring(progress)
+                    }
+                    // pauseText now starts at the pause point, so the consumed
+                    // progress must be reset to keep the two in sync.
+                    lastProgress = 0
                 }
                 stop()
                 result.success(1)
