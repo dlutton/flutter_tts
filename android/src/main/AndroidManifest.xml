@@ -1,3 +1,14 @@
 <manifest
         xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.eyedeadevelopment.fluttertts" />
+        package="com.eyedeadevelopment.fluttertts">
+    <!-- Apps targeting Android 11+ must declare the TTS engine intent for
+         package visibility, or engine/language queries return nothing and the
+         engine list stays empty (see README "Android 11" section, #255, #449).
+         Declaring it here lets the manifest merger add it to every consuming
+         app automatically, so apps no longer have to remember the README step. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+</manifest>
