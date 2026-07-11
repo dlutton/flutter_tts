@@ -28,7 +28,15 @@ project.getTasks().withType(JavaCompile).configureEach {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+
+// Migration to built-in Kotlin (Flutter 3.44+ / AGP 9 deprecation of plugins
+// applying the Kotlin Gradle Plugin themselves). AGP 9+ provides built-in
+// Kotlin, so only apply KGP for apps still on older AGP versions, per
+// https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+def agpMajor = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0] as int
+if (agpMajor < 9) {
+    apply plugin: 'kotlin-android'
+}
 
 android {
     compileSdk 36
@@ -51,10 +59,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
     }
 }
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
