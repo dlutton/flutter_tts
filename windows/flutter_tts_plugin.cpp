@@ -78,14 +78,15 @@ namespace {
 		mPlayer = winrt::Windows::Media::Playback::MediaPlayer::MediaPlayer();
 		auto mEndedToken =
 			mPlayer.MediaEnded([=](Windows::Media::Playback::MediaPlayer const& sender,
-				Windows::Foundation::IInspectable const& args)
-				{
-				    methodChannel->InvokeMethod("speak.onComplete", NULL);
-				    if (awaitSpeakCompletion) {
+			Windows::Foundation::IInspectable const& args)
+			{
+			    methodChannel->InvokeMethod("speak.onComplete", NULL);
+			    if (awaitSpeakCompletion && speakResult) {
                         speakResult->Success(1);
+                        speakResult.reset();
                     }
-					isSpeaking = false;
-				});
+				isSpeaking = false;
+			});
 	}
 
 	bool FlutterTtsPlugin::speaking() {
@@ -129,8 +130,9 @@ namespace {
 
 	void FlutterTtsPlugin::stop() {
 	    methodChannel->InvokeMethod("speak.onCancel", NULL);
-        if (awaitSpeakCompletion) {
+        if (awaitSpeakCompletion && speakResult) {
             speakResult->Success(1);
+            speakResult.reset();
         }
 
 		mPlayer.Close();
@@ -250,6 +252,7 @@ namespace {
 		static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
 		FlutterTtsPlugin();
 		virtual ~FlutterTtsPlugin();
+		void OnSpeakComplete();
 	private:
 		// Called when a method is called on this plugin's channel from Dart.
 		void HandleMethodCall(
@@ -276,6 +279,7 @@ namespace {
 		bool paused();
 		FlutterResult speakResult;
     	HANDLE addWaitHandle;
+		CRITICAL_SECTION cs;
 	};
 
 	void FlutterTtsPlugin::RegisterWithRegistrar(
@@ -294,13 +298,18 @@ namespace {
 	}
 
 	FlutterTtsPlugin::FlutterTtsPlugin() {
+		InitializeCriticalSection(&cs);
 		addWaitHandle = NULL;
 		isPaused = false;
 		speakResult = NULL;
 		pVoice = NULL;
 		HRESULT hr;
+		// Tolerate COM already being initialized on this thread (e.g. by the
+		// engine or another plugin). RPC_E_CHANGED_MODE means the thread is
+		// already in a different apartment; in that case reuse it rather than
+		// throwing and crashing the host app.
 		hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-		if (FAILED(hr))
+		if (FAILED(hr) && hr != RPC_E_CHANGED_MODE)
 		{
 			throw std::exception("TTS init failed");
 		}
@@ -314,22 +323,30 @@ namespace {
 	}
 
 	FlutterTtsPlugin::~FlutterTtsPlugin() {
+		if (addWaitHandle != NULL) {
+			UnregisterWaitEx(addWaitHandle, INVALID_HANDLE_VALUE);
+			addWaitHandle = NULL;
+		}
+		EnterCriticalSection(&cs);
+		if (speakResult) speakResult.reset();
+		LeaveCriticalSection(&cs);
+		if (pVoice != NULL) {
+			pVoice->Release();
+			pVoice = NULL;
+		}
+		DeleteCriticalSection(&cs);
 		::CoUninitialize();
 	}
 
-    void CALLBACK setResult(PVOID lpParam, BOOLEAN TimerOrWaitFired)
+    void CALLBACK onSpeakComplete(PVOID lpParam, BOOLEAN TimerOrWaitFired)
     {
-        flutter::MethodResult<flutter::EncodableValue>* p = (flutter::MethodResult<flutter::EncodableValue>*) lpParam;
-        p->Success(1);
-    }
-
-    void CALLBACK onCompletion(PVOID lpParam, BOOLEAN TimerOrWaitFired)
-    {
-        methodChannel->InvokeMethod("speak.onComplete", NULL);
+        FlutterTtsPlugin* plugin = static_cast<FlutterTtsPlugin*>(lpParam);
+        plugin->OnSpeakComplete();
     }
 
 	bool FlutterTtsPlugin::speaking()
 	{
+		if (pVoice == NULL) return false;
 		SPVOICESTATUS status;
 		pVoice->GetStatus(&status, NULL);
 		if (status.dwRunningState == SPRS_IS_SPEAKING) return true;
@@ -339,6 +356,16 @@ namespace {
 
 
 	void FlutterTtsPlugin::speak(const std::string text, FlutterResult result) {
+		if (pVoice == NULL) { result->Success(0); return; }
+		// Unregister any previous completion wait first. Without this, a stale
+		// wait callback could fire against a destroyed MethodResult (the
+		// previous speak's result), causing an access violation (0xc0000005).
+		// INVALID_HANDLE_VALUE makes UnregisterWaitEx block until any in-flight
+		// callback finishes before returning.
+		if (addWaitHandle != NULL) {
+			UnregisterWaitEx(addWaitHandle, INVALID_HANDLE_VALUE);
+			addWaitHandle = NULL;
+		}
 		HRESULT hr;
 		const std::string arg = "<PITCH MIDDLE = '" + std::to_string(int((pitch - 1) * 10 * (1 + (pitch < 1)) )) + "'/>" + text;
 
@@ -349,16 +376,38 @@ namespace {
 		delete[] wstr;
 		HANDLE speakCompletionHandle = pVoice->SpeakCompleteEvent();
 		methodChannel->InvokeMethod("speak.onStart", NULL);
-		RegisterWaitForSingleObject(&addWaitHandle, speakCompletionHandle, (WAITORTIMERCALLBACK)&onCompletion, speakResult.get(), INFINITE, WT_EXECUTEONLYONCE);
-		if (awaitSpeakCompletion){
-		    speakResult = std::move(result);
-		    RegisterWaitForSingleObject(&addWaitHandle, speakCompletionHandle, (WAITORTIMERCALLBACK)&setResult, speakResult.get(), INFINITE, WT_EXECUTEONLYONCE);
+		if (awaitSpeakCompletion) {
+			// Move the result into speakResult BEFORE registering the wait, so
+			// the callback always observes a valid pointer. Guarded by cs to
+			// avoid racing with a concurrently firing callback.
+			EnterCriticalSection(&cs);
+			speakResult = std::move(result);
+			LeaveCriticalSection(&cs);
 		}
-		else result->Success(1);
+		else {
+			result->Success(1);
+		}
+		// A single completion wait drives both speak.onComplete and resolving
+		// the awaited speak future. Using one handle avoids the previous bug of
+		// overwriting addWaitHandle with a second RegisterWaitForSingleObject
+		// call (which leaked the first registration).
+		RegisterWaitForSingleObject(&addWaitHandle, speakCompletionHandle,
+			(WAITORTIMERCALLBACK)&onSpeakComplete, this, INFINITE,
+			WT_EXECUTEONLYONCE);
+	}
+
+	void FlutterTtsPlugin::OnSpeakComplete() {
+		methodChannel->InvokeMethod("speak.onComplete", NULL);
+		EnterCriticalSection(&cs);
+		if (speakResult) {
+			speakResult->Success(1);
+			speakResult.reset();
+		}
+		LeaveCriticalSection(&cs);
 	}
 	void FlutterTtsPlugin::pause()
 	{
-		if (isPaused == false)
+		if (pVoice != NULL && isPaused == false)
 		{
 			pVoice->Pause();
 			isPaused = true;
@@ -368,24 +417,42 @@ namespace {
 	void FlutterTtsPlugin::continuePlay()
 	{
 		isPaused = false;
-		pVoice->Resume();
+		if (pVoice != NULL) pVoice->Resume();
 	    methodChannel->InvokeMethod("speak.onContinue", NULL);
 	}
 	void FlutterTtsPlugin::stop()
 	{
-		pVoice->Speak(L"", 2, NULL);
-		pVoice->Resume();
+		// Cancel the pending completion wait first so its callback can't fire
+		// after we invalidate speakResult below (would be a use-after-free).
+		if (addWaitHandle != NULL) {
+			UnregisterWaitEx(addWaitHandle, INVALID_HANDLE_VALUE);
+			addWaitHandle = NULL;
+		}
+		if (pVoice != NULL) {
+			pVoice->Speak(L"", 2, NULL);
+			pVoice->Resume();
+		}
 		isPaused = false;
 	    methodChannel->InvokeMethod("speak.onCancel", NULL);
+		// Resolve the awaited speak future (if any) so the Dart side isn't left
+		// waiting forever after a cancel.
+		EnterCriticalSection(&cs);
+		if (speakResult) {
+			speakResult->Success(1);
+			speakResult.reset();
+		}
+		LeaveCriticalSection(&cs);
 	}
 	void FlutterTtsPlugin::setVolume(const double newVolume)
 	{
+		if (pVoice == NULL) return;
 		const USHORT volume = (short)(100 * newVolume);
 		pVoice->SetVolume(volume);
 	}
 	void FlutterTtsPlugin::setPitch(const double newPitch) {pitch = newPitch;}
 	void FlutterTtsPlugin::setRate(const double newRate)
 	{
+		if (pVoice == NULL) return;
 		const long speechRate = (long)((newRate - 0.5) * 15);
 		pVoice->SetRate(speechRate);
 	}
@@ -398,24 +465,26 @@ namespace {
  		ULONG ulCount = 0;
 		// Get the number of voices.
 		hr = cpEnum->GetCount(&ulCount);
-		if (FAILED(hr)) return;
+		if (FAILED(hr)) { cpEnum->Release(); return; }
 		ISpObjectToken* cpVoiceToken = NULL;
 		while (ulCount--)
 		{
 			cpVoiceToken = NULL;
 			hr = cpEnum->Next(1, &cpVoiceToken, NULL);
-			if (FAILED(hr)) return;
+			if (FAILED(hr)) break;
 			CComPtr<ISpDataKey> cpAttribKey;
 			hr = cpVoiceToken->OpenKey(L"Attributes", &cpAttribKey);
-			if (FAILED(hr)) return;
+			if (FAILED(hr)) { cpVoiceToken->Release(); continue; }
 			WCHAR* psz = NULL;
 			hr = cpAttribKey->GetStringValue(L"Language", &psz);
+			if (FAILED(hr) || psz == NULL) { cpVoiceToken->Release(); continue; }
 		    wchar_t locale[25];
             LCIDToLocaleName((LCID)std::strtol(CW2A(psz), NULL, 16), locale, 25, 0);
             ::CoTaskMemFree(psz);
             std::string language = CW2A(locale);
             psz = NULL;
-            cpAttribKey->GetStringValue(L"Name", &psz);
+            hr = cpAttribKey->GetStringValue(L"Name", &psz);
+			if (FAILED(hr) || psz == NULL) { cpVoiceToken->Release(); continue; }
 			std::string name = CW2A(psz);
 			::CoTaskMemFree(psz);
             flutter::EncodableMap voiceInfo;
@@ -424,6 +493,7 @@ namespace {
             voices.push_back(flutter::EncodableMap(voiceInfo));
 			cpVoiceToken->Release();
 		}
+		cpEnum->Release();
 	}
 	void FlutterTtsPlugin::setVoice(const std::string voiceLanguage, const std::string voiceName, FlutterResult& result) {
 		HRESULT hr;
@@ -432,24 +502,25 @@ namespace {
 		if (FAILED(hr)) { result->Success(0); return; }
 		ULONG ulCount = 0;
 		hr = cpEnum->GetCount(&ulCount);
-		if (FAILED(hr)) { result->Success(0); return; }
+		if (FAILED(hr)) { cpEnum->Release(); result->Success(0); return; }
 		ISpObjectToken* cpVoiceToken = NULL;
 		bool success = false;
 		while (ulCount--)
 		{
 			cpVoiceToken = NULL;
 			hr = cpEnum->Next(1, &cpVoiceToken, NULL);
-			if (FAILED(hr)) { result->Success(0); return; }
+			if (FAILED(hr)) break;
 			CComPtr<ISpDataKey> cpAttribKey;
 			hr = cpVoiceToken->OpenKey(L"Attributes", &cpAttribKey);
-			if (FAILED(hr)) { result->Success(0); return; }
+			if (FAILED(hr)) { cpVoiceToken->Release(); continue; }
 			WCHAR* psz = NULL;
 			hr = cpAttribKey->GetStringValue(L"Name", &psz);
-			if (FAILED(hr)) { result->Success(0); return; }
+			if (FAILED(hr) || psz == NULL) { cpVoiceToken->Release(); continue; }
 			std::string name = CW2A(psz);
 			::CoTaskMemFree(psz);
 			psz = NULL;
 			hr = cpAttribKey->GetStringValue(L"Language", &psz);
+			if (FAILED(hr) || psz == NULL) { cpVoiceToken->Release(); continue; }
 		    wchar_t locale[25];
             LCIDToLocaleName((LCID)std::strtol(CW2A(psz), NULL, 16), locale, 25, 0);
             ::CoTaskMemFree(psz);
@@ -461,6 +532,7 @@ namespace {
 			}
 			cpVoiceToken->Release();
 		}
+		cpEnum->Release();
 		result->Success(success ? 1 : 0);
 	}
 	void FlutterTtsPlugin::getLanguages(flutter::EncodableList& languages)
@@ -473,20 +545,21 @@ namespace {
  		ULONG ulCount = 0;
 		// Get the number of voices.
 		hr = cpEnum->GetCount(&ulCount);
-		if (FAILED(hr)) return;
+		if (FAILED(hr)) { cpEnum->Release(); return; }
 		ISpObjectToken* cpVoiceToken = NULL;
         std::set<flutter::EncodableValue> languagesSet = {};
 		while (ulCount--)
 		{
 			cpVoiceToken = NULL;
 			hr = cpEnum->Next(1, &cpVoiceToken, NULL);
-			if (FAILED(hr)) return;
+			if (FAILED(hr)) break;
 			CComPtr<ISpDataKey> cpAttribKey;
 			hr = cpVoiceToken->OpenKey(L"Attributes", &cpAttribKey);
-			if (FAILED(hr)) return;
+			if (FAILED(hr)) { cpVoiceToken->Release(); continue; }
 
 			WCHAR* psz = NULL;
 			hr = cpAttribKey->GetStringValue(L"Language", &psz);
+			if (FAILED(hr) || psz == NULL) { cpVoiceToken->Release(); continue; }
 		    wchar_t locale[25];
             LCIDToLocaleName((LCID)std::strtol(CW2A(psz), NULL, 16), locale, 25, 0);
             std::string language = CW2A(locale);
@@ -494,6 +567,7 @@ namespace {
 			::CoTaskMemFree(psz);
 			cpVoiceToken->Release();
 		}
+		cpEnum->Release();
         std::for_each(begin(languagesSet), end(languagesSet), [&languages](const flutter::EncodableValue value)
             {
                 languages.push_back(value);
@@ -507,20 +581,21 @@ namespace {
 		if (FAILED(hr)) { result->Success(0); return; }
 		ULONG ulCount = 0;
 		hr = cpEnum->GetCount(&ulCount);
-		if (FAILED(hr)) { result->Success(0); return; }
+		if (FAILED(hr)) { cpEnum->Release(); result->Success(0); return; }
 		ISpObjectToken* cpVoiceToken = NULL;
 		bool found = false;
 		while (ulCount--)
 		{
 			cpVoiceToken = NULL;
 			hr = cpEnum->Next(1, &cpVoiceToken, NULL);
-			if (FAILED(hr)) { result->Success(0); return; }
+			if (FAILED(hr)) break;
 			CComPtr<ISpDataKey> cpAttribKey;
 			hr = cpVoiceToken->OpenKey(L"Attributes", &cpAttribKey);
-			if (FAILED(hr)) { result->Success(0); return; }
+			if (FAILED(hr)) { cpVoiceToken->Release(); continue; }
 
 			WCHAR* psz = NULL;
 			hr = cpAttribKey->GetStringValue(L"Language", &psz);
+			if (FAILED(hr) || psz == NULL) { cpVoiceToken->Release(); continue; }
 		    wchar_t locale[25];
             LCIDToLocaleName((LCID)std::strtol(CW2A(psz), NULL, 16), locale, 25, 0);
             std::string language = CW2A(locale);
@@ -532,6 +607,7 @@ namespace {
 			::CoTaskMemFree(psz);
 			cpVoiceToken->Release();
 		}
+		cpEnum->Release();
 		if (found) result->Success(1);
 		else result->Success(0);
 	}
