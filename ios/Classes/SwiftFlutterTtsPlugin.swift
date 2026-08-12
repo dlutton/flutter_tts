@@ -501,6 +501,11 @@ extension AVSpeechSynthesisVoiceGender {
             return "female"
         case .unspecified:
             return "unspecified"
+        @unknown default:
+            // AVSpeechSynthesisVoiceGender is an Objective-C enum, so a voice
+            // can report a case this build was not compiled against. Without
+            // this the switch traps and takes the whole app down.
+            return "unspecified"
         }
     }
 }
