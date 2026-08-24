@@ -1,5 +1,11 @@
 # ChangeLog
 
+## 4.3.0
+
+* Adds Swift Package Manager support for iOS and macOS. The iOS plugin is now
+  implemented purely in Swift (the Objective-C registration shim has been removed).
+  Both platforms can be built with either Swift Package Manager or CocoaPods.
+
 ## 4.2.5
 
 ### Fixes
