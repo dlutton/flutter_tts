@@ -227,16 +227,6 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
-                    }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
 
                 engineResult!!.success(1)
             } else {
@@ -258,16 +248,6 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
 
             if (status == TextToSpeech.SUCCESS) {
                 tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                try {
-                    val locale: Locale = tts!!.defaultVoice.locale
-                    if (isLanguageAvailable(locale)) {
-                        tts!!.language = locale
-                    }
-                } catch (e: NullPointerException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                } catch (e: IllegalArgumentException) {
-                    Log.e(tag, "getDefaultLocale: " + e.message)
-                }
             } else {
                 Log.e(tag, "Failed to initialize TextToSpeech with status: $status")
             }
