@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId "com.eyedeadevelopment.flutterttsexample"
-        minSdkVersion 23
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 35
         versionCode 1
         versionName "1.0"
