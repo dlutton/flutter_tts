@@ -55,7 +55,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
     private var queueMode: Int = TextToSpeech.QUEUE_FLUSH
     private var ttsStatus: Int? = null
     private var selectedEngine: String? = null
-    private var engineResult: Result? = null
+//    private var engineResult: Result? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
     private var audioManager: AudioManager? = null
     private var audioFocusRequest: AudioFocusRequest? = null
@@ -214,33 +214,33 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
     }
 
-    private val onInitListenerWithCallback: TextToSpeech.OnInitListener =
-        TextToSpeech.OnInitListener { status ->
-            // Handle pending method calls (sent while TTS was initializing)
-            val toRun = synchronized(this@FlutterTtsPlugin) {
-                ttsStatus = status
-                ArrayList(pendingMethodCalls).also { pendingMethodCalls.clear() }
-            }
-            toRun.forEach { it.run() }
-
-            if (status == TextToSpeech.SUCCESS) {
-                tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
-                engineResult!!.success(1)
-                Thread {
-                    try {
-                        val locale = tts!!.defaultVoice.locale
-                        if (isLanguageAvailable(locale)) {
-                            tts!!.setLanguage(locale)
-                        }
-                    } catch (e: Exception) {
-                        Log.e(tag, "getDefaultLocale: " + e.message)
-                    }
-                }.start()
-            } else {
-                engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
-            }
-            //engineResult = null
-        }
+//    private val onInitListenerWithCallback: TextToSpeech.OnInitListener =
+//        TextToSpeech.OnInitListener { status ->
+//            // Handle pending method calls (sent while TTS was initializing)
+//            val toRun = synchronized(this@FlutterTtsPlugin) {
+//                ttsStatus = status
+//                ArrayList(pendingMethodCalls).also { pendingMethodCalls.clear() }
+//            }
+//            toRun.forEach { it.run() }
+//
+//            if (status == TextToSpeech.SUCCESS) {
+//                tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
+//                engineResult!!.success(1)
+//                Thread {
+//                    try {
+//                        val locale = tts!!.defaultVoice.locale
+//                        if (isLanguageAvailable(locale)) {
+//                            tts!!.setLanguage(locale)
+//                        }
+//                    } catch (e: Exception) {
+//                        Log.e(tag, "getDefaultLocale: " + e.message)
+//                    }
+//                }.start()
+//            } else {
+//                engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
+//            }
+//            //engineResult = null
+//        }
 
     private val onInitListenerWithoutCallback: TextToSpeech.OnInitListener =
         TextToSpeech.OnInitListener { status ->
@@ -489,11 +489,49 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         return false
     }
 
-    private fun setEngine(engine: String?, result: Result) {
-        ttsStatus = null
+    private fun setEngine(engine: String, result: Result) {
         selectedEngine = engine
-        engineResult = result
-        tts = TextToSpeech(context, onInitListenerWithCallback, engine)
+        val listener = createOnInitListener(result)
+        tts = TextToSpeech(context, listener, selectedEngine)
+    }
+
+    private fun createOnInitListener(requestResult: Result): TextToSpeech.OnInitListener {
+        return TextToSpeech.OnInitListener { status ->
+            // Handle pending method calls
+            val toRun = synchronized(this@FlutterTtsPlugin) {
+                ttsStatus = status
+                ArrayList(pendingMethodCalls).also { pendingMethodCalls.clear() }
+            }
+            toRun.forEach { it.run() }
+
+            if (status == TextToSpeech.SUCCESS) {
+                tts!!.setOnUtteranceProgressListener(utteranceProgressListener)
+                try {
+                    // Use the captured result for this specific request
+                    requestResult.success(1)
+                } catch (e: Exception) {
+                    // This safeguards against edge cases where the result might still be handled elsewhere
+                    Log.w(tag, "Error replying to setEngine: ${e.message}")
+                }
+
+                Thread {
+                    try {
+                        val locale = tts!!.defaultVoice.locale
+                        if (isLanguageAvailable(locale)) {
+                            tts!!.setLanguage(locale)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(tag, "getDefaultLocale: " + e.message)
+                    }
+                }.start()
+            } else {
+                try {
+                    requestResult.error("TtsError", "Failed to initialize TextToSpeech with status: $status", null)
+                } catch (e: Exception) {
+                    Log.w(tag, "Error replying to setEngine error: ${e.message}")
+                }
+            }
+        }
     }
 
     private fun setLanguage(language: String?, result: Result) {
@@ -617,7 +655,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         map["latency"] = latencyToString(voice.latency)
         map["network_required"] = if (voice.isNetworkConnectionRequired) "1" else "0"
         map["features"] = voice.features.joinToString(separator = "\t")
-        
+
     }
 
     // Function to map quality integer to the constant name
