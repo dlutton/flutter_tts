@@ -214,15 +214,23 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
         }
     }
 
+    // A queued speak re-queues itself when the engine connection is not
+    // usable, so run a copy: adding to the list while iterating it threw
+    // ConcurrentModificationException, and clear() afterwards dropped the call.
+    private fun runPendingMethodCalls() {
+        val calls = ArrayList(pendingMethodCalls)
+        pendingMethodCalls.clear()
+        for (call in calls) {
+            call.run()
+        }
+    }
+
     private val onInitListenerWithCallback: TextToSpeech.OnInitListener =
         TextToSpeech.OnInitListener { status ->
             // Handle pending method calls (sent while TTS was initializing)
             synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
-                    call.run()
-                }
-                pendingMethodCalls.clear()
+                runPendingMethodCalls()
             }
 
             if (status == TextToSpeech.SUCCESS) {
@@ -237,12 +245,18 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
                 } catch (e: IllegalArgumentException) {
                     Log.e(tag, "getDefaultLocale: " + e.message)
                 }
-
-                engineResult!!.success(1)
-            } else {
-                engineResult!!.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
             }
-            //engineResult = null
+
+            // onInit runs again when the engine service reconnects. Answer
+            // setEngine's result once and drop it; a second answer throws
+            // "Reply already submitted".
+            val result = engineResult
+            engineResult = null
+            if (status == TextToSpeech.SUCCESS) {
+                result?.success(1)
+            } else {
+                result?.error("TtsError","Failed to initialize TextToSpeech with status: $status", null)
+            }
         }
 
     private val onInitListenerWithoutCallback: TextToSpeech.OnInitListener =
@@ -250,10 +264,7 @@ class FlutterTtsPlugin : MethodCallHandler, FlutterPlugin {
             // Handle pending method calls (sent while TTS was initializing)
             synchronized(this@FlutterTtsPlugin) {
                 ttsStatus = status
-                for (call in pendingMethodCalls) {
-                    call.run()
-                }
-                pendingMethodCalls.clear()
+                runPendingMethodCalls()
             }
 
             if (status == TextToSpeech.SUCCESS) {
