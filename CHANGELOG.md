@@ -1,5 +1,15 @@
 # ChangeLog
 
+## Unreleased
+
+- Remove standalone KGP application and legacy compiler options; use built-in Kotlin with a JVM 11 target.
+- Require Flutter 3.44 / Dart 3.12 or newer; the migrated Android example requires Flutter 3.47.
+- Preserve Swift Package Manager and CocoaPods support.
+
+### Features
+
+- **iOS/macOS:** Add Swift Package Manager package manifests to support Flutter's SPM integration.
+
 ## 4.2.5
 
 ### Fixes
