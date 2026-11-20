@@ -29,3 +29,6 @@ xcuserdata
 Icon?
 .tags*
 
+
+.build/
+.swiftpm/
